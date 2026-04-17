@@ -27,6 +27,9 @@
             box-shadow: 0 0 15px rgba(212, 175, 55, 0.15); 
             margin-bottom: 20px; 
         }
+        .full-width {
+            grid-column: 1 / -1;
+        }
         h2, h3 { 
             margin-top: 0; 
             color: #d4af37; 
@@ -152,6 +155,22 @@
             font-size: 0.8rem;
             text-transform: uppercase;
         }
+
+        .scrollable-log {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 4px;
+        }
+        .scrollable-log::-webkit-scrollbar { width: 8px; }
+        .scrollable-log::-webkit-scrollbar-track { background: #050505; }
+        .scrollable-log::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 4px; }
+        
+        .match-row:hover { background: #1a1a1a; }
+        .match-fixture { width: 120px; font-weight: bold; color: #888; }
+        .match-result-text { color: #aaa; }
+        .match-highlight { color: #d4af37; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -162,7 +181,7 @@
             <h2>add match result</h2>
             <div class="row">
                 <div>
-                    <label>team 1</label>
+                    <label style="color:#d4af37;">team 1 (batting first)</label>
                     <select id="t1"></select>
                 </div>
                 <div>
@@ -180,7 +199,7 @@
             </div>
             <div class="row">
                 <div>
-                    <label>team 2</label>
+                    <label style="color:#d4af37;">team 2 (chasing)</label>
                     <select id="t2"></select>
                 </div>
                 <div>
@@ -253,7 +272,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th>team</th><th>p</th><th>w</th><th>l</th><th>t</th><th>pts</th><th>nrr</th><th>form (last 3)</th><th>status</th>
+                        <th>team</th><th>p</th><th>w</th><th>l</th><th>t</th><th>pts</th><th>nrr</th><th>form</th><th>status</th>
                     </tr>
                 </thead>
                 <tbody id="ptable_body"></tbody>
@@ -277,6 +296,25 @@
             </div>
         </div>
     </div>
+
+    <div class="card full-width">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>tournament match log</h2>
+            <span id="match_progress" style="color: #aaa; font-size: 0.9rem;"></span>
+        </div>
+        <div class="scrollable-log">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">m#</th>
+                        <th class="match-fixture">fixture</th>
+                        <th>result</th>
+                    </tr>
+                </thead>
+                <tbody id="match_log_body"></tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -285,11 +323,47 @@
     const GROUP_B = ['csk', 'rcb', 'gt', 'pbks', 'rr'];
     const TOTAL_MATCHES_PER_TEAM = 14;
     
-    let matches = JSON.parse(localStorage.getItem('ipl_matches')) || [];
+    let schedule = [];
     let batters = JSON.parse(localStorage.getItem('ipl_batters')) || {};
     let bowlers = JSON.parse(localStorage.getItem('ipl_bowlers')) || {};
 
+    function generateSchedule() {
+        let tempSchedule = [];
+        let idCounter = 1;
+
+        // group a intra (1 match each)
+        for (let i = 0; i < GROUP_A.length; i++) {
+            for (let j = i + 1; j < GROUP_A.length; j++) {
+                tempSchedule.push({ id: 0, t1: GROUP_A[i], t2: GROUP_A[j], played: false, result: null });
+            }
+        }
+        // group b intra (1 match each)
+        for (let i = 0; i < GROUP_B.length; i++) {
+            for (let j = i + 1; j < GROUP_B.length; j++) {
+                tempSchedule.push({ id: 0, t1: GROUP_B[i], t2: GROUP_B[j], played: false, result: null });
+            }
+        }
+        // inter group (2 matches each)
+        for (let i = 0; i < GROUP_A.length; i++) {
+            for (let j = 0; j < GROUP_B.length; j++) {
+                tempSchedule.push({ id: 0, t1: GROUP_A[i], t2: GROUP_B[j], played: false, result: null });
+                tempSchedule.push({ id: 0, t1: GROUP_B[j], t2: GROUP_A[i], played: false, result: null });
+            }
+        }
+
+        // basic shuffle to make the fixture list look realistic
+        for (let i = tempSchedule.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [tempSchedule[i], tempSchedule[j]] = [tempSchedule[j], tempSchedule[i]];
+        }
+
+        // assign final ids
+        tempSchedule.forEach(m => m.id = idCounter++);
+        return tempSchedule;
+    }
+
     function init() {
+        // init dropdowns
         const selects = ['t1', 't2', 'pred_t1', 'pred_t2'];
         selects.forEach(id => {
             const el = document.getElementById(id);
@@ -303,8 +377,24 @@
         document.getElementById('t2').selectedIndex = 1;
         document.getElementById('pred_t2').selectedIndex = 1;
 
+        // render group pills
         document.getElementById('group_a_teams').innerHTML = GROUP_A.map(t => `<span class="team-pill">${t}</span>`).join('');
         document.getElementById('group_b_teams').innerHTML = GROUP_B.map(t => `<span class="team-pill">${t}</span>`).join('');
+
+        // handle schedule logic
+        let savedSchedule = JSON.parse(localStorage.getItem('ipl_schedule'));
+        if (!savedSchedule) {
+            schedule = generateSchedule();
+            // migrate old matches if they exist from the previous version
+            let oldMatches = JSON.parse(localStorage.getItem('ipl_matches')) || [];
+            oldMatches.forEach(m => {
+                let slot = schedule.find(x => !x.played && ((x.t1 === m.t1 && x.t2 === m.t2) || (x.t1 === m.t2 && x.t2 === m.t1)));
+                if(slot) { slot.played = true; slot.result = m; }
+            });
+            localStorage.setItem('ipl_schedule', JSON.stringify(schedule));
+        } else {
+            schedule = savedSchedule;
+        }
 
         updateUI();
     }
@@ -313,8 +403,12 @@
         return Math.floor(balls / 6) + ((balls % 6) / 6.0);
     }
 
+    function formatDisplayOvers(balls) {
+        return Math.floor(balls / 6) + "." + (balls % 6);
+    }
+
     function addMatch() {
-        const m = {
+        const data = {
             t1: document.getElementById('t1').value,
             r1: parseInt(document.getElementById('r1').value) || 0,
             w1: parseInt(document.getElementById('w1').value) || 0,
@@ -325,11 +419,20 @@
             b2: parseInt(document.getElementById('b2').value) || 0
         };
 
-        if (m.t1 === m.t2) return alert("teams must be different");
+        if (data.t1 === data.t2) return alert("teams must be different");
 
-        matches.push(m);
-        localStorage.setItem('ipl_matches', JSON.stringify(matches));
+        // find an unplayed slot for this matchup
+        let slot = schedule.find(x => !x.played && ((x.t1 === data.t1 && x.t2 === data.t2) || (x.t1 === data.t2 && x.t2 === data.t1)));
+        
+        if (!slot) {
+            return alert("this matchup has already reached its maximum allowed matches based on group rules!");
+        }
 
+        slot.played = true;
+        slot.result = data;
+        localStorage.setItem('ipl_schedule', JSON.stringify(schedule));
+
+        // caps update
         const batName = document.getElementById('bat_name').value.trim().toLowerCase();
         const batRuns = parseInt(document.getElementById('bat_runs').value) || 0;
         if (batName && batRuns > 0) {
@@ -344,6 +447,7 @@
             localStorage.setItem('ipl_bowlers', JSON.stringify(bowlers));
         }
 
+        // clear form
         ['r1','w1','r2','w2','bat_name','bat_runs','bowl_name','bowl_wkts'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('b1').value = 120;
         document.getElementById('b2').value = 120;
@@ -352,10 +456,9 @@
     }
 
     function clearData() {
-        if(confirm("wipe all data?")) {
+        if(confirm("wipe all data and regenerate the schedule?")) {
             localStorage.clear();
-            matches = []; batters = {}; bowlers = {};
-            updateUI();
+            location.reload();
         }
     }
 
@@ -363,8 +466,12 @@
         let table = {};
         TEAMS.forEach(t => table[t] = { p:0, w:0, l:0, t:0, pts:0, rf:0, of:0, ra:0, oa:0, form: [] });
 
-        matches.forEach(m => {
+        let playedMatches = schedule.filter(s => s.played);
+        
+        playedMatches.forEach(s => {
+            let m = s.result; // using the actual inputted data for calcs
             let o1 = calculateOvers(m.b1), o2 = calculateOvers(m.b2);
+            
             table[m.t1].p++; table[m.t2].p++;
             table[m.t1].rf += m.r1; table[m.t1].of += o1;
             table[m.t1].ra += m.r2; table[m.t1].oa += o2;
@@ -390,6 +497,44 @@
         });
 
         return arr.sort((a, b) => b.pts - a.pts || b.nrr - a.nrr);
+    }
+
+    function renderMatchLog() {
+        let tbody = document.getElementById('match_log_body');
+        tbody.innerHTML = '';
+        
+        let playedCount = 0;
+
+        schedule.forEach(s => {
+            let rowHtml = ``;
+            if (s.played) {
+                playedCount++;
+                let m = s.result;
+                let t1Name = m.t1.toUpperCase();
+                let t2Name = m.t2.toUpperCase();
+                
+                let str1 = `${t1Name}: ${m.r1}/${m.w1} (${formatDisplayOvers(m.b1)})`;
+                let str2 = `${t2Name}: ${m.r2}/${m.w2} (${formatDisplayOvers(m.b2)})`;
+                
+                let winStr = "match tied";
+                if (m.r1 > m.r2) winStr = `<span class="match-highlight">${t1Name} won by ${m.r1 - m.r2} runs</span>`;
+                else if (m.r2 > m.r1) winStr = `<span class="match-highlight">${t2Name} won by ${10 - m.w2} wickets</span>`;
+
+                rowHtml = `<td class="match-result-text">${str1} &nbsp;|&nbsp; ${str2} &nbsp;—&nbsp; ${winStr}</td>`;
+            } else {
+                rowHtml = `<td style="color: #444; font-style: italic;">awaiting result</td>`;
+            }
+
+            tbody.innerHTML += `
+                <tr class="match-row">
+                    <td style="color: #666;">${s.id}</td>
+                    <td class="match-fixture">${s.t1.toUpperCase()} vs ${s.t2.toUpperCase()}</td>
+                    ${rowHtml}
+                </tr>
+            `;
+        });
+
+        document.getElementById('match_progress').innerText = `${playedCount} / 70 completed`;
     }
 
     function updateUI() {
@@ -422,6 +567,7 @@
         document.getElementById('orange_body').innerHTML = sortCaps(batters).map(b => `<tr><td style="text-transform: capitalize;">${b[0]}</td><td style="color: #d4af37; font-weight: bold;">${b[1]}</td></tr>`).join('');
         document.getElementById('purple_body').innerHTML = sortCaps(bowlers).map(b => `<tr><td style="text-transform: capitalize;">${b[0]}</td><td style="color: #d4af37; font-weight: bold;">${b[1]}</td></tr>`).join('');
         
+        renderMatchLog();
         window.currentStandings = standings;
     }
 
@@ -445,13 +591,3 @@
         if(total === 0) total = 1; 
         
         let p1 = Math.max(10, Math.min(90, (score1 / total) * 100));
-        let p2 = 100 - p1;
-
-        document.getElementById('prediction_result').innerText = 
-            `${t1.toUpperCase()}: ${p1.toFixed(1)}%  |  ${t2.toUpperCase()}: ${p2.toFixed(1)}%`;
-    }
-
-    init();
-</script>
-</body>
-</html>
