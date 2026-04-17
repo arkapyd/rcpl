@@ -345,6 +345,7 @@
         let tempSchedule = [];
         let idCounter = 1;
 
+        // build all required matches
         for (let i = 0; i < GROUP_A.length; i++) {
             for (let j = i + 1; j < GROUP_A.length; j++) {
                 tempSchedule.push({ id: 0, t1: GROUP_A[i], t2: GROUP_A[j], played: false, result: null });
@@ -362,13 +363,48 @@
             }
         }
 
-        for (let i = tempSchedule.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [tempSchedule[i], tempSchedule[j]] = [tempSchedule[j], tempSchedule[i]];
+        // constraint solver: randomized greedy approach
+        let finalSchedule = [];
+        let success = false;
+        let attempts = 0;
+
+        while (!success && attempts < 500) {
+            attempts++;
+            let pool = [...tempSchedule];
+            
+            // initial random shuffle of the pool
+            for (let i = pool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pool[i], pool[j]] = [pool[j], pool[i]];
+            }
+
+            finalSchedule = [];
+            let lastTeams = [];
+            let valid = true;
+
+            while (pool.length > 0) {
+                // find first match in shuffled pool that does not include teams from the previous match
+                let matchIdx = pool.findIndex(m => !lastTeams.includes(m.t1) && !lastTeams.includes(m.t2));
+                
+                if (matchIdx !== -1) {
+                    let m = pool.splice(matchIdx, 1)[0];
+                    finalSchedule.push(m);
+                    lastTeams = [m.t1, m.t2];
+                } else {
+                    valid = false;
+                    break; // stuck, retry
+                }
+            }
+            if (valid) success = true;
         }
 
-        tempSchedule.forEach(m => m.id = idCounter++);
-        return tempSchedule;
+        if (!success) {
+            console.warn("could not find a perfectly strict schedule after 500 attempts. falling back to random.");
+            finalSchedule = tempSchedule; 
+        }
+
+        finalSchedule.forEach(m => m.id = idCounter++);
+        return finalSchedule;
     }
 
     function init() {
@@ -610,7 +646,6 @@
             `${t1.toUpperCase()}: ${p1.toFixed(1)}%  |  ${t2.toUpperCase()}: ${p2.toFixed(1)}%`;
     }
 
-    // load app safely
     try {
         init();
     } catch (e) {
