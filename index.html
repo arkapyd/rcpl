@@ -1,30 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" type="image/jpeg" href="logorcpl.jpg" style="border-radius: 50%;">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RCPL S4</title>
+    <title>rcpl s4</title>
+    <link rel="icon" type="image/jpeg" href="logorcpl.jpg">
     <style>
-        /* Style for the prominent, round RCPL logo on the page */
-.page-logo-container {
-    position: fixed; /* Keep it fixed in the corner */
-    top: 20px;       /* 20px from the top */
-    left: 20px;      /* 20px from the left - change to 'right' if preferred */
-    width: 150px;    /* Size of the logo container - make it prominent */
-    height: 150px;   /* Size of the logo container */
-    border-radius: 50%; /* Perfect circle frame */
-    border: 5px solid #d4af37; /* A sleek gold border */
-    overflow: hidden;   /* Ensure the image stays within the circle */
-    z-index: 10000;      /* Ensure it sits on top of all other elements */
-    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4); /* Add a sleek glow */
-}
-
-.page-logo-container img {
-    width: 100%;       /* Image fills the circle width */
-    height: 100%;      /* Image fills the circle height */
-    object-fit: cover;  /* Prevents distortion, centers and crops if needed */
-}
         body { 
             font-family: system-ui, sans-serif; 
             background-color: #050505; 
@@ -32,6 +13,25 @@
             margin: 0; 
             padding: 20px; 
         }
+        
+        /* floating logo styles */
+        .floating-logo {
+            position: fixed;
+            left: 30px;
+            top: 25%;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 3px solid #d4af37;
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+            object-fit: cover;
+            z-index: 1000;
+            transition: opacity 0.4s ease;
+        }
+        .floating-logo:hover {
+            opacity: 0;
+        }
+
         .container { 
             max-width: 1200px; 
             margin: 0 auto; 
@@ -266,10 +266,10 @@
     </style>
 </head>
 <body>
-<div class="page-logo-container">
-    <img src="logorcpl.jpg" alt="RCPL Logo">
-</div>
+
 <div id="loading_overlay">syncing with cloud...</div>
+
+<img src="logorcpl.jpg" alt="rcpl logo" class="floating-logo">
 
 <div class="container" id="main_app" style="opacity: 0; transition: opacity 0.5s;">
     <div class="left-col" id="admin_panel">
@@ -484,237 +484,4 @@
             }
         }
         for (let i = 0; i < GROUP_B.length; i++) {
-            for (let j = i + 1; j < GROUP_B.length; j++) {
-                tempSchedule.push({ id: 0, t1: GROUP_B[i], t2: GROUP_B[j], played: false, result: null });
-            }
-        }
-        for (let i = 0; i < GROUP_A.length; i++) {
-            for (let j = 0; j < GROUP_B.length; j++) {
-                tempSchedule.push({ id: 0, t1: GROUP_A[i], t2: GROUP_B[j], played: false, result: null });
-                tempSchedule.push({ id: 0, t1: GROUP_B[j], t2: GROUP_A[i], played: false, result: null });
-            }
-        }
-
-        let finalSchedule = [];
-        let success = false;
-        let attempts = 0;
-
-        while (!success && attempts < 500) {
-            attempts++;
-            let pool = [...tempSchedule];
-            for (let i = pool.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [pool[i], pool[j]] = [pool[j], pool[i]];
-            }
-
-            finalSchedule = [];
-            let lastTeams = [];
-            let valid = true;
-
-            while (pool.length > 0) {
-                let matchIdx = pool.findIndex(m => !lastTeams.includes(m.t1) && !lastTeams.includes(m.t2));
-                if (matchIdx !== -1) {
-                    let m = pool.splice(matchIdx, 1)[0];
-                    finalSchedule.push(m);
-                    lastTeams = [m.t1, m.t2];
-                } else {
-                    valid = false; break;
-                }
-            }
-            if (valid) success = true;
-        }
-
-        if (!success) finalSchedule = tempSchedule; 
-        finalSchedule.forEach(m => m.id = idCounter++);
-        return finalSchedule;
-    }
-
-    function initUI() {
-        const selects = ['t1', 't2', 'pred_t1', 'pred_t2'];
-        selects.forEach(id => {
-            const el = document.getElementById(id);
-            if(el) {
-                el.innerHTML = '';
-                TEAMS.forEach(t => {
-                    let opt = document.createElement('option');
-                    opt.value = t; opt.innerText = t.toUpperCase();
-                    el.appendChild(opt);
-                });
-            }
-        });
-        if(document.getElementById('t2')) document.getElementById('t2').selectedIndex = 1;
-        if(document.getElementById('pred_t2')) document.getElementById('pred_t2').selectedIndex = 1;
-
-        document.getElementById('group_a_teams').innerHTML = GROUP_A.map(t => `<span class="team-pill">${t}</span>`).join('');
-        document.getElementById('group_b_teams').innerHTML = GROUP_B.map(t => `<span class="team-pill">${t}</span>`).join('');
-    }
-
-    function calculateOvers(balls) { return Math.floor(balls / 6) + ((balls % 6) / 6.0); }
-    function formatDisplayOvers(balls) { return Math.floor(balls / 6) + "." + (balls % 6); }
-
-    window.addMatch = function() {
-        const data = {
-            t1: document.getElementById('t1').value,
-            r1: parseInt(document.getElementById('r1').value) || 0,
-            w1: parseInt(document.getElementById('w1').value) || 0,
-            b1: parseInt(document.getElementById('b1').value) || 0,
-            t2: document.getElementById('t2').value,
-            r2: parseInt(document.getElementById('r2').value) || 0,
-            w2: parseInt(document.getElementById('w2').value) || 0,
-            b2: parseInt(document.getElementById('b2').value) || 0
-        };
-
-        if (data.t1 === data.t2) return alert("teams must be different");
-
-        let slot = schedule.find(x => !x.played && ((x.t1 === data.t1 && x.t2 === data.t2) || (x.t1 === data.t2 && x.t2 === data.t1)));
-        if (!slot) return alert("this matchup has already reached its maximum allowed matches based on group rules!");
-
-        slot.played = true;
-        slot.result = data;
-
-        const batName = document.getElementById('bat_name').value.trim().toLowerCase();
-        const batRuns = parseInt(document.getElementById('bat_runs').value) || 0;
-        if (batName && batRuns > 0) batters[batName] = (batters[batName] || 0) + batRuns;
-
-        const bowlName = document.getElementById('bowl_name').value.trim().toLowerCase();
-        const bowlWkts = parseInt(document.getElementById('bowl_wkts').value) || 0;
-        if (bowlName && bowlWkts > 0) bowlers[bowlName] = (bowlers[bowlName] || 0) + bowlWkts;
-
-        pushToCloud();
-
-        ['r1','w1','r2','w2','bat_name','bat_runs','bowl_name','bowl_wkts'].forEach(id => document.getElementById(id).value = '');
-        document.getElementById('b1').value = 120; document.getElementById('b2').value = 120;
-    };
-
-    window.clearData = function() {
-        if(confirm("this will delete the database for everyone across the internet. proceed?")) {
-            schedule = generateSchedule();
-            batters = {};
-            bowlers = {};
-            pushToCloud();
-        }
-    };
-
-    window.unlockAdmin = function() {
-        let pass = prompt("enter admin password:");
-        if (pass === "rcpl2026") {
-            document.getElementById("admin_panel").style.display = "block";
-            document.getElementById("view_panel").style.gridColumn = "auto";
-        } else if (pass !== null) {
-            alert("incorrect password.");
-        }
-    };
-
-    function generateTableData() {
-        let table = {};
-        TEAMS.forEach(t => table[t] = { p:0, w:0, l:0, t:0, pts:0, rf:0, of:0, ra:0, oa:0, form: [] });
-        let playedMatches = schedule.filter(s => s.played && s.result);
-        
-        playedMatches.forEach(s => {
-            let m = s.result; 
-            let o1 = calculateOvers(m.b1), o2 = calculateOvers(m.b2);
-            if (table[m.t1] && table[m.t2]) {
-                table[m.t1].p++; table[m.t2].p++;
-                table[m.t1].rf += m.r1; table[m.t1].of += o1;
-                table[m.t1].ra += m.r2; table[m.t1].oa += o2;
-                table[m.t2].rf += m.r2; table[m.t2].of += o2;
-                table[m.t2].ra += m.r1; table[m.t2].oa += o1;
-                if (m.r1 > m.r2) {
-                    table[m.t1].w++; table[m.t1].pts += 2; table[m.t1].form.push('W');
-                    table[m.t2].l++; table[m.t2].form.push('L');
-                } else if (m.r2 > m.r1) {
-                    table[m.t2].w++; table[m.t2].pts += 2; table[m.t2].form.push('W');
-                    table[m.t1].l++; table[m.t1].form.push('L');
-                } else {
-                    table[m.t1].t++; table[m.t1].pts += 1; table[m.t1].form.push('T');
-                    table[m.t2].t++; table[m.t2].pts += 1; table[m.t2].form.push('T');
-                }
-            }
-        });
-
-        let arr = Object.keys(table).map(t => {
-            let nrr = (table[t].of > 0 ? table[t].rf/table[t].of : 0) - (table[t].oa > 0 ? table[t].ra/table[t].oa : 0);
-            return { team: t, ...table[t], nrr: nrr.toFixed(3) };
-        });
-        return arr.sort((a, b) => b.pts - a.pts || b.nrr - a.nrr);
-    }
-
-    function updateUI() {
-        let standings = generateTableData();
-        let tbody = document.getElementById('ptable_body');
-        tbody.innerHTML = '';
-
-        if (standings.length > 4) {
-            let fourthPlacePts = standings[3].pts;
-            standings.forEach(s => {
-                let maxPossible = s.pts + ((TOTAL_MATCHES_PER_TEAM - s.p) * 2);
-                if (s.p === TOTAL_MATCHES_PER_TEAM && s.pts >= fourthPlacePts) s.status = '<span class="tag q">q</span>';
-                else if (maxPossible < fourthPlacePts && fourthPlacePts > 0) s.status = '<span class="tag e">e</span>';
-                else s.status = '-';
-            });
-        }
-
-        standings.forEach(s => {
-            let formHtml = s.form.slice(-3).map(f => `<span class="tag form-${f.toLowerCase()}">${f.toLowerCase()}</span>`).join(' ');
-            tbody.innerHTML += `<tr>
-                <td style="color: #fff;"><b>${s.team.toUpperCase()}</b></td>
-                <td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td>
-                <td style="color: #d4af37;"><b>${s.pts}</b></td><td>${s.nrr}</td>
-                <td>${formHtml || '-'}</td><td>${s.status || '-'}</td>
-            </tr>`;
-        });
-
-        const sortCaps = (obj) => {
-            if (!obj || typeof obj !== 'object') return [];
-            return Object.entries(obj).sort((a,b) => b[1] - a[1]).slice(0,5);
-        };
-        
-        document.getElementById('orange_body').innerHTML = sortCaps(batters).map(b => `<tr><td style="text-transform: capitalize;">${b[0]}</td><td style="color: #d4af37; font-weight: bold;">${b[1]}</td></tr>`).join('');
-        document.getElementById('purple_body').innerHTML = sortCaps(bowlers).map(b => `<tr><td style="text-transform: capitalize;">${b[0]}</td><td style="color: #d4af37; font-weight: bold;">${b[1]}</td></tr>`).join('');
-        
-        let logTbody = document.getElementById('match_log_body');
-        logTbody.innerHTML = '';
-        let playedCount = 0;
-
-        schedule.forEach(s => {
-            let rowHtml = ``;
-            if (s.played && s.result) {
-                playedCount++;
-                let m = s.result;
-                let winStr = "match tied";
-                if (m.r1 > m.r2) winStr = `<span class="match-highlight">${m.t1.toUpperCase()} won by ${m.r1 - m.r2} runs</span>`;
-                else if (m.r2 > m.r1) winStr = `<span class="match-highlight">${m.t2.toUpperCase()} won by ${10 - (m.w2 || 0)} wickets</span>`;
-
-                rowHtml = `<td class="match-result-text">${m.t1.toUpperCase()}: ${m.r1}/${m.w1} (${formatDisplayOvers(m.b1)}) &nbsp;|&nbsp; ${m.t2.toUpperCase()}: ${m.r2}/${m.w2} (${formatDisplayOvers(m.b2)}) &nbsp;—&nbsp; ${winStr}</td>`;
-            } else {
-                rowHtml = `<td style="color: #444; font-style: italic;">awaiting result</td>`;
-            }
-            logTbody.innerHTML += `<tr class="match-row"><td style="color: #666;">${s.id}</td><td class="match-fixture">${s.t1.toUpperCase()} vs ${s.t2.toUpperCase()}</td>${rowHtml}</tr>`;
-        });
-
-        document.getElementById('match_progress').innerText = `${playedCount} / 70 completed`;
-        window.currentStandings = standings;
-    }
-
-    window.predictMatch = function() {
-        const t1 = document.getElementById('pred_t1').value;
-        const t2 = document.getElementById('pred_t2').value;
-        if (t1 === t2) return document.getElementById('prediction_result').innerText = "select different teams.";
-
-        let stats = window.currentStandings;
-        let s1 = stats.find(s => s.team === t1);
-        let s2 = stats.find(s => s.team === t2);
-
-        if (!s1 || !s2 || (s1.p === 0 && s2.p === 0)) return document.getElementById('prediction_result').innerText = "not enough data yet.";
-
-        const getFormScore = (formArr) => formArr.slice(-3).reduce((acc, val) => acc + (val==='W'?2:val==='T'?1:0), 0);
-        let score1 = (s1.pts * 1.5) + (parseFloat(s1.nrr) * 5) + (getFormScore(s1.form) * 3);
-        let score2 = (s2.pts * 1.5) + (parseFloat(s2.nrr) * 5) + (getFormScore(s2.form) * 3);
-        let total = (score1 + score2) || 1; 
-        
-        let p1 = Math.max(10, Math.min(90, (score1 / total) * 100));
-        document.getElementById('prediction_result').innerText = `${t1.toUpperCase()}: ${p1.toFixed(1)}%  |  ${t2.toUpperCase()}: ${(100 - p1).toFixed(1)}%`;
-    }
-</script>
-</body>
-</html>
+            for (let j
