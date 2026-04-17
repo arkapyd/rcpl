@@ -61,6 +61,10 @@
             color: #fff; 
             box-sizing: border-box; 
         }
+        option {
+            background: #1a1a1a;
+            color: #fff;
+        }
         input:focus, select:focus {
             outline: none;
             border-color: #d4af37;
@@ -323,27 +327,34 @@
     const GROUP_B = ['csk', 'rcb', 'gt', 'pbks', 'rr'];
     const TOTAL_MATCHES_PER_TEAM = 14;
     
+    function safeParse(key, fallback) {
+        try {
+            let data = localStorage.getItem(key);
+            return data ? JSON.parse(data) : fallback;
+        } catch (e) {
+            console.error('corrupt data reset for', key);
+            return fallback;
+        }
+    }
+
     let schedule = [];
-    let batters = JSON.parse(localStorage.getItem('ipl_batters')) || {};
-    let bowlers = JSON.parse(localStorage.getItem('ipl_bowlers')) || {};
+    let batters = safeParse('ipl_batters', {});
+    let bowlers = safeParse('ipl_bowlers', {});
 
     function generateSchedule() {
         let tempSchedule = [];
         let idCounter = 1;
 
-        // group a intra (1 match each)
         for (let i = 0; i < GROUP_A.length; i++) {
             for (let j = i + 1; j < GROUP_A.length; j++) {
                 tempSchedule.push({ id: 0, t1: GROUP_A[i], t2: GROUP_A[j], played: false, result: null });
             }
         }
-        // group b intra (1 match each)
         for (let i = 0; i < GROUP_B.length; i++) {
             for (let j = i + 1; j < GROUP_B.length; j++) {
                 tempSchedule.push({ id: 0, t1: GROUP_B[i], t2: GROUP_B[j], played: false, result: null });
             }
         }
-        // inter group (2 matches each)
         for (let i = 0; i < GROUP_A.length; i++) {
             for (let j = 0; j < GROUP_B.length; j++) {
                 tempSchedule.push({ id: 0, t1: GROUP_A[i], t2: GROUP_B[j], played: false, result: null });
@@ -351,46 +362,45 @@
             }
         }
 
-        // basic shuffle to make the fixture list look realistic
         for (let i = tempSchedule.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [tempSchedule[i], tempSchedule[j]] = [tempSchedule[j], tempSchedule[i]];
         }
 
-        // assign final ids
         tempSchedule.forEach(m => m.id = idCounter++);
         return tempSchedule;
     }
 
     function init() {
-        // init dropdowns
         const selects = ['t1', 't2', 'pred_t1', 'pred_t2'];
         selects.forEach(id => {
             const el = document.getElementById(id);
-            el.innerHTML = '';
-            TEAMS.forEach(t => {
-                let opt = document.createElement('option');
-                opt.value = t; opt.innerText = t.toUpperCase();
-                el.appendChild(opt);
-            });
+            if(el) {
+                el.innerHTML = '';
+                TEAMS.forEach(t => {
+                    let opt = document.createElement('option');
+                    opt.value = t; opt.innerText = t.toUpperCase();
+                    el.appendChild(opt);
+                });
+            }
         });
-        document.getElementById('t2').selectedIndex = 1;
-        document.getElementById('pred_t2').selectedIndex = 1;
+        
+        if(document.getElementById('t2')) document.getElementById('t2').selectedIndex = 1;
+        if(document.getElementById('pred_t2')) document.getElementById('pred_t2').selectedIndex = 1;
 
-        // render group pills
         document.getElementById('group_a_teams').innerHTML = GROUP_A.map(t => `<span class="team-pill">${t}</span>`).join('');
         document.getElementById('group_b_teams').innerHTML = GROUP_B.map(t => `<span class="team-pill">${t}</span>`).join('');
 
-        // handle schedule logic
-        let savedSchedule = JSON.parse(localStorage.getItem('ipl_schedule'));
+        let savedSchedule = safeParse('ipl_schedule', null);
         if (!savedSchedule) {
             schedule = generateSchedule();
-            // migrate old matches if they exist from the previous version
-            let oldMatches = JSON.parse(localStorage.getItem('ipl_matches')) || [];
-            oldMatches.forEach(m => {
-                let slot = schedule.find(x => !x.played && ((x.t1 === m.t1 && x.t2 === m.t2) || (x.t1 === m.t2 && x.t2 === m.t1)));
-                if(slot) { slot.played = true; slot.result = m; }
-            });
+            let oldMatches = safeParse('ipl_matches', []);
+            if (Array.isArray(oldMatches)) {
+                oldMatches.forEach(m => {
+                    let slot = schedule.find(x => !x.played && ((x.t1 === m.t1 && x.t2 === m.t2) || (x.t1 === m.t2 && x.t2 === m.t1)));
+                    if(slot) { slot.played = true; slot.result = m; }
+                });
+            }
             localStorage.setItem('ipl_schedule', JSON.stringify(schedule));
         } else {
             schedule = savedSchedule;
@@ -421,7 +431,6 @@
 
         if (data.t1 === data.t2) return alert("teams must be different");
 
-        // find an unplayed slot for this matchup
         let slot = schedule.find(x => !x.played && ((x.t1 === data.t1 && x.t2 === data.t2) || (x.t1 === data.t2 && x.t2 === data.t1)));
         
         if (!slot) {
@@ -432,7 +441,6 @@
         slot.result = data;
         localStorage.setItem('ipl_schedule', JSON.stringify(schedule));
 
-        // caps update
         const batName = document.getElementById('bat_name').value.trim().toLowerCase();
         const batRuns = parseInt(document.getElementById('bat_runs').value) || 0;
         if (batName && batRuns > 0) {
@@ -447,7 +455,6 @@
             localStorage.setItem('ipl_bowlers', JSON.stringify(bowlers));
         }
 
-        // clear form
         ['r1','w1','r2','w2','bat_name','bat_runs','bowl_name','bowl_wkts'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('b1').value = 120;
         document.getElementById('b2').value = 120;
@@ -466,28 +473,30 @@
         let table = {};
         TEAMS.forEach(t => table[t] = { p:0, w:0, l:0, t:0, pts:0, rf:0, of:0, ra:0, oa:0, form: [] });
 
-        let playedMatches = schedule.filter(s => s.played);
+        let playedMatches = schedule.filter(s => s.played && s.result);
         
         playedMatches.forEach(s => {
-            let m = s.result; // using the actual inputted data for calcs
+            let m = s.result; 
             let o1 = calculateOvers(m.b1), o2 = calculateOvers(m.b2);
             
-            table[m.t1].p++; table[m.t2].p++;
-            table[m.t1].rf += m.r1; table[m.t1].of += o1;
-            table[m.t1].ra += m.r2; table[m.t1].oa += o2;
-            
-            table[m.t2].rf += m.r2; table[m.t2].of += o2;
-            table[m.t2].ra += m.r1; table[m.t2].oa += o1;
+            if (table[m.t1] && table[m.t2]) {
+                table[m.t1].p++; table[m.t2].p++;
+                table[m.t1].rf += m.r1; table[m.t1].of += o1;
+                table[m.t1].ra += m.r2; table[m.t1].oa += o2;
+                
+                table[m.t2].rf += m.r2; table[m.t2].of += o2;
+                table[m.t2].ra += m.r1; table[m.t2].oa += o1;
 
-            if (m.r1 > m.r2) {
-                table[m.t1].w++; table[m.t1].pts += 2; table[m.t1].form.push('W');
-                table[m.t2].l++; table[m.t2].form.push('L');
-            } else if (m.r2 > m.r1) {
-                table[m.t2].w++; table[m.t2].pts += 2; table[m.t2].form.push('W');
-                table[m.t1].l++; table[m.t1].form.push('L');
-            } else {
-                table[m.t1].t++; table[m.t1].pts += 1; table[m.t1].form.push('T');
-                table[m.t2].t++; table[m.t2].pts += 1; table[m.t2].form.push('T');
+                if (m.r1 > m.r2) {
+                    table[m.t1].w++; table[m.t1].pts += 2; table[m.t1].form.push('W');
+                    table[m.t2].l++; table[m.t2].form.push('L');
+                } else if (m.r2 > m.r1) {
+                    table[m.t2].w++; table[m.t2].pts += 2; table[m.t2].form.push('W');
+                    table[m.t1].l++; table[m.t1].form.push('L');
+                } else {
+                    table[m.t1].t++; table[m.t1].pts += 1; table[m.t1].form.push('T');
+                    table[m.t2].t++; table[m.t2].pts += 1; table[m.t2].form.push('T');
+                }
             }
         });
 
@@ -507,18 +516,18 @@
 
         schedule.forEach(s => {
             let rowHtml = ``;
-            if (s.played) {
+            if (s.played && s.result) {
                 playedCount++;
                 let m = s.result;
-                let t1Name = m.t1.toUpperCase();
-                let t2Name = m.t2.toUpperCase();
+                let t1Name = m.t1 ? m.t1.toUpperCase() : '';
+                let t2Name = m.t2 ? m.t2.toUpperCase() : '';
                 
                 let str1 = `${t1Name}: ${m.r1}/${m.w1} (${formatDisplayOvers(m.b1)})`;
                 let str2 = `${t2Name}: ${m.r2}/${m.w2} (${formatDisplayOvers(m.b2)})`;
                 
                 let winStr = "match tied";
                 if (m.r1 > m.r2) winStr = `<span class="match-highlight">${t1Name} won by ${m.r1 - m.r2} runs</span>`;
-                else if (m.r2 > m.r1) winStr = `<span class="match-highlight">${t2Name} won by ${10 - m.w2} wickets</span>`;
+                else if (m.r2 > m.r1) winStr = `<span class="match-highlight">${t2Name} won by ${10 - (m.w2 || 0)} wickets</span>`;
 
                 rowHtml = `<td class="match-result-text">${str1} &nbsp;|&nbsp; ${str2} &nbsp;—&nbsp; ${winStr}</td>`;
             } else {
@@ -562,7 +571,10 @@
             </tr>`;
         });
 
-        const sortCaps = (obj) => Object.entries(obj).sort((a,b) => b[1] - a[1]).slice(0,5);
+        const sortCaps = (obj) => {
+            if (!obj || typeof obj !== 'object') return [];
+            return Object.entries(obj).sort((a,b) => b[1] - a[1]).slice(0,5);
+        };
         
         document.getElementById('orange_body').innerHTML = sortCaps(batters).map(b => `<tr><td style="text-transform: capitalize;">${b[0]}</td><td style="color: #d4af37; font-weight: bold;">${b[1]}</td></tr>`).join('');
         document.getElementById('purple_body').innerHTML = sortCaps(bowlers).map(b => `<tr><td style="text-transform: capitalize;">${b[0]}</td><td style="color: #d4af37; font-weight: bold;">${b[1]}</td></tr>`).join('');
@@ -580,6 +592,7 @@
         let s1 = stats.find(s => s.team === t1);
         let s2 = stats.find(s => s.team === t2);
 
+        if (!s1 || !s2) return;
         if (s1.p === 0 && s2.p === 0) return document.getElementById('prediction_result').innerText = "not enough data yet.";
 
         const getFormScore = (formArr) => formArr.slice(-3).reduce((acc, val) => acc + (val==='W'?2:val==='T'?1:0), 0);
@@ -591,3 +604,20 @@
         if(total === 0) total = 1; 
         
         let p1 = Math.max(10, Math.min(90, (score1 / total) * 100));
+        let p2 = 100 - p1;
+
+        document.getElementById('prediction_result').innerText = 
+            `${t1.toUpperCase()}: ${p1.toFixed(1)}%  |  ${t2.toUpperCase()}: ${p2.toFixed(1)}%`;
+    }
+
+    // load app safely
+    try {
+        init();
+    } catch (e) {
+        console.error("fatal initialization error caught. resetting environment.", e);
+        localStorage.clear();
+        init();
+    }
+</script>
+</body>
+</html>
