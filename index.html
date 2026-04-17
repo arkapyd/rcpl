@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RCPL S4</title>
+    <title>RCPL Season 4</title>
     <link rel="icon" type="image/jpeg" href="logorcpl.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
     <style>
@@ -32,19 +32,16 @@
             overflow: hidden;
         }
 
-        .ribbon-background-text {
-            position: absolute;
-            width: 100%;
-            text-align: center;
+        .ribbon-text {
             font-family: 'Bebas Neue', sans-serif;
             font-size: 3.5rem;
-            line-height: 80px;
             color: #d4af37;
             letter-spacing: 6px;
-            z-index: 1;
             white-space: nowrap;
             text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
             user-select: none;
+            margin: 0 25px; /* adds breathing room around the logo */
+            line-height: 80px;
         }
 
         .ribbon-logo {
@@ -296,8 +293,9 @@
 <div id="loading_overlay">Syncing With Cloud...</div>
 
 <div class="top-ribbon">
-    <div class="ribbon-background-text">REAL CRICKET PREMIER LEAGUE S4</div>
+    <span class="ribbon-text">REAL CRICKET PREMIER</span>
     <img src="logorcpl.jpg" alt="RCPL Logo" class="ribbon-logo">
+    <span class="ribbon-text">LEAGUE SEASON 4</span>
 </div>
 
 <div class="container" id="main_app" style="opacity: 0; transition: opacity 0.5s;">
