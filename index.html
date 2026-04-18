@@ -253,7 +253,7 @@
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
         }
-        /* Specific Franchise Colors */
+        
         .team-kkr:hover { background-color: #4a148c; border-color: #7c43bd; color: #fff; box-shadow: 0 4px 12px rgba(74, 20, 140, 0.4); transform: scale(1.1) translateY(-2px); }
         .team-csk:hover { background-color: #d4af37; border-color: #ffdf00; color: #000; box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4); transform: scale(1.1) translateY(-2px); }
         .team-rcb:hover { background-color: #d50000; border-color: #ff1744; color: #fff; box-shadow: 0 4px 12px rgba(213, 0, 0, 0.4); transform: scale(1.1) translateY(-2px); }
@@ -515,15 +515,15 @@
                 <thead>
                     <tr>
                         <th>Team</th>
-                        <th>BEWM</th>
-                        <th>BASRA</th>
                         <th>Runs Scored</th>
                         <th>Balls Faced</th>
                         <th>Runs Conceded</th>
                         <th>Balls Bowled</th>
                         <th>Average</th>
                         <th>Strike Rate</th>
+                        <th style="color:#d4af37;">BASRA</th>
                         <th>Economy</th>
+                        <th style="color:#d4af37;">BEWM</th>
                         <th>Run Rate</th>
                         <th>W/L</th>
                         <th>Value</th>
@@ -537,45 +537,45 @@
     <div class="card full-width">
         <h2>Franchise Legacies</h2>
         
-        <div id="legacy_mi" class="legacy-item">
-            <h4>Mumbai Indians (MI)</h4>
-            <p>A dominant force in the RCPL, boasting 1 Championship title and a consistently high win rate. Always a massive threat in the playoffs with their balanced squad.</p>
-        </div>
-        <div id="legacy_rcb" class="legacy-item">
-            <h4>Royal Challengers Bangalore (RCB)</h4>
-            <p>1-time RCPL Champions. Known for their explosive batting firepower and a stellar track record of posting the highest totals in the league's history.</p>
+        <div id="legacy_pbks" class="legacy-item">
+            <h4>Punjab Kings (PBKS)</h4>
+            <p>The perennial bridesmaids of the RCPL. After finishing as runners-up in all three previous seasons, they responded by absolutely dominating Season 3 with an absurd W/L ratio and striking at over 200. They are arguably the most dangerous team on paper.</p>
         </div>
         <div id="legacy_kkr" class="legacy-item">
             <h4>Kolkata Knight Riders (KKR)</h4>
-            <p>1-time RCPL Champions. They possess tactical brilliance and an impressive overall head-to-head record against almost every franchise.</p>
+            <p> RCPL S4 defending champions who carry immense momentum from a stellar Season 3 performance. Their aggressive batting and tight economy make them perennial favorites.</p>
         </div>
-        <div id="legacy_pbks" class="legacy-item">
-            <h4>Punjab Kings (PBKS)</h4>
-            <p>The perennial bridesmaids of the RCPL. They have reached the finals in all three previous seasons only to finish as runners-up. Exceptionally dangerous and hungry for their maiden title.</p>
+        <div id="legacy_mi" class="legacy-item">
+            <h4>Mumbai Indians (MI)</h4>
+            <p>A franchise with a glorious past and 1 RCPL Championship - in the inaugural season - but coming off a shocking dip in form during Season 3. They will be desperate to reclaim their throne and rebuild their win rate.</p>
+        </div>
+        <div id="legacy_rcb" class="legacy-item">
+            <h4>Royal Challengers Bangalore (RCB)</h4>
+            <p>1-time RCPL Champions. Known for their explosive batting firepower, they posted excellent numbers in Season 3 following a title run in S2 and remain heavyweights in the league with a fearsome top order.</p>
         </div>
         <div id="legacy_dc" class="legacy-item">
             <h4>Delhi Capitals (DC)</h4>
-            <p>A highly competitive side with a solid win-loss ratio. They have consistently fought hard for the top playoff spots and are always in the mix.</p>
+            <p>A resilient squad that hangs tough in the middle of the pack. Their solid strike rate shows promise, but they need to convert close games into victories to finally grab a title.</p>
         </div>
         <div id="legacy_rr" class="legacy-item">
             <h4>Rajasthan Royals (RR)</h4>
-            <p>Known for their unyielding fighting spirit and giant-killing performances. They are looking to drastically improve their overall win percentage this season.</p>
+            <p>The giant-killers who have historically struggled with consistency. They are looking to bounce back from a rough Season 3 and improve their overall win percentage.</p>
         </div>
         <div id="legacy_srh" class="legacy-item">
             <h4>Sunrisers Hyderabad (SRH)</h4>
-            <p>While they have faced tough challenges in past seasons, resulting in a lower win-loss ratio, they remain a dangerous squad capable of upsetting the heavyweights on any given day.</p>
+            <p>Facing an uphill battle after a tough Season 3 where they struggled with the ball, holding the highest economy rate. They are looking for a complete turnaround this season.</p>
         </div>
         <div id="legacy_csk" class="legacy-item">
             <h4>Chennai Super Kings (CSK)</h4>
-            <p>Historically struggled in the early seasons of the RCPL, but they are undergoing a massive rebuild, aiming for a strong comeback to establish their dominance.</p>
+            <p>Coming off an incredibly difficult Season 3 with the lowest win rate and strike rate in the league. They are in full rebuild mode and hungry for redemption.</p>
         </div>
         <div id="legacy_lsg" class="legacy-item">
             <h4>Lucknow Super Giants (LSG)</h4>
-            <p>A brand new entrant to the RCPL in Season 4. With a completely clean slate, they are the unpredictable wildcards ready to disrupt the established hierarchy.</p>
+            <p>A brand new entrant to the RCPL in Season 4. With a completely clean slate and zero baggage, they are the unpredictable wildcards ready to disrupt the established hierarchy.</p>
         </div>
         <div id="legacy_gt" class="legacy-item">
             <h4>Gujarat Titans (GT)</h4>
-            <p>Making their highly anticipated debut in Season 4. They are ready to make an instant impact and build a legendary franchise from scratch.</p>
+            <p>Making their highly anticipated debut in Season 4. They have everything to prove and are ready to make a massive splash to build a new legacy from the ground up.</p>
         </div>
     </div>
 
@@ -606,17 +606,18 @@
     const GROUP_B = ['csk', 'rcb', 'gt', 'pbks', 'rr'];
     const TOTAL_MATCHES_PER_TEAM = 14;
     
+    // Baseline stats updated accurately to end of Season 3
     const CAREER_BASE = {
-        dc: { r: 1578, b: 1048, rc: 1562, bb: 1079, w: 22, l: 9, wl_lost: 35, wkts_taken: 197 },
-        rcb: { r: 1605, b: 993, rc: 1499, bb: 1157, w: 28, l: 13, wl_lost: 33, wkts_taken: 156 },
-        mi: { r: 1639, b: 1110, rc: 1531, bb: 1076, w: 29, l: 14, wl_lost: 37, wkts_taken: 215 },
-        kkr: { r: 1754, b: 1102, rc: 1620, bb: 1127, w: 19, l: 14, wl_lost: 37, wkts_taken: 121 },
-        pbks: { r: 2020, b: 983, rc: 1483, bb: 1113, w: 27, l: 14, wl_lost: 33, wkts_taken: 201 },
-        rr: { r: 1472, b: 1299, rc: 1597, bb: 1047, w: 15, l: 18, wl_lost: 43, wkts_taken: 178 },
-        csk: { r: 1195, b: 1048, rc: 1553, bb: 998, w: 5, l: 24, wl_lost: 35, wkts_taken: 11 },
-        srh: { r: 1222, b: 1075, rc: 1670, bb: 911, w: 6, l: 25, wl_lost: 36, wkts_taken: 30 },
-        lsg: { r: 0, b: 0, rc: 0, bb: 0, w: 0, l: 0, wl_lost: 0, wkts_taken: 0 },
-        gt: { r: 0, b: 0, rc: 0, bb: 0, w: 0, l: 0, wl_lost: 0, wkts_taken: 0 }
+        pbks: { r: 1465, b: 671, rc: 1023, bb: 801, w: 10.18, l: 1.82, wl_lost: 22.366, wkts_taken: 60, m_played: 12 },
+        kkr: { r: 1116, b: 690, rc: 988, bb: 725, w: 9.56, l: 2.44, wl_lost: 23.001, wkts_taken: 60, m_played: 12 },
+        mi: { r: 1142, b: 818, rc: 1072, bb: 746, w: 2.55, l: 9.45, wl_lost: 27.268, wkts_taken: 60, m_played: 12 },
+        rcb: { r: 1067, b: 677, rc: 1040, bb: 797, w: 8.81, l: 3.19, wl_lost: 22.568, wkts_taken: 60, m_played: 12 },
+        dc: { r: 1016, b: 712, rc: 1099, bb: 724, w: 5.10, l: 6.90, wl_lost: 23.733, wkts_taken: 60, m_played: 12 },
+        csk: { r: 708, b: 721, rc: 1005, bb: 695, w: 1.19, l: 10.81, wl_lost: 24.033, wkts_taken: 60, m_played: 12 },
+        rr: { r: 913, b: 733, rc: 1066, bb: 660, w: 4.68, l: 7.32, wl_lost: 24.431, wkts_taken: 60, m_played: 12 },
+        srh: { r: 871, b: 719, rc: 1046, bb: 602, w: 4.86, l: 7.14, wl_lost: 23.968, wkts_taken: 60, m_played: 12 },
+        lsg: { r: 0, b: 0, rc: 0, bb: 0, w: 0, l: 0, wl_lost: 0, wkts_taken: 0, m_played: 0 },
+        gt: { r: 0, b: 0, rc: 0, bb: 0, w: 0, l: 0, wl_lost: 0, wkts_taken: 0, m_played: 0 }
     };
 
     const H2H_BASE = {
@@ -948,7 +949,7 @@
         TEAMS.forEach(t => {
             careerStats[t] = { 
                 ...CAREER_BASE[t],
-                m_played: CAREER_BASE[t].w + CAREER_BASE[t].l
+                m_played: CAREER_BASE[t].m_played || 0
             };
         });
 
@@ -1026,15 +1027,15 @@
         cStatsArr.forEach(c => {
             careerHtml += `<tr>
                 <td style="text-transform: uppercase; font-weight: bold; color: #fff;">${c.team}</td>
-                <td style="color: #aaa;">${c.bewm.toFixed(2)}</td>
-                <td style="color: #00e676;">${c.basra.toFixed(2)}</td>
                 <td>${c.r}</td>
                 <td>${c.b}</td>
                 <td>${c.rc}</td>
                 <td>${c.bb}</td>
                 <td>${c.avg.toFixed(2)}</td>
-                <td style="color: #d4af37;">${c.sr.toFixed(2)}</td>
+                <td>${c.sr.toFixed(2)}</td>
+                <td style="color: #d4af37; font-weight: bold;">${c.basra.toFixed(2)}</td>
                 <td>${c.eco.toFixed(2)}</td>
+                <td style="color: #d4af37; font-weight: bold;">${c.bewm.toFixed(2)}</td>
                 <td>${c.rr.toFixed(2)}</td>
                 <td>${c.wl.toFixed(2)}</td>
                 <td style="color: #00e676; font-weight: bold;">$${c.value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
