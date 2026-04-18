@@ -253,6 +253,16 @@
             box-shadow: 0 4px 8px rgba(212, 175, 55, 0.2);
         }
 
+        .scrollable-table {
+            overflow-x: auto;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background: #0a0a0a;
+        }
+        .scrollable-table::-webkit-scrollbar { height: 8px; width: 8px; }
+        .scrollable-table::-webkit-scrollbar-track { background: #050505; }
+        .scrollable-table::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 4px; }
+
         .scrollable-log {
             max-height: 400px;
             overflow-y: auto;
@@ -446,6 +456,32 @@
             </table>
         </div>
     </div>
+
+    <div class="card full-width">
+        <h2>Career Statistics</h2>
+        <div class="scrollable-table">
+            <table style="min-width: 900px;">
+                <thead>
+                    <tr>
+                        <th>Team</th>
+                        <th>BEWM</th>
+                        <th>Runs Scored</th>
+                        <th>Balls Faced</th>
+                        <th>Runs Conceded</th>
+                        <th>Balls Bowled</th>
+                        <th>Average</th>
+                        <th>Strike Rate</th>
+                        <th>Economy</th>
+                        <th>Run Rate</th>
+                        <th>W/L</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody id="career_body"></tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
 
 <div class="admin-trigger" onclick="window.unlockAdmin()">Admin</div>
@@ -473,13 +509,25 @@
     const GROUP_B = ['csk', 'rcb', 'gt', 'pbks', 'rr'];
     const TOTAL_MATCHES_PER_TEAM = 14;
     
+    // Historical base data matched exactly to provided stats
+    const CAREER_BASE = {
+        dc: { r: 1578, b: 1048, rc: 1562, bb: 1079, w: 22, l: 9, wl_lost: 35 },
+        rcb: { r: 1605, b: 993, rc: 1499, bb: 1157, w: 28, l: 13, wl_lost: 33 },
+        mi: { r: 1639, b: 1110, rc: 1531, bb: 1076, w: 29, l: 14, wl_lost: 37 },
+        kkr: { r: 1754, b: 1102, rc: 1620, bb: 1127, w: 19, l: 14, wl_lost: 37 },
+        pbks: { r: 2020, b: 983, rc: 1483, bb: 1113, w: 27, l: 14, wl_lost: 33 },
+        rr: { r: 1472, b: 1299, rc: 1597, bb: 1047, w: 15, l: 18, wl_lost: 43 },
+        csk: { r: 1195, b: 1048, rc: 1553, bb: 998, w: 5, l: 24, wl_lost: 35 },
+        srh: { r: 1222, b: 1075, rc: 1670, bb: 911, w: 6, l: 25, wl_lost: 36 },
+        lsg: { r: 0, b: 0, rc: 0, bb: 0, w: 0, l: 0, wl_lost: 0 },
+        gt: { r: 0, b: 0, rc: 0, bb: 0, w: 0, l: 0, wl_lost: 0 }
+    };
+
     let schedule = [];
     let isDataLoaded = false;
 
     function pushToCloud() {
-        set(dbRef, {
-            schedule: schedule
-        });
+        set(dbRef, { schedule: schedule });
     }
 
     onValue(dbRef, (snapshot) => {
@@ -694,7 +742,6 @@
         
         let playedMatches = schedule.filter(s => s.played && s.result);
         
-        // calculate highest totals
         let highestTotals = [];
         let biggestWinsRuns = [];
         let biggestWinsWkts = [];
@@ -749,6 +796,88 @@
 
         document.getElementById('match_progress').innerText = `${playedCount} / 70 Completed`;
         window.currentStandings = standings;
+
+        // Process Career Stats
+        let careerStats = {};
+        TEAMS.forEach(t => {
+            careerStats[t] = { ...CAREER_BASE[t] };
+        });
+
+        playedMatches.forEach(s => {
+            let m = s.result;
+            
+            if(careerStats[m.t1] && careerStats[m.t2]) {
+                careerStats[m.t1].r += m.r1;
+                careerStats[m.t1].b += m.b1;
+                careerStats[m.t1].rc += m.r2;
+                careerStats[m.t1].bb += m.b2;
+                careerStats[m.t1].wl_lost += (m.w1 || 0);
+
+                careerStats[m.t2].r += m.r2;
+                careerStats[m.t2].b += m.b2;
+                careerStats[m.t2].rc += m.r1;
+                careerStats[m.t2].bb += m.b1;
+                careerStats[m.t2].wl_lost += (m.w2 || 0);
+
+                if (m.r1 > m.r2) {
+                    careerStats[m.t1].w++;
+                    careerStats[m.t2].l++;
+                } else if (m.r2 > m.r1) {
+                    careerStats[m.t2].w++;
+                    careerStats[m.t1].l++;
+                }
+            }
+        });
+
+        let careerHtml = '';
+        let cStatsArr = [];
+
+        for (let t of TEAMS) {
+            let c = careerStats[t];
+            let avg = c.wl_lost > 0 ? (c.r / c.wl_lost) : c.r;
+            let sr = c.b > 0 ? (c.r / c.b) * 100 : 0;
+            let eco = c.bb > 0 ? (c.rc / (c.bb / 6)) : 0;
+            let rr = c.b > 0 ? (c.r / (c.b / 6)) : 0;
+            let wl = c.l > 0 ? (c.w / c.l) : c.w;
+
+            let titles = ['mi', 'rcb', 'kkr'].includes(t) ? 1 : 0;
+            let runnersUp = (t === 'pbks') ? 3 : 0;
+
+            let bewm = ((sr / 100) * 1.8) + (wl * 0.8) + (titles * 0.4) - (eco * 0.05);
+            if (c.r === 0) bewm = 0;
+
+            let value = (c.w * 450) + (wl * 1200) + (titles * 18000) + (runnersUp * 6000) + (sr * 35) - (eco * 120);
+            if (value < 0 || c.r === 0) value = Math.max(0, Math.random() * 500); 
+
+            cStatsArr.push({
+                team: t,
+                bewm: bewm,
+                r: c.r, b: c.b, rc: c.rc, bb: c.bb,
+                avg: avg, sr: sr, eco: eco, rr: rr, wl: wl,
+                value: value
+            });
+        }
+
+        cStatsArr.sort((a,b) => b.value - a.value);
+
+        cStatsArr.forEach(c => {
+            careerHtml += `<tr>
+                <td style="text-transform: uppercase; font-weight: bold; color: #fff;">${c.team}</td>
+                <td style="color: #aaa;">${c.bewm.toFixed(2)}</td>
+                <td>${c.r}</td>
+                <td>${c.b}</td>
+                <td>${c.rc}</td>
+                <td>${c.bb}</td>
+                <td>${c.avg.toFixed(2)}</td>
+                <td style="color: #d4af37;">${c.sr.toFixed(2)}</td>
+                <td>${c.eco.toFixed(2)}</td>
+                <td>${c.rr.toFixed(2)}</td>
+                <td>${c.wl.toFixed(2)}</td>
+                <td style="color: #00e676; font-weight: bold;">$${c.value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            </tr>`;
+        });
+
+        document.getElementById('career_body').innerHTML = careerHtml;
     }
 
     window.predictMatch = function() {
@@ -771,7 +900,6 @@
             return;
         }
 
-        // calculate head to head
         let h2hMatches = schedule.filter(s => s.played && s.result && 
             ((s.result.t1 === t1 && s.result.t2 === t2) || (s.result.t1 === t2 && s.result.t2 === t1))
         );
@@ -788,7 +916,6 @@
             ? `<div style="font-size: 0.9rem; color: #aaa; margin-bottom: 8px;">H2H This Season: <span style="color:#fff">${t1.toUpperCase()} ${t1Wins} - ${t2Wins} ${t2.toUpperCase()}</span> (Ties: ${ties})</div>` 
             : `<div style="font-size: 0.9rem; color: #aaa; margin-bottom: 8px; font-style: italic;">No head-to-head matches played yet.</div>`;
 
-        // calculate prediction math
         const getFormScore = (formArr) => formArr.slice(-3).reduce((acc, val) => acc + (val==='W'?2:val==='T'?1:0), 0);
         let score1 = (s1.pts * 1.5) + (parseFloat(s1.nrr) * 5) + (getFormScore(s1.form) * 3);
         let score2 = (s2.pts * 1.5) + (parseFloat(s2.nrr) * 5) + (getFormScore(s2.form) * 3);
