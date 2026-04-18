@@ -472,11 +472,12 @@
     <div class="card full-width">
         <h2>Career Statistics</h2>
         <div class="scrollable-table">
-            <table style="min-width: 900px;">
+            <table style="min-width: 1000px;">
                 <thead>
                     <tr>
                         <th>Team</th>
                         <th>BEWM</th>
+                        <th>BASRA</th>
                         <th>Runs Scored</th>
                         <th>Balls Faced</th>
                         <th>Runs Conceded</th>
@@ -522,16 +523,16 @@
     const TOTAL_MATCHES_PER_TEAM = 14;
     
     const CAREER_BASE = {
-        dc: { r: 1578, b: 1048, rc: 1562, bb: 1079, w: 22, l: 9, wl_lost: 35 },
-        rcb: { r: 1605, b: 993, rc: 1499, bb: 1157, w: 28, l: 13, wl_lost: 33 },
-        mi: { r: 1639, b: 1110, rc: 1531, bb: 1076, w: 29, l: 14, wl_lost: 37 },
-        kkr: { r: 1754, b: 1102, rc: 1620, bb: 1127, w: 19, l: 14, wl_lost: 37 },
-        pbks: { r: 2020, b: 983, rc: 1483, bb: 1113, w: 27, l: 14, wl_lost: 33 },
-        rr: { r: 1472, b: 1299, rc: 1597, bb: 1047, w: 15, l: 18, wl_lost: 43 },
-        csk: { r: 1195, b: 1048, rc: 1553, bb: 998, w: 5, l: 24, wl_lost: 35 },
-        srh: { r: 1222, b: 1075, rc: 1670, bb: 911, w: 6, l: 25, wl_lost: 36 },
-        lsg: { r: 0, b: 0, rc: 0, bb: 0, w: 0, l: 0, wl_lost: 0 },
-        gt: { r: 0, b: 0, rc: 0, bb: 0, w: 0, l: 0, wl_lost: 0 }
+        dc: { r: 1578, b: 1048, rc: 1562, bb: 1079, w: 22, l: 9, wl_lost: 35, wkts_taken: 197 },
+        rcb: { r: 1605, b: 993, rc: 1499, bb: 1157, w: 28, l: 13, wl_lost: 33, wkts_taken: 156 },
+        mi: { r: 1639, b: 1110, rc: 1531, bb: 1076, w: 29, l: 14, wl_lost: 37, wkts_taken: 215 },
+        kkr: { r: 1754, b: 1102, rc: 1620, bb: 1127, w: 19, l: 14, wl_lost: 37, wkts_taken: 121 },
+        pbks: { r: 2020, b: 983, rc: 1483, bb: 1113, w: 27, l: 14, wl_lost: 33, wkts_taken: 201 },
+        rr: { r: 1472, b: 1299, rc: 1597, bb: 1047, w: 15, l: 18, wl_lost: 43, wkts_taken: 178 },
+        csk: { r: 1195, b: 1048, rc: 1553, bb: 998, w: 5, l: 24, wl_lost: 35, wkts_taken: 11 },
+        srh: { r: 1222, b: 1075, rc: 1670, bb: 911, w: 6, l: 25, wl_lost: 36, wkts_taken: 30 },
+        lsg: { r: 0, b: 0, rc: 0, bb: 0, w: 0, l: 0, wl_lost: 0, wkts_taken: 0 },
+        gt: { r: 0, b: 0, rc: 0, bb: 0, w: 0, l: 0, wl_lost: 0, wkts_taken: 0 }
     };
 
     const H2H_BASE = {
@@ -851,24 +852,31 @@
         // Process Career Stats
         let careerStats = {};
         TEAMS.forEach(t => {
-            careerStats[t] = { ...CAREER_BASE[t] };
+            careerStats[t] = { 
+                ...CAREER_BASE[t],
+                m_played: CAREER_BASE[t].w + CAREER_BASE[t].l
+            };
         });
 
         playedMatches.forEach(s => {
             let m = s.result;
             
             if(careerStats[m.t1] && careerStats[m.t2]) {
+                careerStats[m.t1].m_played++;
                 careerStats[m.t1].r += m.r1;
                 careerStats[m.t1].b += m.b1;
                 careerStats[m.t1].rc += m.r2;
                 careerStats[m.t1].bb += m.b2;
                 careerStats[m.t1].wl_lost += (m.w1 || 0);
+                careerStats[m.t1].wkts_taken += (m.w2 || 0);
 
+                careerStats[m.t2].m_played++;
                 careerStats[m.t2].r += m.r2;
                 careerStats[m.t2].b += m.b2;
                 careerStats[m.t2].rc += m.r1;
                 careerStats[m.t2].bb += m.b1;
                 careerStats[m.t2].wl_lost += (m.w2 || 0);
+                careerStats[m.t2].wkts_taken += (m.w1 || 0);
 
                 if (m.r1 > m.r2) {
                     careerStats[m.t1].w++;
@@ -885,24 +893,34 @@
 
         for (let t of TEAMS) {
             let c = careerStats[t];
-            let avg = c.wl_lost > 0 ? (c.r / c.wl_lost) : c.r;
+            let avg = c.wl_lost > 0 ? (c.r / c.wl_lost) : (c.r > 0 ? c.r : 0);
             let sr = c.b > 0 ? (c.r / c.b) * 100 : 0;
             let eco = c.bb > 0 ? (c.rc / (c.bb / 6)) : 0;
             let rr = c.b > 0 ? (c.r / (c.b / 6)) : 0;
             let wl = c.l > 0 ? (c.w / c.l) : c.w;
+            let wpm = c.m_played > 0 ? (c.wkts_taken / c.m_played) : 0;
+
+            let basra = avg + sr;
+            
+            let bewm = 0;
+            if (eco === 0 && wpm === 0) {
+                bewm = 0;
+            } else if (eco === 0) {
+                bewm = (wpm * 0.3);
+            } else {
+                bewm = 10 + (wpm * 0.3) - (eco * 0.7);
+            }
 
             let titles = ['mi', 'rcb', 'kkr'].includes(t) ? 1 : 0;
             let runnersUp = (t === 'pbks') ? 3 : 0;
 
-            let bewm = ((sr / 100) * 1.8) + (wl * 0.8) + (titles * 0.4) - (eco * 0.05);
-            if (c.r === 0) bewm = 0;
-
             let value = (c.w * 450) + (wl * 1200) + (titles * 18000) + (runnersUp * 6000) + (sr * 35) - (eco * 120);
-            if (value < 0 || c.r === 0) value = Math.max(0, Math.random() * 500); 
+            if (c.r === 0 && c.rc === 0) value = 0;
+            else if (value < 0) value = 0; 
 
             cStatsArr.push({
                 team: t,
-                bewm: bewm,
+                bewm: bewm, basra: basra,
                 r: c.r, b: c.b, rc: c.rc, bb: c.bb,
                 avg: avg, sr: sr, eco: eco, rr: rr, wl: wl,
                 value: value
@@ -915,6 +933,7 @@
             careerHtml += `<tr>
                 <td style="text-transform: uppercase; font-weight: bold; color: #fff;">${c.team}</td>
                 <td style="color: #aaa;">${c.bewm.toFixed(2)}</td>
+                <td style="color: #00e676;">${c.basra.toFixed(2)}</td>
                 <td>${c.r}</td>
                 <td>${c.b}</td>
                 <td>${c.rc}</td>
