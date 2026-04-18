@@ -40,7 +40,7 @@
             white-space: nowrap;
             text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
             user-select: none;
-            margin: 0 25px; /* adds breathing room around the logo */
+            margin: 0 25px; 
             line-height: 80px;
         }
 
@@ -196,8 +196,12 @@
         .flex-split { 
             display: flex; 
             gap: 20px; 
+            flex-wrap: wrap;
         }
-        .flex-split > div { flex: 1; }
+        .flex-split > div { 
+            flex: 1; 
+            min-width: 200px;
+        }
         .tag { 
             padding: 2px 6px; 
             border-radius: 4px; 
@@ -343,7 +347,7 @@
         </div>
         
         <div class="card">
-            <h2>Win Predictor & Form Guide</h2>
+            <h2>H2H & Win Predictor</h2>
             <div class="row">
                 <div>
                     <select id="pred_t1"></select>
@@ -353,8 +357,8 @@
                     <select id="pred_t2"></select>
                 </div>
             </div>
-            <button onclick="window.predictMatch()" class="action">Predict</button>
-            <p id="prediction_result" style="margin-top: 15px; font-weight: bold; color: #d4af37; text-align: center; transition: all 0.3s ease;"></p>
+            <button onclick="window.predictMatch()" class="action">Compare & Predict</button>
+            <div id="prediction_result" style="margin-top: 15px; text-align: center; transition: all 0.3s ease;"></div>
         </div>
     </div>
 
@@ -384,17 +388,41 @@
 
         <div class="flex-split">
             <div class="card">
-                <h2>Orange Cap</h2>
+                <h2>Orange Cap (Most Runs)</h2>
                 <table>
                     <thead><tr><th>Team</th><th>Runs</th></tr></thead>
                     <tbody id="orange_body"></tbody>
                 </table>
             </div>
             <div class="card">
-                <h2>Purple Cap</h2>
+                <h2>Purple Cap (Most Wkts)</h2>
                 <table>
                     <thead><tr><th>Team</th><th>Wickets</th></tr></thead>
                     <tbody id="purple_body"></tbody>
+                </table>
+            </div>
+            <div class="card">
+                <h2>Highest Team Totals</h2>
+                <table>
+                    <thead><tr><th>Team</th><th>Score</th><th>Opponent</th></tr></thead>
+                    <tbody id="highest_totals_body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="flex-split">
+            <div class="card">
+                <h2>Biggest Wins (By Runs)</h2>
+                <table>
+                    <thead><tr><th>Team</th><th>Margin</th><th>Opponent</th></tr></thead>
+                    <tbody id="biggest_wins_runs_body"></tbody>
+                </table>
+            </div>
+            <div class="card">
+                <h2>Biggest Wins (By Wickets)</h2>
+                <table>
+                    <thead><tr><th>Team</th><th>Margin</th><th>Opponent</th></tr></thead>
+                    <tbody id="biggest_wins_wkts_body"></tbody>
                 </table>
             </div>
         </div>
@@ -664,6 +692,41 @@
         const purpleStandings = [...standings].sort((a, b) => b.wkts_taken - a.wkts_taken).slice(0, 5);
         document.getElementById('purple_body').innerHTML = purpleStandings.map(s => `<tr><td style="text-transform: uppercase;">${s.team}</td><td style="color: #d4af37; font-weight: bold;">${s.wkts_taken}</td></tr>`).join('');
         
+        let playedMatches = schedule.filter(s => s.played && s.result);
+        
+        // calculate highest totals
+        let highestTotals = [];
+        let biggestWinsRuns = [];
+        let biggestWinsWkts = [];
+
+        playedMatches.forEach(s => {
+            let m = s.result;
+            highestTotals.push({ team: m.t1, runs: m.r1, wkts: m.w1, vs: m.t2 });
+            highestTotals.push({ team: m.t2, runs: m.r2, wkts: m.w2, vs: m.t1 });
+
+            if (m.r1 > m.r2) {
+                biggestWinsRuns.push({ team: m.t1, margin: m.r1 - m.r2, vs: m.t2 });
+            } else if (m.r2 > m.r1) {
+                biggestWinsWkts.push({ team: m.t2, margin: 10 - (m.w2 || 0), vs: m.t1 });
+            }
+        });
+
+        highestTotals.sort((a, b) => b.runs - a.runs).slice(0, 5);
+        biggestWinsRuns.sort((a, b) => b.margin - a.margin).slice(0, 5);
+        biggestWinsWkts.sort((a, b) => b.margin - a.margin).slice(0, 5);
+
+        document.getElementById('highest_totals_body').innerHTML = highestTotals.slice(0, 5).map(t =>
+            `<tr><td style="text-transform: uppercase;">${t.team}</td><td style="color: #d4af37; font-weight: bold;">${t.runs}/${t.wkts}</td><td style="font-size:0.75rem; color:#888;">vs ${t.vs.toUpperCase()}</td></tr>`
+        ).join('');
+
+        document.getElementById('biggest_wins_runs_body').innerHTML = biggestWinsRuns.slice(0, 5).map(t =>
+            `<tr><td style="text-transform: uppercase;">${t.team}</td><td style="color: #d4af37; font-weight: bold;">${t.margin} Runs</td><td style="font-size:0.75rem; color:#888;">vs ${t.vs.toUpperCase()}</td></tr>`
+        ).join('');
+
+        document.getElementById('biggest_wins_wkts_body').innerHTML = biggestWinsWkts.slice(0, 5).map(t =>
+            `<tr><td style="text-transform: uppercase;">${t.team}</td><td style="color: #d4af37; font-weight: bold;">${t.margin} Wkts</td><td style="font-size:0.75rem; color:#888;">vs ${t.vs.toUpperCase()}</td></tr>`
+        ).join('');
+
         let logTbody = document.getElementById('match_log_body');
         logTbody.innerHTML = '';
         let playedCount = 0;
@@ -691,21 +754,57 @@
     window.predictMatch = function() {
         const t1 = document.getElementById('pred_t1').value;
         const t2 = document.getElementById('pred_t2').value;
-        if (t1 === t2) return document.getElementById('prediction_result').innerText = "Select different teams.";
+        
+        let resultDiv = document.getElementById('prediction_result');
+
+        if (t1 === t2) {
+            resultDiv.innerHTML = `<span style="color: #d50000;">Select different teams.</span>`;
+            return;
+        }
 
         let stats = window.currentStandings;
         let s1 = stats.find(s => s.team === t1);
         let s2 = stats.find(s => s.team === t2);
 
-        if (!s1 || !s2 || (s1.p === 0 && s2.p === 0)) return document.getElementById('prediction_result').innerText = "Not enough data yet.";
+        if (!s1 || !s2 || (s1.p === 0 && s2.p === 0)) {
+            resultDiv.innerHTML = `<span style="color: #aaa;">Not enough data yet to form predictions.</span>`;
+            return;
+        }
 
+        // calculate head to head
+        let h2hMatches = schedule.filter(s => s.played && s.result && 
+            ((s.result.t1 === t1 && s.result.t2 === t2) || (s.result.t1 === t2 && s.result.t2 === t1))
+        );
+
+        let t1Wins = 0, t2Wins = 0, ties = 0;
+        h2hMatches.forEach(s => {
+            let m = s.result;
+            if (m.r1 > m.r2) { m.t1 === t1 ? t1Wins++ : t2Wins++; }
+            else if (m.r2 > m.r1) { m.t2 === t1 ? t1Wins++ : t2Wins++; }
+            else ties++;
+        });
+
+        let h2hHtml = h2hMatches.length > 0 
+            ? `<div style="font-size: 0.9rem; color: #aaa; margin-bottom: 8px;">H2H This Season: <span style="color:#fff">${t1.toUpperCase()} ${t1Wins} - ${t2Wins} ${t2.toUpperCase()}</span> (Ties: ${ties})</div>` 
+            : `<div style="font-size: 0.9rem; color: #aaa; margin-bottom: 8px; font-style: italic;">No head-to-head matches played yet.</div>`;
+
+        // calculate prediction math
         const getFormScore = (formArr) => formArr.slice(-3).reduce((acc, val) => acc + (val==='W'?2:val==='T'?1:0), 0);
         let score1 = (s1.pts * 1.5) + (parseFloat(s1.nrr) * 5) + (getFormScore(s1.form) * 3);
         let score2 = (s2.pts * 1.5) + (parseFloat(s2.nrr) * 5) + (getFormScore(s2.form) * 3);
         let total = (score1 + score2) || 1; 
         
         let p1 = Math.max(10, Math.min(90, (score1 / total) * 100));
-        document.getElementById('prediction_result').innerText = `${t1.toUpperCase()}: ${p1.toFixed(1)}%  |  ${t2.toUpperCase()}: ${(100 - p1).toFixed(1)}%`;
+        let p2 = 100 - p1;
+
+        resultDiv.innerHTML = `
+            ${h2hHtml}
+            <div style="font-size: 1.1rem;">
+                <span style="color: #d4af37;">${t1.toUpperCase()}:</span> <span style="color: #fff;">${p1.toFixed(1)}%</span> 
+                &nbsp;|&nbsp; 
+                <span style="color: #d4af37;">${t2.toUpperCase()}:</span> <span style="color: #fff;">${p2.toFixed(1)}%</span>
+            </div>
+        `;
     }
 </script>
 </body>
