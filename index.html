@@ -458,6 +458,18 @@
     </div>
 
     <div class="card full-width">
+        <h2>Overall Head-to-Head (S1 - Present)</h2>
+        <div class="scrollable-table">
+            <table style="text-align: center;">
+                <thead>
+                    <tr id="h2h_header"></tr>
+                </thead>
+                <tbody id="h2h_body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card full-width">
         <h2>Career Statistics</h2>
         <div class="scrollable-table">
             <table style="min-width: 900px;">
@@ -509,7 +521,6 @@
     const GROUP_B = ['csk', 'rcb', 'gt', 'pbks', 'rr'];
     const TOTAL_MATCHES_PER_TEAM = 14;
     
-    // Historical base data matched exactly to provided stats
     const CAREER_BASE = {
         dc: { r: 1578, b: 1048, rc: 1562, bb: 1079, w: 22, l: 9, wl_lost: 35 },
         rcb: { r: 1605, b: 993, rc: 1499, bb: 1157, w: 28, l: 13, wl_lost: 33 },
@@ -523,8 +534,22 @@
         gt: { r: 0, b: 0, rc: 0, bb: 0, w: 0, l: 0, wl_lost: 0 }
     };
 
+    const H2H_BASE = {
+        mi: { csk:3, rcb:2, kkr:4, pbks:1, dc:2, rr:3, srh:4, lsg:0, gt:0 },
+        csk: { mi:2, rcb:0, kkr:0, pbks:0, dc:1, rr:3, srh:4, lsg:0, gt:0 },
+        rcb: { mi:4, csk:4, kkr:1, pbks:1, dc:2, rr:4, srh:5, lsg:0, gt:0 },
+        kkr: { mi:3, csk:4, rcb:3, pbks:1, dc:1, rr:4, srh:4, lsg:0, gt:0 },
+        pbks: { mi:4, csk:4, rcb:5, kkr:6, dc:2, rr:5, srh:4, lsg:0, gt:0 },
+        dc: { mi:1, csk:1, rcb:1, kkr:1, pbks:1, rr:1, srh:1, lsg:0, gt:0 },
+        rr: { mi:1, csk:2, rcb:0, kkr:0, pbks:0, dc:2, srh:3, lsg:0, gt:0 },
+        srh: { mi:0, csk:1, rcb:0, kkr:0, pbks:0, dc:2, rr:1, lsg:0, gt:0 },
+        lsg: { mi:0, csk:0, rcb:0, kkr:0, pbks:0, dc:0, rr:0, srh:0, gt:0 },
+        gt: { mi:0, csk:0, rcb:0, kkr:0, pbks:0, dc:0, rr:0, srh:0, lsg:0 }
+    };
+
     let schedule = [];
     let isDataLoaded = false;
+    window.currentH2H = {};
 
     function pushToCloud() {
         set(dbRef, { schedule: schedule });
@@ -622,6 +647,10 @@
 
         document.getElementById('group_a_teams').innerHTML = GROUP_A.map(t => `<span class="team-pill">${t}</span>`).join('');
         document.getElementById('group_b_teams').innerHTML = GROUP_B.map(t => `<span class="team-pill">${t}</span>`).join('');
+        
+        let h2hHeader = `<th style="text-align: left; color: #aaa;">Team</th>`;
+        TEAMS.forEach(t => h2hHeader += `<th>${t.toUpperCase()}</th>`);
+        document.getElementById('h2h_header').innerHTML = h2hHeader;
     }
 
     function calculateOvers(balls) { return Math.floor(balls / 6) + ((balls % 6) / 6.0); }
@@ -742,6 +771,10 @@
         
         let playedMatches = schedule.filter(s => s.played && s.result);
         
+        // H2H Setup
+        let currentH2H = JSON.parse(JSON.stringify(H2H_BASE));
+
+        // calculate highest totals & biggest wins
         let highestTotals = [];
         let biggestWinsRuns = [];
         let biggestWinsWkts = [];
@@ -753,10 +786,28 @@
 
             if (m.r1 > m.r2) {
                 biggestWinsRuns.push({ team: m.t1, margin: m.r1 - m.r2, vs: m.t2 });
+                currentH2H[m.t1][m.t2]++;
             } else if (m.r2 > m.r1) {
                 biggestWinsWkts.push({ team: m.t2, margin: 10 - (m.w2 || 0), vs: m.t1 });
+                currentH2H[m.t2][m.t1]++;
             }
         });
+
+        window.currentH2H = currentH2H;
+
+        let h2hHtml = '';
+        TEAMS.forEach(t1 => {
+            h2hHtml += `<tr><td style="text-transform: uppercase; font-weight: bold; color: #d4af37; text-align: left;">${t1}</td>`;
+            TEAMS.forEach(t2 => {
+                if(t1 === t2) {
+                    h2hHtml += `<td style="color: #333;">-</td>`;
+                } else {
+                    h2hHtml += `<td style="color: #fff;">${currentH2H[t1][t2]}</td>`;
+                }
+            });
+            h2hHtml += `</tr>`;
+        });
+        document.getElementById('h2h_body').innerHTML = h2hHtml;
 
         highestTotals.sort((a, b) => b.runs - a.runs).slice(0, 5);
         biggestWinsRuns.sort((a, b) => b.margin - a.margin).slice(0, 5);
@@ -912,9 +963,13 @@
             else ties++;
         });
 
-        let h2hHtml = h2hMatches.length > 0 
-            ? `<div style="font-size: 0.9rem; color: #aaa; margin-bottom: 8px;">H2H This Season: <span style="color:#fff">${t1.toUpperCase()} ${t1Wins} - ${t2Wins} ${t2.toUpperCase()}</span> (Ties: ${ties})</div>` 
-            : `<div style="font-size: 0.9rem; color: #aaa; margin-bottom: 8px; font-style: italic;">No head-to-head matches played yet.</div>`;
+        let overallT1 = window.currentH2H[t1][t2];
+        let overallT2 = window.currentH2H[t2][t1];
+
+        let h2hHtml = `
+            <div style="font-size: 0.9rem; color: #aaa; margin-bottom: 4px;">Overall H2H: <span style="color:#fff">${t1.toUpperCase()} ${overallT1} - ${overallT2} ${t2.toUpperCase()}</span></div>
+            <div style="font-size: 0.9rem; color: #aaa; margin-bottom: 8px;">H2H This Season: <span style="color:#fff">${t1.toUpperCase()} ${t1Wins} - ${t2Wins} ${t2.toUpperCase()}</span> (Ties: ${ties})</div>
+        `;
 
         const getFormScore = (formArr) => formArr.slice(-3).reduce((acc, val) => acc + (val==='W'?2:val==='T'?1:0), 0);
         let score1 = (s1.pts * 1.5) + (parseFloat(s1.nrr) * 5) + (getFormScore(s1.form) * 3);
