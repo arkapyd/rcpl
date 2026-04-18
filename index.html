@@ -53,6 +53,11 @@
             object-fit: cover;
             z-index: 2;
             background-color: #050505;
+            transition: opacity 0.4s ease;
+        }
+
+        .ribbon-logo:hover {
+            opacity: 0;
         }
 
         .container { 
@@ -233,6 +238,8 @@
             box-shadow: 0 4px 12px rgba(212, 175, 55, 0.1);
         }
         .group-box h3 { border-bottom: none; padding-bottom: 0; margin-bottom: 10px; font-size: 1rem; }
+        
+        /* TEAM PILLS & CUSTOM HOVERS */
         .team-pill {
             display: inline-block;
             padding: 4px 10px;
@@ -244,14 +251,19 @@
             font-size: 0.8rem;
             text-transform: uppercase;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: default;
+            cursor: pointer;
         }
-        .team-pill:hover {
-            transform: scale(1.1) translateY(-2px);
-            border-color: #d4af37;
-            color: #d4af37;
-            box-shadow: 0 4px 8px rgba(212, 175, 55, 0.2);
-        }
+        /* Specific Franchise Colors */
+        .team-kkr:hover { background-color: #4a148c; border-color: #7c43bd; color: #fff; box-shadow: 0 4px 12px rgba(74, 20, 140, 0.4); transform: scale(1.1) translateY(-2px); }
+        .team-csk:hover { background-color: #d4af37; border-color: #ffdf00; color: #000; box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4); transform: scale(1.1) translateY(-2px); }
+        .team-rcb:hover { background-color: #d50000; border-color: #ff1744; color: #fff; box-shadow: 0 4px 12px rgba(213, 0, 0, 0.4); transform: scale(1.1) translateY(-2px); }
+        .team-pbks:hover { background-color: #b71c1c; border-color: #f05545; color: #fff; box-shadow: 0 4px 12px rgba(183, 28, 28, 0.4); transform: scale(1.1) translateY(-2px); }
+        .team-rr:hover { background-color: #e91e63; border-color: #ff6090; color: #fff; box-shadow: 0 4px 12px rgba(233, 30, 99, 0.4); transform: scale(1.1) translateY(-2px); }
+        .team-lsg:hover { background-color: #00bcd4; border-color: #62efff; color: #000; box-shadow: 0 4px 12px rgba(0, 188, 212, 0.4); transform: scale(1.1) translateY(-2px); }
+        .team-gt:hover { background-color: #1a237e; border-color: #534bae; color: #fff; box-shadow: 0 4px 12px rgba(26, 35, 126, 0.4); transform: scale(1.1) translateY(-2px); }
+        .team-mi:hover { background-color: #3f51b5; border-color: #757de8; color: #fff; box-shadow: 0 4px 12px rgba(63, 81, 181, 0.4); transform: scale(1.1) translateY(-2px); }
+        .team-srh:hover { background-color: #e65100; border-color: #ff833a; color: #fff; box-shadow: 0 4px 12px rgba(230, 81, 0, 0.4); transform: scale(1.1) translateY(-2px); }
+        .team-dc:hover { background-color: #283593; border-color: #5f5fc4; color: #fff; box-shadow: 0 4px 12px rgba(40, 53, 147, 0.4); transform: scale(1.1) translateY(-2px); }
 
         .scrollable-table {
             overflow-x: auto;
@@ -299,6 +311,33 @@
             display: flex; justify-content: center; align-items: center;
             color: #d4af37; font-size: 1.5rem; z-index: 9999;
             transition: opacity 0.5s ease;
+        }
+
+        /* Legacy Styling */
+        .legacy-item {
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border-left: 3px solid #333;
+            background: #151515;
+            border-radius: 0 8px 8px 0;
+            transition: all 0.5s ease;
+        }
+        .legacy-item.highlight {
+            border-left-color: #d4af37;
+            background: #222;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+        }
+        .legacy-item h4 {
+            margin: 0 0 8px 0;
+            color: #fff;
+            text-transform: uppercase;
+            font-size: 1.1rem;
+        }
+        .legacy-item p {
+            margin: 0;
+            color: #aaa;
+            font-size: 0.95rem;
+            line-height: 1.5;
         }
     </style>
 </head>
@@ -495,6 +534,51 @@
         </div>
     </div>
 
+    <div class="card full-width">
+        <h2>Franchise Legacies</h2>
+        
+        <div id="legacy_mi" class="legacy-item">
+            <h4>Mumbai Indians (MI)</h4>
+            <p>A dominant force in the RCPL, boasting 1 Championship title and a consistently high win rate. Always a massive threat in the playoffs with their balanced squad.</p>
+        </div>
+        <div id="legacy_rcb" class="legacy-item">
+            <h4>Royal Challengers Bangalore (RCB)</h4>
+            <p>1-time RCPL Champions. Known for their explosive batting firepower and a stellar track record of posting the highest totals in the league's history.</p>
+        </div>
+        <div id="legacy_kkr" class="legacy-item">
+            <h4>Kolkata Knight Riders (KKR)</h4>
+            <p>1-time RCPL Champions. They possess tactical brilliance and an impressive overall head-to-head record against almost every franchise.</p>
+        </div>
+        <div id="legacy_pbks" class="legacy-item">
+            <h4>Punjab Kings (PBKS)</h4>
+            <p>The perennial bridesmaids of the RCPL. They have reached the finals in all three previous seasons only to finish as runners-up. Exceptionally dangerous and hungry for their maiden title.</p>
+        </div>
+        <div id="legacy_dc" class="legacy-item">
+            <h4>Delhi Capitals (DC)</h4>
+            <p>A highly competitive side with a solid win-loss ratio. They have consistently fought hard for the top playoff spots and are always in the mix.</p>
+        </div>
+        <div id="legacy_rr" class="legacy-item">
+            <h4>Rajasthan Royals (RR)</h4>
+            <p>Known for their unyielding fighting spirit and giant-killing performances. They are looking to drastically improve their overall win percentage this season.</p>
+        </div>
+        <div id="legacy_srh" class="legacy-item">
+            <h4>Sunrisers Hyderabad (SRH)</h4>
+            <p>While they have faced tough challenges in past seasons, resulting in a lower win-loss ratio, they remain a dangerous squad capable of upsetting the heavyweights on any given day.</p>
+        </div>
+        <div id="legacy_csk" class="legacy-item">
+            <h4>Chennai Super Kings (CSK)</h4>
+            <p>Historically struggled in the early seasons of the RCPL, but they are undergoing a massive rebuild, aiming for a strong comeback to establish their dominance.</p>
+        </div>
+        <div id="legacy_lsg" class="legacy-item">
+            <h4>Lucknow Super Giants (LSG)</h4>
+            <p>A brand new entrant to the RCPL in Season 4. With a completely clean slate, they are the unpredictable wildcards ready to disrupt the established hierarchy.</p>
+        </div>
+        <div id="legacy_gt" class="legacy-item">
+            <h4>Gujarat Titans (GT)</h4>
+            <p>Making their highly anticipated debut in Season 4. They are ready to make an instant impact and build a legendary franchise from scratch.</p>
+        </div>
+    </div>
+
 </div>
 
 <div class="admin-trigger" onclick="window.unlockAdmin()">Admin</div>
@@ -551,6 +635,16 @@
     let schedule = [];
     let isDataLoaded = false;
     window.currentH2H = {};
+
+    window.scrollToLegacy = function(team) {
+        const el = document.getElementById(`legacy_${team}`);
+        if(el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.querySelectorAll('.legacy-item').forEach(item => item.classList.remove('highlight'));
+            el.classList.add('highlight');
+            setTimeout(() => { el.classList.remove('highlight'); }, 2000);
+        }
+    };
 
     function pushToCloud() {
         set(dbRef, { schedule: schedule });
@@ -646,8 +740,8 @@
         if(document.getElementById('t2')) document.getElementById('t2').selectedIndex = 1;
         if(document.getElementById('pred_t2')) document.getElementById('pred_t2').selectedIndex = 1;
 
-        document.getElementById('group_a_teams').innerHTML = GROUP_A.map(t => `<span class="team-pill">${t}</span>`).join('');
-        document.getElementById('group_b_teams').innerHTML = GROUP_B.map(t => `<span class="team-pill">${t}</span>`).join('');
+        document.getElementById('group_a_teams').innerHTML = GROUP_A.map(t => `<span class="team-pill team-${t}" onclick="window.scrollToLegacy('${t}')">${t}</span>`).join('');
+        document.getElementById('group_b_teams').innerHTML = GROUP_B.map(t => `<span class="team-pill team-${t}" onclick="window.scrollToLegacy('${t}')">${t}</span>`).join('');
         
         let h2hHeader = `<th style="text-align: left; color: #aaa;">Team</th>`;
         TEAMS.forEach(t => h2hHeader += `<th>${t.toUpperCase()}</th>`);
