@@ -368,6 +368,18 @@
 
 <div class="container" id="main_app" style="opacity: 0; transition: opacity 0.5s;">
     <div class="left-col" id="admin_panel">
+        
+        <div class="card" style="border-color: #2962ff; box-shadow: 0 0 15px rgba(41, 98, 255, 0.15);">
+            <h2 style="color: #2962ff;">Push Match Alert</h2>
+            <div class="row">
+                <div>
+                    <label style="color:#aaa;">Upcoming Match</label>
+                    <select id="alert_match"></select>
+                </div>
+            </div>
+            <button onclick="window.sendMatchAlert()" style="background: #2962ff; color: white; border-color: #0039cb;">Trigger Email Alert</button>
+        </div>
+
         <div class="card">
             <h2>Add Match Result</h2>
             <div class="row">
@@ -553,9 +565,22 @@
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
             <div style="flex: 1; min-width: 250px;">
                 <h2 style="border: none; padding: 0; margin: 0;">Get Match Alerts</h2>
-                <p style="color: #aaa; font-size: 0.85rem; margin: 5px 0 0 0;">Subscribe with your email to receive live match results, upcoming fixtures, and playoff scenario updates straight to your inbox.</p>
+                <p style="color: #aaa; font-size: 0.85rem; margin: 5px 0 0 0;">Subscribe with your email to receive live match results and alerts when your team plays.</p>
             </div>
             <div class="subscribe-wrap">
+                <select id="sub_team" style="width: auto; min-width: 150px; background: #1a1a1a; color: #fff;">
+                    <option value="all">All Teams / Playoffs</option>
+                    <option value="mi">MI</option>
+                    <option value="csk">CSK</option>
+                    <option value="rcb">RCB</option>
+                    <option value="kkr">KKR</option>
+                    <option value="pbks">PBKS</option>
+                    <option value="dc">DC</option>
+                    <option value="rr">RR</option>
+                    <option value="srh">SRH</option>
+                    <option value="lsg">LSG</option>
+                    <option value="gt">GT</option>
+                </select>
                 <input type="email" id="sub_email" placeholder="Enter your email address...">
                 <button onclick="window.subscribeEmail()">Subscribe</button>
             </div>
@@ -575,7 +600,7 @@
         </div>
         <div id="legacy_rcb" class="legacy-item">
             <h4>Royal Challengers Bangalore (RCB)</h4>
-            <p> RCPL S2 Champions. Known for their explosive batting firepower throughout the league's history, they consistently post massive numbers. They remain heavyweights with a fearsome top order.</p>
+            <p> RCPL S3 Champions. Known for their explosive batting firepower throughout the league's history, they consistently post massive numbers. They remain heavyweights with a fearsome top order.</p>
         </div>
         <div id="legacy_dc" class="legacy-item">
             <h4>Delhi Capitals (DC)</h4>
@@ -613,7 +638,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, push } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, push, get, child } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC_q2XGkzgWGVSX4_RSckQnQVrKNdVc6ek",
@@ -634,6 +659,7 @@
     const GROUP_B = ['csk', 'rcb', 'gt', 'pbks', 'rr'];
     const TOTAL_MATCHES_PER_TEAM = 14;
     
+    // Baseline stats updated accurately to end of Season 3 (cumulative)
     const CAREER_BASE = {
         pbks: { r: 1465, b: 671, rc: 1023, bb: 801, w: 10.18, l: 1.82, wl_lost: 22.366, wkts_taken: 60, m_played: 12 },
         kkr: { r: 1116, b: 690, rc: 988, bb: 725, w: 9.56, l: 2.44, wl_lost: 23.001, wkts_taken: 60, m_played: 12 },
@@ -676,6 +702,7 @@
 
     window.subscribeEmail = function() {
         const input = document.getElementById('sub_email');
+        const team = document.getElementById('sub_team').value;
         const email = input.value.trim();
         if(!email || !email.includes('@')) {
             alert('Please enter a valid email address.');
@@ -683,12 +710,59 @@
         }
         push(ref(db, 'rcpl_subscribers'), {
             email: email,
+            team: team,
             timestamp: new Date().toISOString()
         }).then(() => {
-            alert('Successfully subscribed to RCPL Match Alerts!');
+            alert(`Successfully subscribed to RCPL Match Alerts for ${team.toUpperCase()}!`);
             input.value = '';
         }).catch((e) => {
             alert('Something went wrong. Please try again.');
+        });
+    };
+
+    window.sendMatchAlert = function() {
+        const matchStr = document.getElementById('alert_match').value;
+        if (!matchStr) return alert("No unplayed matches available to alert.");
+        
+        const [t1, t2, id] = matchStr.split(',');
+        const webhookUrl = "YOUR_MAKE_WEBHOOK_URL_HERE";
+
+        if (webhookUrl === "YOUR_MAKE_WEBHOOK_URL_HERE") {
+            alert("To enable auto-emails, you must replace 'YOUR_MAKE_WEBHOOK_URL_HERE' in the code with your actual Make.com Webhook URL.");
+            return;
+        }
+
+        get(child(ref(db), 'rcpl_subscribers')).then((snapshot) => {
+            let targetEmails = [];
+            if (snapshot.exists()) {
+                const subs = snapshot.val();
+                for (let key in subs) {
+                    let s = subs[key];
+                    if (s.team === t1 || s.team === t2 || s.team === 'all') {
+                        targetEmails.push(s.email);
+                    }
+                }
+            }
+
+            if(targetEmails.length === 0) {
+                alert(`No subscribers found for ${t1.toUpperCase()} or ${t2.toUpperCase()}.`);
+                return;
+            }
+
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    team1: t1.toUpperCase(), 
+                    team2: t2.toUpperCase(), 
+                    matchId: id,
+                    emails: targetEmails
+                })
+            }).then(res => {
+                alert(`Match alert successfully triggered! ${targetEmails.length} fans will be notified.`);
+            }).catch(e => {
+                alert("Failed to send alert to automation server.");
+            });
         });
     };
 
@@ -912,6 +986,13 @@
         
         let playedMatches = schedule.filter(s => s.played && s.result);
         
+        // Populate Admin Alert Dropdown
+        let unplayedMatches = schedule.filter(s => !s.played);
+        let alertSelect = document.getElementById('alert_match');
+        if (alertSelect) {
+            alertSelect.innerHTML = unplayedMatches.map(m => `<option value="${m.t1},${m.t2},${m.id}">Match ${m.id}: ${m.t1.toUpperCase()} vs ${m.t2.toUpperCase()}</option>`).join('');
+        }
+
         // H2H Setup
         let currentH2H = JSON.parse(JSON.stringify(H2H_BASE));
 
