@@ -600,7 +600,7 @@
         </div>
         <div id="legacy_rcb" class="legacy-item">
             <h4>Royal Challengers Bangalore (RCB)</h4>
-            <p> RCPL S3 Champions. Known for their explosive batting firepower throughout the league's history, they consistently post massive numbers. They remain heavyweights with a fearsome top order.</p>
+            <p>RCPL S2 Champions. Known for their explosive batting firepower throughout the league's history, they consistently post massive numbers. They remain heavyweights with a fearsome top order.</p>
         </div>
         <div id="legacy_dc" class="legacy-item">
             <h4>Delhi Capitals (DC)</h4>
@@ -1022,9 +1022,19 @@
             h2hHtml += `<tr><td style="text-transform: uppercase; font-weight: bold; color: #d4af37; text-align: left;">${t1}</td>`;
             TEAMS.forEach(t2 => {
                 if(t1 === t2) {
-                    h2hHtml += `<td style="color: #333;">-</td>`;
+                    h2hHtml += `<td style="color: #333; background: rgba(255,255,255,0.02);">-</td>`;
                 } else {
-                    h2hHtml += `<td style="color: #fff;">${currentH2H[t1][t2]}</td>`;
+                    let w = currentH2H[t1][t2];
+                    let l = currentH2H[t2][t1];
+                    let color = "#aaa";
+                    let fw = "normal";
+                    
+                    if (w > l) { color = "#00e676"; fw = "bold"; }
+                    else if (l > w) { color = "#ff5252"; }
+                    else if (w === l && w > 0) { color = "#d4af37"; }
+                    else { color = "#444"; }
+                    
+                    h2hHtml += `<td style="color: ${color}; font-weight: ${fw};">${w} - ${l}</td>`;
                 }
             });
             h2hHtml += `</tr>`;
