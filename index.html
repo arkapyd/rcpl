@@ -172,6 +172,7 @@
         button.action {
             background: transparent;
             color: #d4af37;
+            border: 1px solid #d4af37;
         }
         button.action:hover {
             background: #d4af37;
@@ -183,7 +184,7 @@
             font-size: 0.9rem; 
         }
         th, td { 
-            text-align: left; 
+            text-align: center; 
             padding: 8px; 
             border-bottom: 1px solid #222; 
             transition: background-color 0.2s ease, color 0.2s ease;
@@ -191,6 +192,9 @@
         th { 
             color: #d4af37; 
             font-weight: normal; 
+        }
+        td:first-child, th:first-child {
+            text-align: left;
         }
         tbody tr {
             transition: all 0.2s ease;
@@ -237,7 +241,7 @@
             border-color: #555;
             box-shadow: 0 4px 12px rgba(212, 175, 55, 0.1);
         }
-        .group-box h3 { border-bottom: none; padding-bottom: 0; margin-bottom: 10px; font-size: 1rem; }
+        .group-box h3 { border-bottom: none; padding-bottom: 0; margin-bottom: 10px; font-size: 1rem; text-align: left; }
         
         .team-pill {
             display: inline-block;
@@ -286,9 +290,9 @@
         .scrollable-log::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 4px; }
         
         .match-row:hover { background: #1a1a1a; }
-        .match-fixture { width: 120px; font-weight: bold; color: #888; transition: color 0.2s ease; }
+        .match-fixture { width: 120px; font-weight: bold; color: #888; transition: color 0.2s ease; text-align: left; }
         .match-row:hover .match-fixture { color: #d4af37; }
-        .match-result-text { color: #aaa; }
+        .match-result-text { color: #aaa; text-align: left; }
         .match-highlight { color: #d4af37; font-weight: bold; }
 
         .admin-trigger {
@@ -370,7 +374,7 @@
     <div class="left-col" id="admin_panel">
         
         <div class="card" style="border-color: #2962ff; box-shadow: 0 0 15px rgba(41, 98, 255, 0.15);">
-            <h2 style="color: #2962ff;">Push Match Alert</h2>
+            <h2 style="color: #2962ff; text-align: left;">Push Match Alert</h2>
             <div class="row">
                 <div>
                     <label style="color:#aaa;">Upcoming Match</label>
@@ -381,7 +385,7 @@
         </div>
 
         <div class="card">
-            <h2>Add Match Result</h2>
+            <h2 style="text-align: left;">Add Match Result</h2>
             <div class="row">
                 <div>
                     <label style="color:#d4af37;">Team 1 (Batting First)</label>
@@ -420,10 +424,11 @@
             </div>
             <button onclick="window.addMatch()">Save Match</button>
             <button class="danger" onclick="window.clearData()">Reset Tournament (Danger)</button>
+            <button class="action" style="margin-top: 10px;" onclick="window.swapFirstTwo()">Swap Match 1 & 2</button>
         </div>
         
         <div class="card">
-            <h2>H2H & Win Predictor</h2>
+            <h2 style="text-align: left;">H2H & Win Predictor</h2>
             <div class="row">
                 <div>
                     <select id="pred_t1"></select>
@@ -451,7 +456,7 @@
         </div>
 
         <div class="card">
-            <h2>Points Table</h2>
+            <h2 style="text-align: left;">Points Table</h2>
             <table>
                 <thead>
                     <tr>
@@ -464,21 +469,21 @@
 
         <div class="flex-split">
             <div class="card">
-                <h2>Orange Cap (Most Runs)</h2>
+                <h2 style="text-align: left;">Orange Cap (Most Runs)</h2>
                 <table>
                     <thead><tr><th>Team</th><th>Runs</th></tr></thead>
                     <tbody id="orange_body"></tbody>
                 </table>
             </div>
             <div class="card">
-                <h2>Purple Cap (Most Wkts)</h2>
+                <h2 style="text-align: left;">Purple Cap (Most Wkts)</h2>
                 <table>
                     <thead><tr><th>Team</th><th>Wickets</th></tr></thead>
                     <tbody id="purple_body"></tbody>
                 </table>
             </div>
             <div class="card">
-                <h2>Highest Team Totals</h2>
+                <h2 style="text-align: left;">Highest Team Totals</h2>
                 <table>
                     <thead><tr><th>Team</th><th>Score</th><th>Opponent</th></tr></thead>
                     <tbody id="highest_totals_body"></tbody>
@@ -488,14 +493,14 @@
 
         <div class="flex-split">
             <div class="card">
-                <h2>Biggest Wins (By Runs)</h2>
+                <h2 style="text-align: left;">Biggest Wins (By Runs)</h2>
                 <table>
                     <thead><tr><th>Team</th><th>Margin</th><th>Opponent</th></tr></thead>
                     <tbody id="biggest_wins_runs_body"></tbody>
                 </table>
             </div>
             <div class="card">
-                <h2>Biggest Wins (By Wickets)</h2>
+                <h2 style="text-align: left;">Biggest Wins (By Wickets)</h2>
                 <table>
                     <thead><tr><th>Team</th><th>Margin</th><th>Opponent</th></tr></thead>
                     <tbody id="biggest_wins_wkts_body"></tbody>
@@ -506,16 +511,16 @@
 
     <div class="card full-width">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2>Tournament Match Log</h2>
+            <h2 style="text-align: left; border: none; padding: 0;">Tournament Match Log</h2>
             <span id="match_progress" style="color: #aaa; font-size: 0.9rem;"></span>
         </div>
-        <div class="scrollable-log">
+        <div class="scrollable-log" style="margin-top: 10px;">
             <table>
                 <thead>
                     <tr>
                         <th style="width: 60px;">M#</th>
                         <th class="match-fixture">Fixture</th>
-                        <th>Result</th>
+                        <th style="text-align: left;">Result</th>
                     </tr>
                 </thead>
                 <tbody id="match_log_body"></tbody>
@@ -524,7 +529,7 @@
     </div>
 
     <div class="card full-width">
-        <h2>Overall Head-to-Head (S1 - Present)</h2>
+        <h2 style="text-align: left;">Overall Head-to-Head (S1 - Present)</h2>
         <div class="scrollable-table">
             <table style="text-align: center;">
                 <thead>
@@ -536,7 +541,7 @@
     </div>
 
     <div class="card full-width">
-        <h2>Career Statistics</h2>
+        <h2 style="text-align: left;">Career Statistics</h2>
         <div class="scrollable-table">
             <table style="min-width: 1000px;">
                 <thead>
@@ -564,7 +569,7 @@
     <div class="card full-width" style="border-color: #333;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
             <div style="flex: 1; min-width: 250px;">
-                <h2 style="border: none; padding: 0; margin: 0;">Get Match Alerts</h2>
+                <h2 style="border: none; padding: 0; margin: 0; text-align: left;">Get Match Alerts</h2>
                 <p style="color: #aaa; font-size: 0.85rem; margin: 5px 0 0 0;">Subscribe with your email to receive live match results and alerts when your team plays.</p>
             </div>
             <div class="subscribe-wrap">
@@ -588,7 +593,7 @@
     </div>
 
     <div class="card full-width">
-        <h2>Franchise Legacies</h2>
+        <h2 style="text-align: left;">Franchise Legacies</h2>
         
         <div id="legacy_pbks" class="legacy-item">
             <h4>Punjab Kings (PBKS)</h4>
@@ -596,11 +601,11 @@
         </div>
         <div id="legacy_kkr" class="legacy-item">
             <h4>Kolkata Knight Riders (KKR)</h4>
-            <p>RCPL S4 defending champions. They have maintained an elite level of consistency across all three seasons. Boasting a stellar cumulative win/loss ratio of 3.91 and aggressive batting, they are a complete package aiming for back-to-back titles.</p>
+            <p>1-time RCPL Champions. They have maintained an elite level of consistency across all three seasons. Boasting a stellar cumulative win/loss ratio of 3.91 and aggressive batting, they are a complete package aiming for back-to-back titles.</p>
         </div>
         <div id="legacy_rcb" class="legacy-item">
             <h4>Royal Challengers Bangalore (RCB)</h4>
-            <p>RCPL S2 Champions. Known for their explosive batting firepower throughout the league's history, they consistently post massive numbers. They remain heavyweights with a fearsome top order.</p>
+            <p>1-time RCPL Champions. Known for their explosive batting firepower throughout the league's history, they consistently post massive numbers. They remain heavyweights with a fearsome top order.</p>
         </div>
         <div id="legacy_dc" class="legacy-item">
             <h4>Delhi Capitals (DC)</h4>
@@ -659,7 +664,6 @@
     const GROUP_B = ['csk', 'rcb', 'gt', 'pbks', 'rr'];
     const TOTAL_MATCHES_PER_TEAM = 14;
     
-    // Baseline stats updated accurately to end of Season 3 (cumulative)
     const CAREER_BASE = {
         pbks: { r: 1465, b: 671, rc: 1023, bb: 801, w: 10.18, l: 1.82, wl_lost: 22.366, wkts_taken: 60, m_played: 12 },
         kkr: { r: 1116, b: 690, rc: 988, bb: 725, w: 9.56, l: 2.44, wl_lost: 23.001, wkts_taken: 60, m_played: 12 },
@@ -764,6 +768,25 @@
                 alert("Failed to send alert to automation server.");
             });
         });
+    };
+    
+    window.swapFirstTwo = function() {
+        if(confirm("Swap Match 1 and Match 2?")) {
+            if(schedule.length >= 2) {
+                let temp = { t1: schedule[0].t1, t2: schedule[0].t2, played: schedule[0].played, result: schedule[0].result };
+                schedule[0].t1 = schedule[1].t1;
+                schedule[0].t2 = schedule[1].t2;
+                schedule[0].played = schedule[1].played;
+                schedule[0].result = schedule[1].result;
+                
+                schedule[1].t1 = temp.t1;
+                schedule[1].t2 = temp.t2;
+                schedule[1].played = temp.played;
+                schedule[1].result = temp.result;
+                
+                pushToCloud();
+            }
+        }
     };
 
     function pushToCloud() {
@@ -971,7 +994,7 @@
         standings.forEach(s => {
             let formHtml = s.form.slice(-3).map(f => `<span class="tag form-${f.toLowerCase()}">${f}</span>`).join(' ');
             tbody.innerHTML += `<tr>
-                <td style="color: #fff;"><b>${s.team.toUpperCase()}</b></td>
+                <td style="color: #fff; text-align: left;"><b>${s.team.toUpperCase()}</b></td>
                 <td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td>
                 <td style="color: #d4af37;"><b>${s.pts}</b></td><td>${s.nrr}</td>
                 <td>${formHtml || '-'}</td><td>${s.status || '-'}</td>
@@ -979,10 +1002,10 @@
         });
 
         const orangeStandings = [...standings].sort((a, b) => b.rf - a.rf).slice(0, 5);
-        document.getElementById('orange_body').innerHTML = orangeStandings.map(s => `<tr><td style="text-transform: uppercase;">${s.team}</td><td style="color: #d4af37; font-weight: bold;">${s.rf}</td></tr>`).join('');
+        document.getElementById('orange_body').innerHTML = orangeStandings.map(s => `<tr><td style="text-transform: uppercase; text-align: left;">${s.team}</td><td style="color: #d4af37; font-weight: bold;">${s.rf}</td></tr>`).join('');
 
         const purpleStandings = [...standings].sort((a, b) => b.wkts_taken - a.wkts_taken).slice(0, 5);
-        document.getElementById('purple_body').innerHTML = purpleStandings.map(s => `<tr><td style="text-transform: uppercase;">${s.team}</td><td style="color: #d4af37; font-weight: bold;">${s.wkts_taken}</td></tr>`).join('');
+        document.getElementById('purple_body').innerHTML = purpleStandings.map(s => `<tr><td style="text-transform: uppercase; text-align: left;">${s.team}</td><td style="color: #d4af37; font-weight: bold;">${s.wkts_taken}</td></tr>`).join('');
         
         let playedMatches = schedule.filter(s => s.played && s.result);
         
@@ -1046,15 +1069,15 @@
         biggestWinsWkts.sort((a, b) => b.margin - a.margin).slice(0, 5);
 
         document.getElementById('highest_totals_body').innerHTML = highestTotals.slice(0, 5).map(t =>
-            `<tr><td style="text-transform: uppercase;">${t.team}</td><td style="color: #d4af37; font-weight: bold;">${t.runs}/${t.wkts}</td><td style="font-size:0.75rem; color:#888;">vs ${t.vs.toUpperCase()}</td></tr>`
+            `<tr><td style="text-transform: uppercase; text-align: left;">${t.team}</td><td style="color: #d4af37; font-weight: bold;">${t.runs}/${t.wkts}</td><td style="font-size:0.75rem; color:#888;">vs ${t.vs.toUpperCase()}</td></tr>`
         ).join('');
 
         document.getElementById('biggest_wins_runs_body').innerHTML = biggestWinsRuns.slice(0, 5).map(t =>
-            `<tr><td style="text-transform: uppercase;">${t.team}</td><td style="color: #d4af37; font-weight: bold;">${t.margin} Runs</td><td style="font-size:0.75rem; color:#888;">vs ${t.vs.toUpperCase()}</td></tr>`
+            `<tr><td style="text-transform: uppercase; text-align: left;">${t.team}</td><td style="color: #d4af37; font-weight: bold;">${t.margin} Runs</td><td style="font-size:0.75rem; color:#888;">vs ${t.vs.toUpperCase()}</td></tr>`
         ).join('');
 
         document.getElementById('biggest_wins_wkts_body').innerHTML = biggestWinsWkts.slice(0, 5).map(t =>
-            `<tr><td style="text-transform: uppercase;">${t.team}</td><td style="color: #d4af37; font-weight: bold;">${t.margin} Wkts</td><td style="font-size:0.75rem; color:#888;">vs ${t.vs.toUpperCase()}</td></tr>`
+            `<tr><td style="text-transform: uppercase; text-align: left;">${t.team}</td><td style="color: #d4af37; font-weight: bold;">${t.margin} Wkts</td><td style="font-size:0.75rem; color:#888;">vs ${t.vs.toUpperCase()}</td></tr>`
         ).join('');
 
         let logTbody = document.getElementById('match_log_body');
@@ -1070,11 +1093,11 @@
                 if (m.r1 > m.r2) winStr = `<span class="match-highlight">${m.t1.toUpperCase()} won by ${m.r1 - m.r2} runs</span>`;
                 else if (m.r2 > m.r1) winStr = `<span class="match-highlight">${m.t2.toUpperCase()} won by ${10 - (m.w2 || 0)} wickets</span>`;
 
-                rowHtml = `<td class="match-result-text">${m.t1.toUpperCase()}: ${m.r1}/${m.w1} (${formatDisplayOvers(m.b1)}) &nbsp;|&nbsp; ${m.t2.toUpperCase()}: ${m.r2}/${m.w2} (${formatDisplayOvers(m.b2)}) &nbsp;—&nbsp; ${winStr}</td>`;
+                rowHtml = `<td class="match-result-text" style="text-align: left;">${m.t1.toUpperCase()}: ${m.r1}/${m.w1} (${formatDisplayOvers(m.b1)}) &nbsp;|&nbsp; ${m.t2.toUpperCase()}: ${m.r2}/${m.w2} (${formatDisplayOvers(m.b2)}) &nbsp;—&nbsp; ${winStr}</td>`;
             } else {
-                rowHtml = `<td style="color: #444; font-style: italic;">Awaiting Result</td>`;
+                rowHtml = `<td style="color: #444; font-style: italic; text-align: left;">Awaiting Result</td>`;
             }
-            logTbody.innerHTML += `<tr class="match-row"><td style="color: #666;">${s.id}</td><td class="match-fixture">${s.t1.toUpperCase()} vs ${s.t2.toUpperCase()}</td>${rowHtml}</tr>`;
+            logTbody.innerHTML += `<tr class="match-row"><td style="color: #666; text-align: left;">${s.id}</td><td class="match-fixture">${s.t1.toUpperCase()} vs ${s.t2.toUpperCase()}</td>${rowHtml}</tr>`;
         });
 
         document.getElementById('match_progress').innerText = `${playedCount} / 70 Completed`;
@@ -1168,7 +1191,7 @@
 
         cStatsArr.forEach(c => {
             careerHtml += `<tr>
-                <td style="text-transform: uppercase; font-weight: bold; color: #fff;">${c.team}</td>
+                <td style="text-transform: uppercase; font-weight: bold; color: #fff; text-align: left;">${c.team}</td>
                 <td>${c.r}</td>
                 <td>${c.b}</td>
                 <td>${c.rc}</td>
