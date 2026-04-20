@@ -424,7 +424,15 @@
             </div>
             <button onclick="window.addMatch()">Save Match</button>
             <button class="danger" onclick="window.clearData()">Reset Tournament (Danger)</button>
-            <button class="action" style="margin-top: 10px;" onclick="window.swapFirstTwo()">Swap Match 1 & 2</button>
+            
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #333;">
+                <label style="color:#d4af37; margin-bottom: 5px;">Swap Matches (by Match #)</label>
+                <div class="row" style="margin-bottom: 5px;">
+                    <div><input type="number" id="swap_i" placeholder="Match A" min="1"></div>
+                    <div><input type="number" id="swap_j" placeholder="Match B" min="1"></div>
+                </div>
+                <button class="action" onclick="window.swapMatches()" style="margin-top: 0;">Swap Sequence</button>
+            </div>
         </div>
         
         <div class="card">
@@ -770,22 +778,41 @@
         });
     };
     
-    window.swapFirstTwo = function() {
-        if(confirm("Swap Match 1 and Match 2?")) {
-            if(schedule.length >= 2) {
-                let temp = { t1: schedule[0].t1, t2: schedule[0].t2, played: schedule[0].played, result: schedule[0].result };
-                schedule[0].t1 = schedule[1].t1;
-                schedule[0].t2 = schedule[1].t2;
-                schedule[0].played = schedule[1].played;
-                schedule[0].result = schedule[1].result;
-                
-                schedule[1].t1 = temp.t1;
-                schedule[1].t2 = temp.t2;
-                schedule[1].played = temp.played;
-                schedule[1].result = temp.result;
-                
-                pushToCloud();
-            }
+    window.swapMatches = function() {
+        const id1 = parseInt(document.getElementById('swap_i').value);
+        const id2 = parseInt(document.getElementById('swap_j').value);
+
+        if (!id1 || !id2 || id1 === id2) {
+            alert("Please enter two different valid match numbers.");
+            return;
+        }
+
+        const idx1 = schedule.findIndex(m => m.id === id1);
+        const idx2 = schedule.findIndex(m => m.id === id2);
+
+        if (idx1 === -1 || idx2 === -1) {
+            alert("One or both match numbers not found in the schedule.");
+            return;
+        }
+
+        if (confirm(`Swap Match ${id1} and Match ${id2}?`)) {
+            // cache the original ids
+            let originalId1 = schedule[idx1].id;
+            let originalId2 = schedule[idx2].id;
+            
+            // swap the full objects in the array
+            let temp = schedule[idx1];
+            schedule[idx1] = schedule[idx2];
+            schedule[idx2] = temp;
+            
+            // restore the ids so they remain in chronological order
+            schedule[idx1].id = originalId1;
+            schedule[idx2].id = originalId2;
+            
+            pushToCloud();
+            
+            document.getElementById('swap_i').value = '';
+            document.getElementById('swap_j').value = '';
         }
     };
 
