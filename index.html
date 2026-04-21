@@ -69,7 +69,6 @@
             gap: 20px; 
         }
         
-        /* mobile responsiveness */
         @media (max-width: 900px) {
             .container {
                 grid-template-columns: 1fr;
@@ -94,6 +93,10 @@
             transform: translateY(-4px) scale(1.01);
             box-shadow: 0 8px 25px rgba(212, 175, 55, 0.25);
         }
+        .card.no-hover-card:hover {
+            transform: none;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
+        }
         .full-width {
             grid-column: 1 / -1;
         }
@@ -109,6 +112,9 @@
         }
         .card:hover h2 {
             color: #ffdf00;
+        }
+        .no-hover-card:hover h2 {
+            color: #d4af37; 
         }
         .row { 
             display: flex; 
@@ -214,7 +220,6 @@
             background-color: #1e1e1e;
         }
         
-        /* sortable headers styling */
         .sortable { cursor: pointer; user-select: none; white-space: nowrap; }
         .sortable:hover { color: #fff; text-shadow: 0 0 8px rgba(212,175,55,0.4); }
         .sort-icon { font-size: 0.7rem; color: #888; margin-left: 4px; display: inline-block; transition: transform 0.2s; }
@@ -338,7 +343,6 @@
             transition: opacity 0.5s ease;
         }
 
-        /* toast notification css */
         #toast-container {
             position: fixed;
             bottom: 20px;
@@ -367,17 +371,53 @@
         @keyframes slideOut { to { opacity: 0; transform: translateY(-10px); } }
 
         .legacy-item {
+            position: relative;
             padding: 15px 20px;
             margin-bottom: 15px;
             border-left: 3px solid #333;
-            background: #151515;
+            background-color: #151515;
+            background-size: cover;
+            background-position: right center;
+            background-repeat: no-repeat;
             border-radius: 0 8px 8px 0;
-            transition: all 0.5s ease;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
         }
+        
+        .legacy-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* backgrounds for individual legacy tabs (ensure images are in same dir or update paths) */
+        #legacy_pbks { background-image: linear-gradient(rgba(21,21,21,0.92), rgba(21,21,21,0.92)), url('pbks.png'); }
+        #legacy_kkr { background-image: linear-gradient(rgba(21,21,21,0.92), rgba(21,21,21,0.92)), url('kkr.png'); }
+        #legacy_rcb { background-image: linear-gradient(rgba(21,21,21,0.92), rgba(21,21,21,0.92)), url('rcb.png'); }
+        #legacy_dc { background-image: linear-gradient(rgba(21,21,21,0.92), rgba(21,21,21,0.92)), url('dc.png'); }
+        #legacy_rr { background-image: linear-gradient(rgba(21,21,21,0.92), rgba(21,21,21,0.92)), url('rr.png'); }
+        #legacy_srh { background-image: linear-gradient(rgba(21,21,21,0.92), rgba(21,21,21,0.92)), url('srh.png'); }
+        #legacy_mi { background-image: linear-gradient(rgba(21,21,21,0.92), rgba(21,21,21,0.92)), url('mi.png'); }
+        #legacy_csk { background-image: linear-gradient(rgba(21,21,21,0.92), rgba(21,21,21,0.92)), url('csk.png'); }
+        #legacy_lsg { background-image: linear-gradient(rgba(21,21,21,0.92), rgba(21,21,21,0.92)), url('lsg.png'); }
+        #legacy_gt { background-image: linear-gradient(rgba(21,21,21,0.92), rgba(21,21,21,0.92)), url('gt.png'); }
+
+        /* specific hover states for legacy tabs */
+        #legacy_pbks:hover { border-left-color: #f05545; transform: scale(1.02); box-shadow: 0 4px 20px rgba(183, 28, 28, 0.25); background-color: #1a1010; }
+        #legacy_kkr:hover { border-left-color: #7c43bd; transform: scale(1.02); box-shadow: 0 4px 20px rgba(74, 20, 140, 0.25); background-color: #16101c; }
+        #legacy_rcb:hover { border-left-color: #ff1744; transform: scale(1.02); box-shadow: 0 4px 20px rgba(213, 0, 0, 0.25); background-color: #1c1010; }
+        #legacy_dc:hover { border-left-color: #5f5fc4; transform: scale(1.02); box-shadow: 0 4px 20px rgba(40, 53, 147, 0.25); background-color: #10101c; }
+        #legacy_rr:hover { border-left-color: #ff6090; transform: scale(1.02); box-shadow: 0 4px 20px rgba(233, 30, 99, 0.25); background-color: #1c1016; }
+        #legacy_srh:hover { border-left-color: #ff833a; transform: scale(1.02); box-shadow: 0 4px 20px rgba(230, 81, 0, 0.25); background-color: #1c1410; }
+        #legacy_mi:hover { border-left-color: #757de8; transform: scale(1.02); box-shadow: 0 4px 20px rgba(63, 81, 181, 0.25); background-color: #10121c; }
+        #legacy_csk:hover { border-left-color: #ffdf00; transform: scale(1.02); box-shadow: 0 4px 20px rgba(212, 175, 55, 0.25); background-color: #1c1b10; }
+        #legacy_lsg:hover { border-left-color: #62efff; transform: scale(1.02); box-shadow: 0 4px 20px rgba(0, 188, 212, 0.25); background-color: #101a1c; }
+        #legacy_gt:hover { border-left-color: #534bae; transform: scale(1.02); box-shadow: 0 4px 20px rgba(26, 35, 126, 0.25); background-color: #10101a; }
+
         .legacy-item.highlight {
             border-left-color: #d4af37;
-            background: #222;
+            background-color: #222;
             box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+            transform: scale(1.03);
         }
         .legacy-item h4 {
             margin: 0 0 8px 0;
@@ -482,6 +522,17 @@
             <button onclick="window.addMatch()">Save Match</button>
             <button class="danger" onclick="window.clearData()">Reset Tournament (Danger)</button>
             
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #333;">
+                <label style="color:#d4af37; margin-bottom: 5px;">Edit Past Match Summary</label>
+                <div class="row" style="margin-bottom: 5px;">
+                    <div style="flex: 1;"><select id="edit_summary_match"></select></div>
+                </div>
+                <div class="row" style="margin-bottom: 5px;">
+                    <div style="flex: 1;"><input type="text" id="edit_summary_text" placeholder="Enter new summary or clear to remove..."></div>
+                </div>
+                <button class="action" onclick="window.updateMatchSummary()" style="margin-top: 0;">Update Summary</button>
+            </div>
+
             <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #333;">
                 <label style="color:#d4af37; margin-bottom: 5px;">Swap Matches (by Match #)</label>
                 <div class="row" style="margin-bottom: 5px;">
@@ -660,48 +711,68 @@
         </div>
     </div>
 
-    <div class="card full-width">
+    <div class="card full-width no-hover-card">
         <h2 style="text-align: left;">Franchise Legacies</h2>
         
         <div id="legacy_pbks" class="legacy-item">
-            <h4>Punjab Kings (PBKS)</h4>
-            <p>The perennial bridesmaids of the RCPL. Despite finishing as runners-up in all three previous seasons, they are statistically the most dominant team in league history. With an absurd cumulative W/L ratio of 5.58 and a strike rate over 218, they are the undisputed kings of the group stage, desperately hunting for their elusive maiden title.</p>
+            <div class="legacy-content">
+                <h4>Punjab Kings (PBKS)</h4>
+                <p>The perennial bridesmaids of the RCPL. Despite finishing as runners-up in all three previous seasons, they are statistically the most dominant team in league history. With an absurd cumulative W/L ratio of 5.58 and a strike rate over 218, they are the undisputed kings of the group stage, desperately hunting for their elusive maiden title.</p>
+            </div>
         </div>
         <div id="legacy_kkr" class="legacy-item">
-            <h4>Kolkata Knight Riders (KKR)</h4>
-            <p>1-time RCPL Champions. They have maintained an elite level of consistency across all three seasons. Boasting a stellar cumulative win/loss ratio of 3.91 and aggressive batting, they are a complete package aiming for back-to-back titles.</p>
+            <div class="legacy-content">
+                <h4>Kolkata Knight Riders (KKR)</h4>
+                <p>1-time RCPL Champions. They have maintained an elite level of consistency across all three seasons. Boasting a stellar cumulative win/loss ratio of 3.91 and aggressive batting, they are a complete package aiming for back-to-back titles.</p>
+            </div>
         </div>
         <div id="legacy_rcb" class="legacy-item">
-            <h4>Royal Challengers Bangalore (RCB)</h4>
-            <p>1-time RCPL Champions. Known for their explosive batting firepower throughout the league's history, they consistently post massive numbers. They remain heavyweights with a fearsome top order.</p>
+            <div class="legacy-content">
+                <h4>Royal Challengers Bangalore (RCB)</h4>
+                <p>1-time RCPL Champions. Known for their explosive batting firepower throughout the league's history, they consistently post massive numbers. They remain heavyweights with a fearsome top order.</p>
+            </div>
         </div>
         <div id="legacy_dc" class="legacy-item">
-            <h4>Delhi Capitals (DC)</h4>
-            <p>A resilient squad that hangs tough in the middle of the pack. Their historical strike rate shows promise, but they need to convert close games into victories to improve their sub-1.00 win ratio and finally grab a title.</p>
+            <div class="legacy-content">
+                <h4>Delhi Capitals (DC)</h4>
+                <p>A resilient squad that hangs tough in the middle of the pack. Their historical strike rate shows promise, but they need to convert close games into victories to improve their sub-1.00 win ratio and finally grab a title.</p>
+            </div>
         </div>
         <div id="legacy_rr" class="legacy-item">
-            <h4>Rajasthan Royals (RR)</h4>
-            <p>The giant-killers who have historically struggled with consistency across all three seasons. They are looking to break out of the bottom half of the table and improve their overall win percentage.</p>
+            <div class="legacy-content">
+                <h4>Rajasthan Royals (RR)</h4>
+                <p>The giant-killers who have historically struggled with consistency across all three seasons. They are looking to break out of the bottom half of the table and improve their overall win percentage.</p>
+            </div>
         </div>
         <div id="legacy_srh" class="legacy-item">
-            <h4>Sunrisers Hyderabad (SRH)</h4>
-            <p>Facing an uphill battle historically, struggling with the ball and holding an economy rate over 10 across three cumulative seasons. They are looking for a complete structural turnaround this year.</p>
+            <div class="legacy-content">
+                <h4>Sunrisers Hyderabad (SRH)</h4>
+                <p>Facing an uphill battle historically, struggling with the ball and holding an economy rate over 10 across three cumulative seasons. They are looking for a complete structural turnaround this year.</p>
+            </div>
         </div>
         <div id="legacy_mi" class="legacy-item">
-            <h4>Mumbai Indians (MI)</h4>
-            <p>A franchise with a glorious past and 1 RCPL Championship - won in the inaugural season. However, their cumulative stats reflect a massive struggle since their title run, holding an overall W/L ratio of just 0.27. They are desperate to reclaim their throne and rebuild their legacy.</p>
+            <div class="legacy-content">
+                <h4>Mumbai Indians (MI)</h4>
+                <p>A franchise with a glorious past and 1 RCPL Championship - won in the inaugural season. However, their cumulative stats reflect a massive struggle since their title run, holding an overall W/L ratio of just 0.27. They are desperate to reclaim their throne and rebuild their legacy.</p>
+            </div>
         </div>
         <div id="legacy_csk" class="legacy-item">
-            <h4>Chennai Super Kings (CSK)</h4>
-            <p>It has been an incredibly difficult three seasons for the legendary yellow franchise, holding the lowest win rate (0.11) and strike rate (98.20) in cumulative RCPL history. They are in full rebuild mode and hungry for redemption.</p>
+            <div class="legacy-content">
+                <h4>Chennai Super Kings (CSK)</h4>
+                <p>It has been an incredibly difficult three seasons for the legendary yellow franchise, holding the lowest win rate (0.11) and strike rate (98.20) in cumulative RCPL history. They are in full rebuild mode and hungry for redemption.</p>
+            </div>
         </div>
         <div id="legacy_lsg" class="legacy-item">
-            <h4>Lucknow Super Giants (LSG)</h4>
-            <p>A brand new entrant to the RCPL in Season 4. With a completely clean slate and zero baggage, they are the unpredictable wildcards ready to disrupt the established hierarchy.</p>
+            <div class="legacy-content">
+                <h4>Lucknow Super Giants (LSG)</h4>
+                <p>A brand new entrant to the RCPL in Season 4. With a completely clean slate and zero baggage, they are the unpredictable wildcards ready to disrupt the established hierarchy.</p>
+            </div>
         </div>
         <div id="legacy_gt" class="legacy-item">
-            <h4>Gujarat Titans (GT)</h4>
-            <p>Making their highly anticipated debut in Season 4. They have everything to prove and are ready to make a massive splash to build a new legacy from the ground up.</p>
+            <div class="legacy-content">
+                <h4>Gujarat Titans (GT)</h4>
+                <p>Making their highly anticipated debut in Season 4. They have everything to prove and are ready to make a massive splash to build a new legacy from the ground up.</p>
+            </div>
         </div>
     </div>
 
@@ -762,10 +833,8 @@
     let isDataLoaded = false;
     window.currentH2H = {};
     
-    // sorting state
     let careerSort = { prop: 'value', dir: -1 }; 
 
-    // custom toast notification system
     window.showToast = function(msg, type = 'default') {
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
@@ -894,15 +963,37 @@
         }
     };
 
+    window.updateMatchSummary = function() {
+        const selectEl = document.getElementById('edit_summary_match');
+        if (!selectEl) return;
+        
+        const matchId = parseInt(selectEl.value);
+        const newDesc = document.getElementById('edit_summary_text').value.trim();
+
+        if (!matchId) {
+            window.showToast("Please select a match.", "error");
+            return;
+        }
+
+        const matchIndex = schedule.findIndex(m => m.id === matchId);
+        if (matchIndex !== -1 && schedule[matchIndex].played) {
+            schedule[matchIndex].result.desc = newDesc;
+            pushToCloud();
+            document.getElementById('edit_summary_text').value = '';
+            window.showToast(`Summary updated for Match ${matchId}.`, "success");
+        } else {
+            window.showToast("Could not update match.", "error");
+        }
+    };
+
     window.sortCareer = function(prop) {
         if (careerSort.prop === prop) {
-            careerSort.dir *= -1; // toggle direction
+            careerSort.dir *= -1; 
         } else {
             careerSort.prop = prop;
-            careerSort.dir = -1; // default desc
+            careerSort.dir = -1; 
         }
         
-        // visual update for headers
         document.querySelectorAll('.sortable').forEach(th => {
             th.classList.remove('sort-asc', 'sort-desc');
         });
@@ -911,7 +1002,7 @@
             activeTh.classList.add(careerSort.dir === 1 ? 'sort-asc' : 'sort-desc');
         }
         
-        updateUI(); // re-render table
+        updateUI(); 
     };
 
     function pushToCloud() {
@@ -1150,6 +1241,14 @@
             alertSelect.innerHTML = unplayedMatches.map(m => `<option value="${m.t1},${m.t2},${m.id}">Match ${m.id}: ${m.t1.toUpperCase()} vs ${m.t2.toUpperCase()}</option>`).join('');
         }
 
+        let editSummarySelect = document.getElementById('edit_summary_match');
+        if (editSummarySelect) {
+            editSummarySelect.innerHTML = playedMatches.map(s => {
+                let m = s.result;
+                return `<option value="${s.id}">Match ${s.id}: ${m.t1.toUpperCase()} vs ${m.t2.toUpperCase()}</option>`;
+            }).join('');
+        }
+
         let currentH2H = JSON.parse(JSON.stringify(H2H_BASE));
 
         let highestTotals = [];
@@ -1320,7 +1419,6 @@
             });
         }
 
-        // Apply sorting based on state
         cStatsArr.sort((a,b) => (a[careerSort.prop] > b[careerSort.prop] ? 1 : -1) * careerSort.dir);
 
         cStatsArr.forEach(c => {
