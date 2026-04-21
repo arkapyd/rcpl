@@ -516,6 +516,35 @@
             margin: 0;
             padding: 8px 20px;
         }
+
+        /* H2H Explorer */
+        .h2h-team-btn {
+            padding: 5px 14px;
+            background: transparent;
+            color: #d4af37;
+            border: 1px solid #d4af37;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            width: auto;
+            margin: 0;
+            transition: all 0.2s ease;
+        }
+        .h2h-team-btn:hover, .h2h-team-btn.active {
+            background: #d4af37;
+            color: #050505;
+            transform: none;
+            box-shadow: none;
+        }
+        .h2h-rival-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 0;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        .h2h-rival-row:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
@@ -722,16 +751,18 @@
         </div>
     </div>
 
-    <div class="card full-width">
+    <!-- H2H EXPLORER (replaces old grid table) -->
+    <div class="card full-width no-hover-card">
         <h2 style="text-align: left;">Overall Head-to-Head (S1 - Present)</h2>
-        <div class="scrollable-table">
-            <table style="text-align: center;">
-                <thead>
-                    <tr id="h2h_header"></tr>
-                </thead>
-                <tbody id="h2h_body"></tbody>
-            </table>
+        <div id="h2h_team_btns" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem;"></div>
+        <div id="h2h_panel" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 1rem; flex-wrap: wrap;">
+                <span id="h2h_sel_name" style="font-size: 1.1rem; color: #d4af37; font-weight: bold;"></span>
+                <span id="h2h_summary" style="font-size: 0.85rem; color: #aaa;"></span>
+            </div>
+            <div id="h2h_rivals"></div>
         </div>
+        <div id="h2h_empty" style="color: #555; font-size: 0.9rem; padding: 0.5rem 0;">Select a team above to view their rivalries.</div>
     </div>
 
     <div class="card full-width">
@@ -908,6 +939,7 @@
     let schedule = [];
     let isDataLoaded = false;
     window.currentH2H = {};
+    let h2hSelected = null;
     
     let careerSort = { prop: 'value', dir: -1 }; 
 
@@ -917,7 +949,6 @@
         toast.className = `toast ${type}`;
         toast.innerText = msg;
         container.appendChild(toast);
-        
         setTimeout(() => {
             toast.style.animation = 'slideOut 0.3s forwards';
             setTimeout(() => toast.remove(), 300);
@@ -956,83 +987,46 @@
 
     window.sendMatchAlert = function() {
         const matchStr = document.getElementById('alert_match').value;
-        if (!matchStr) {
-            window.showToast("No unplayed matches available to alert.", "error");
-            return;
-        }
-        
+        if (!matchStr) { window.showToast("No unplayed matches available to alert.", "error"); return; }
         const [t1, t2, id] = matchStr.split(',');
         const webhookUrl = "YOUR_MAKE_WEBHOOK_URL_HERE";
-
-        if (webhookUrl === "YOUR_MAKE_WEBHOOK_URL_HERE") {
-            window.showToast("Webhook URL missing. Replace placeholder in code.", "error");
-            return;
-        }
-
+        if (webhookUrl === "YOUR_MAKE_WEBHOOK_URL_HERE") { window.showToast("Webhook URL missing. Replace placeholder in code.", "error"); return; }
         get(child(ref(db), 'rcpl_subscribers')).then((snapshot) => {
             let targetEmails = [];
             if (snapshot.exists()) {
                 const subs = snapshot.val();
                 for (let key in subs) {
                     let s = subs[key];
-                    if (s.team === t1 || s.team === t2 || s.team === 'all') {
-                        targetEmails.push(s.email);
-                    }
+                    if (s.team === t1 || s.team === t2 || s.team === 'all') targetEmails.push(s.email);
                 }
             }
-
-            if(targetEmails.length === 0) {
-                window.showToast(`No subscribers found for ${t1.toUpperCase()} or ${t2.toUpperCase()}.`, "error");
-                return;
-            }
-
+            if(targetEmails.length === 0) { window.showToast(`No subscribers found for ${t1.toUpperCase()} or ${t2.toUpperCase()}.`, "error"); return; }
             fetch(webhookUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    team1: t1.toUpperCase(), 
-                    team2: t2.toUpperCase(), 
-                    matchId: id,
-                    emails: targetEmails
-                })
-            }).then(res => {
+                body: JSON.stringify({ team1: t1.toUpperCase(), team2: t2.toUpperCase(), matchId: id, emails: targetEmails })
+            }).then(() => {
                 window.showToast(`Alert triggered! ${targetEmails.length} fans notified.`, "success");
-            }).catch(e => {
-                window.showToast("Failed to send alert to automation server.", "error");
-            });
+            }).catch(() => { window.showToast("Failed to send alert to automation server.", "error"); });
         });
     };
     
     window.swapMatches = function() {
         const id1 = parseInt(document.getElementById('swap_i').value);
         const id2 = parseInt(document.getElementById('swap_j').value);
-
-        if (!id1 || !id2 || id1 === id2) {
-            window.showToast("Please enter two different valid match numbers.", "error");
-            return;
-        }
-
+        if (!id1 || !id2 || id1 === id2) { window.showToast("Please enter two different valid match numbers.", "error"); return; }
         const idx1 = schedule.findIndex(m => m.id === id1);
         const idx2 = schedule.findIndex(m => m.id === id2);
-
-        if (idx1 === -1 || idx2 === -1) {
-            window.showToast("One or both match numbers not found in the schedule.", "error");
-            return;
-        }
-
+        if (idx1 === -1 || idx2 === -1) { window.showToast("One or both match numbers not found in the schedule.", "error"); return; }
         if (confirm(`Swap Match ${id1} and Match ${id2}?`)) {
             let originalId1 = schedule[idx1].id;
             let originalId2 = schedule[idx2].id;
-            
             let temp = schedule[idx1];
             schedule[idx1] = schedule[idx2];
             schedule[idx2] = temp;
-            
             schedule[idx1].id = originalId1;
             schedule[idx2].id = originalId2;
-            
             pushToCloud();
-            
             document.getElementById('swap_i').value = '';
             document.getElementById('swap_j').value = '';
             window.showToast("Matches swapped successfully.", "success");
@@ -1042,15 +1036,9 @@
     window.updateMatchSummary = function() {
         const selectEl = document.getElementById('edit_summary_match');
         if (!selectEl) return;
-        
         const matchId = parseInt(selectEl.value);
         const newDesc = document.getElementById('edit_summary_text').value.trim();
-
-        if (!matchId) {
-            window.showToast("Please select a match.", "error");
-            return;
-        }
-
+        if (!matchId) { window.showToast("Please select a match.", "error"); return; }
         const matchIndex = schedule.findIndex(m => m.id === matchId);
         if (matchIndex !== -1 && schedule[matchIndex].played) {
             schedule[matchIndex].result.desc = newDesc;
@@ -1065,13 +1053,8 @@
     window.resetSpecificMatch = function() {
         const selectEl = document.getElementById('reset_match_select');
         if (!selectEl) return;
-
         const matchId = parseInt(selectEl.value);
-        if (!matchId) {
-            window.showToast("Select a match to reset.", "error");
-            return;
-        }
-
+        if (!matchId) { window.showToast("Select a match to reset.", "error"); return; }
         if (confirm(`Are you absolutely sure you want to erase all data for Match ${matchId}? This cannot be undone.`)) {
             const matchIndex = schedule.findIndex(m => m.id === matchId);
             if (matchIndex !== -1) {
@@ -1084,21 +1067,10 @@
     };
 
     window.sortCareer = function(prop) {
-        if (careerSort.prop === prop) {
-            careerSort.dir *= -1; 
-        } else {
-            careerSort.prop = prop;
-            careerSort.dir = -1; 
-        }
-        
-        document.querySelectorAll('.sortable').forEach(th => {
-            th.classList.remove('sort-asc', 'sort-desc');
-        });
+        if (careerSort.prop === prop) { careerSort.dir *= -1; } else { careerSort.prop = prop; careerSort.dir = -1; }
+        document.querySelectorAll('.sortable').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
         const activeTh = document.getElementById(`th_${prop}`);
-        if(activeTh) {
-            activeTh.classList.add(careerSort.dir === 1 ? 'sort-asc' : 'sort-desc');
-        }
-        
+        if(activeTh) activeTh.classList.add(careerSort.dir === 1 ? 'sort-asc' : 'sort-desc');
         updateUI(); 
     };
 
@@ -1114,7 +1086,6 @@
             schedule = generateSchedule();
             pushToCloud(); 
         }
-        
         if (!isDataLoaded) {
             initUI();
             isDataLoaded = true;
@@ -1127,29 +1098,19 @@
 
     function generateSchedule() {
         let tempSchedule = [];
-        let idCounter = 1;
-
-        for (let i = 0; i < GROUP_A.length; i++) {
-            for (let j = i + 1; j < GROUP_A.length; j++) {
+        for (let i = 0; i < GROUP_A.length; i++)
+            for (let j = i + 1; j < GROUP_A.length; j++)
                 tempSchedule.push({ id: 0, t1: GROUP_A[i], t2: GROUP_A[j], played: false, result: null });
-            }
-        }
-        for (let i = 0; i < GROUP_B.length; i++) {
-            for (let j = i + 1; j < GROUP_B.length; j++) {
+        for (let i = 0; i < GROUP_B.length; i++)
+            for (let j = i + 1; j < GROUP_B.length; j++)
                 tempSchedule.push({ id: 0, t1: GROUP_B[i], t2: GROUP_B[j], played: false, result: null });
-            }
-        }
-        for (let i = 0; i < GROUP_A.length; i++) {
+        for (let i = 0; i < GROUP_A.length; i++)
             for (let j = 0; j < GROUP_B.length; j++) {
                 tempSchedule.push({ id: 0, t1: GROUP_A[i], t2: GROUP_B[j], played: false, result: null });
                 tempSchedule.push({ id: 0, t1: GROUP_B[j], t2: GROUP_A[i], played: false, result: null });
             }
-        }
 
-        let finalSchedule = [];
-        let success = false;
-        let attempts = 0;
-
+        let finalSchedule = [], success = false, attempts = 0;
         while (!success && attempts < 500) {
             attempts++;
             let pool = [...tempSchedule];
@@ -1157,25 +1118,20 @@
                 const j = Math.floor(Math.random() * (i + 1));
                 [pool[i], pool[j]] = [pool[j], pool[i]];
             }
-
             finalSchedule = [];
-            let lastTeams = [];
-            let valid = true;
-
+            let lastTeams = [], valid = true;
             while (pool.length > 0) {
                 let matchIdx = pool.findIndex(m => !lastTeams.includes(m.t1) && !lastTeams.includes(m.t2));
                 if (matchIdx !== -1) {
                     let m = pool.splice(matchIdx, 1)[0];
                     finalSchedule.push(m);
                     lastTeams = [m.t1, m.t2];
-                } else {
-                    valid = false; break;
-                }
+                } else { valid = false; break; }
             }
             if (valid) success = true;
         }
-
-        if (!success) finalSchedule = tempSchedule; 
+        if (!success) finalSchedule = tempSchedule;
+        let idCounter = 1;
         finalSchedule.forEach(m => m.id = idCounter++);
         return finalSchedule;
     }
@@ -1198,10 +1154,60 @@
 
         document.getElementById('group_a_teams').innerHTML = GROUP_A.map(t => `<span class="team-pill team-${t}" onclick="window.scrollToLegacy('${t}')">${t}</span>`).join('');
         document.getElementById('group_b_teams').innerHTML = GROUP_B.map(t => `<span class="team-pill team-${t}" onclick="window.scrollToLegacy('${t}')">${t}</span>`).join('');
-        
-        let h2hHeader = `<th style="text-align: left; color: #aaa;">Team</th>`;
-        TEAMS.forEach(t => h2hHeader += `<th>${t.toUpperCase()}</th>`);
-        document.getElementById('h2h_header').innerHTML = h2hHeader;
+
+        // Build H2H team buttons (once)
+        const btnWrap = document.getElementById('h2h_team_btns');
+        TEAMS.forEach(t => {
+            const b = document.createElement('button');
+            b.className = 'h2h-team-btn';
+            b.id = 'h2hbtn_' + t;
+            b.textContent = t.toUpperCase();
+            b.onclick = () => { h2hSelected = t; renderH2HPanel(); };
+            btnWrap.appendChild(b);
+        });
+    }
+
+    function renderH2HPanel() {
+        if (!h2hSelected) return;
+        const data = window.currentH2H;
+
+        document.querySelectorAll('.h2h-team-btn').forEach(b => {
+            b.classList.toggle('active', b.id === 'h2hbtn_' + h2hSelected);
+        });
+
+        const opponents = TEAMS.filter(x => x !== h2hSelected);
+        let totalW = 0, totalL = 0;
+
+        const rows = opponents.map(opp => {
+            const w = data[h2hSelected]?.[opp] ?? 0;
+            const l = data[opp]?.[h2hSelected] ?? 0;
+            totalW += w; totalL += l;
+            return { opp, w, l };
+        }).sort((a, b) => (b.w - b.l) - (a.w - a.l));
+
+        const wl = totalL > 0 ? (totalW / totalL).toFixed(2) : totalW > 0 ? '∞' : '—';
+        document.getElementById('h2h_sel_name').textContent = h2hSelected.toUpperCase();
+        document.getElementById('h2h_summary').textContent = `${totalW}W  ${totalL}L  —  W/L ratio: ${wl}`;
+
+        const maxTotal = Math.max(...rows.map(r => r.w + r.l), 1);
+
+        document.getElementById('h2h_rivals').innerHTML = rows.map(r => {
+            const wPct = (r.w / maxTotal) * 100;
+            const lPct = (r.l / maxTotal) * 100;
+            const col = r.w > r.l ? '#00e676' : r.l > r.w ? '#ff5252' : '#888';
+            return `<div class="h2h-rival-row">
+                <span style="min-width:44px;font-size:0.8rem;color:#aaa;">${r.opp.toUpperCase()}</span>
+                <div style="flex:1;display:flex;gap:3px;height:18px;">
+                    <div style="width:${wPct}%;min-width:${r.w ? '18px' : '0'};background:#00e676;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#050505;font-weight:bold;">${r.w || ''}</div>
+                    <div style="width:${lPct}%;min-width:${r.l ? '18px' : '0'};background:#ff5252;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:bold;">${r.l || ''}</div>
+                    ${!r.w && !r.l ? '<span style="font-size:11px;color:#444;">no matches yet</span>' : ''}
+                </div>
+                <span style="min-width:40px;text-align:right;font-size:0.85rem;font-weight:bold;color:${col};">${r.w}–${r.l}</span>
+            </div>`;
+        }).join('');
+
+        document.getElementById('h2h_panel').style.display = 'block';
+        document.getElementById('h2h_empty').style.display = 'none';
     }
 
     function calculateOvers(balls) { return Math.floor(balls / 6) + ((balls % 6) / 6.0); }
@@ -1219,23 +1225,12 @@
             b2: parseInt(document.getElementById('b2').value) || 0,
             desc: document.getElementById('match_desc').value.trim()
         };
-
-        if (data.t1 === data.t2) {
-            window.showToast("Teams must be different.", "error");
-            return;
-        }
-
+        if (data.t1 === data.t2) { window.showToast("Teams must be different.", "error"); return; }
         let slot = schedule.find(x => !x.played && ((x.t1 === data.t1 && x.t2 === data.t2) || (x.t1 === data.t2 && x.t2 === data.t1)));
-        if (!slot) {
-            window.showToast("This matchup has already reached its maximum allowed matches!", "error");
-            return;
-        }
-
+        if (!slot) { window.showToast("This matchup has already reached its maximum allowed matches!", "error"); return; }
         slot.played = true;
         slot.result = data;
-
         pushToCloud();
-
         ['r1','w1','r2','w2','match_desc'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('b1').value = 120; document.getElementById('b2').value = 120;
         window.showToast("Match saved successfully.", "success");
@@ -1264,21 +1259,17 @@
         let table = {};
         TEAMS.forEach(t => table[t] = { p:0, w:0, l:0, t:0, pts:0, rf:0, of:0, ra:0, oa:0, form: [], wkts_taken: 0 });
         let playedMatches = schedule.filter(s => s.played && s.result);
-        
         playedMatches.forEach(s => {
             let m = s.result; 
             let o1 = calculateOvers(m.b1), o2 = calculateOvers(m.b2);
             if (table[m.t1] && table[m.t2]) {
                 table[m.t1].p++; table[m.t2].p++;
-                
                 table[m.t1].rf += m.r1; table[m.t1].of += o1;
                 table[m.t1].ra += m.r2; table[m.t1].oa += o2;
                 table[m.t1].wkts_taken += (m.w2 || 0);
-
                 table[m.t2].rf += m.r2; table[m.t2].of += o2;
                 table[m.t2].ra += m.r1; table[m.t2].oa += o1;
                 table[m.t2].wkts_taken += (m.w1 || 0);
-                
                 if (m.r1 > m.r2) {
                     table[m.t1].w++; table[m.t1].pts += 2; table[m.t1].form.push('W');
                     table[m.t2].l++; table[m.t2].form.push('L');
@@ -1291,7 +1282,6 @@
                 }
             }
         });
-
         let arr = Object.keys(table).map(t => {
             let nrr = (table[t].of > 0 ? table[t].rf/table[t].of : 0) - (table[t].oa > 0 ? table[t].ra/table[t].oa : 0);
             let nrrStr = nrr > 0 ? `+${nrr.toFixed(3)}` : nrr.toFixed(3);
@@ -1319,12 +1309,10 @@
             });
         }
 
-        standings.forEach((s, index) => {
+        standings.forEach(s => {
             let formHtml = s.form.slice(-5).map(f => `<span class="form-dot dot-${f.toLowerCase()}" title="${f}"></span>`).join('');
-            let teamName = index === 0 ? `${s.team.toUpperCase()} 👑` : s.team.toUpperCase();
-            
             ptable.innerHTML += `<tr>
-                <td style="color: #fff; text-align: left;"><b>${teamName}</b></td>
+                <td style="color: #fff; text-align: left;"><b>${s.team.toUpperCase()}</b></td>
                 <td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td>
                 <td style="color: #d4af37;"><b>${s.pts}</b></td><td>${s.nrr}</td>
                 <td>${formHtml || '-'}</td><td>${s.status || '-'}</td>
@@ -1341,9 +1329,7 @@
         
         let unplayedMatches = schedule.filter(s => !s.played);
         let alertSelect = document.getElementById('alert_match');
-        if (alertSelect) {
-            alertSelect.innerHTML = unplayedMatches.map(m => `<option value="${m.t1},${m.t2},${m.id}">Match ${m.id}: ${m.t1.toUpperCase()} vs ${m.t2.toUpperCase()}</option>`).join('');
-        }
+        if (alertSelect) alertSelect.innerHTML = unplayedMatches.map(m => `<option value="${m.t1},${m.t2},${m.id}">Match ${m.id}: ${m.t1.toUpperCase()} vs ${m.t2.toUpperCase()}</option>`).join('');
 
         let editSummarySelect = document.getElementById('edit_summary_match');
         let resetSelect = document.getElementById('reset_match_select');
@@ -1357,7 +1343,6 @@
         }
 
         let currentH2H = JSON.parse(JSON.stringify(H2H_BASE));
-
         let highestTotals = [];
         let biggestWinsRuns = [];
         let biggestWinsWkts = [];
@@ -1366,7 +1351,6 @@
             let m = s.result;
             highestTotals.push({ team: m.t1, runs: m.r1, wkts: m.w1, vs: m.t2 });
             highestTotals.push({ team: m.t2, runs: m.r2, wkts: m.w2, vs: m.t1 });
-
             if (m.r1 > m.r2) {
                 biggestWinsRuns.push({ team: m.t1, margin: m.r1 - m.r2, vs: m.t2 });
                 currentH2H[m.t1][m.t2]++;
@@ -1377,34 +1361,11 @@
         });
 
         window.currentH2H = currentH2H;
+        renderH2HPanel();
 
-        let h2hHtml = '';
-        TEAMS.forEach(t1 => {
-            h2hHtml += `<tr><td style="text-transform: uppercase; font-weight: bold; color: #d4af37; text-align: left;">${t1}</td>`;
-            TEAMS.forEach(t2 => {
-                if(t1 === t2) {
-                    h2hHtml += `<td style="color: #333; background: rgba(255,255,255,0.02);">-</td>`;
-                } else {
-                    let w = currentH2H[t1][t2];
-                    let l = currentH2H[t2][t1];
-                    let color = "#aaa";
-                    let fw = "normal";
-                    
-                    if (w > l) { color = "#00e676"; fw = "bold"; }
-                    else if (l > w) { color = "#ff5252"; }
-                    else if (w === l && w > 0) { color = "#d4af37"; }
-                    else { color = "#444"; }
-                    
-                    h2hHtml += `<td style="color: ${color}; font-weight: ${fw};">${w} - ${l}</td>`;
-                }
-            });
-            h2hHtml += `</tr>`;
-        });
-        document.getElementById('h2h_body').innerHTML = h2hHtml;
-
-        highestTotals.sort((a, b) => b.runs - a.runs).slice(0, 5);
-        biggestWinsRuns.sort((a, b) => b.margin - a.margin).slice(0, 5);
-        biggestWinsWkts.sort((a, b) => b.margin - a.margin).slice(0, 5);
+        highestTotals.sort((a, b) => b.runs - a.runs);
+        biggestWinsRuns.sort((a, b) => b.margin - a.margin);
+        biggestWinsWkts.sort((a, b) => b.margin - a.margin);
 
         document.getElementById('highest_totals_body').innerHTML = highestTotals.slice(0, 5).map(t =>
             `<tr><td style="text-transform: uppercase; text-align: left;">${t.team}</td><td style="color: #d4af37; font-weight: bold;">${t.runs}/${t.wkts}</td><td style="font-size:0.75rem; color:#888;">vs ${t.vs.toUpperCase()}</td></tr>`
@@ -1421,18 +1382,15 @@
         let logTbody = document.getElementById('match_log_body');
         logTbody.innerHTML = '';
         let playedCount = 0;
-
         schedule.forEach(s => {
-            let rowHtml = ``;
+            let rowHtml = '';
             if (s.played && s.result) {
                 playedCount++;
                 let m = s.result;
                 let winStr = "Match Tied";
                 if (m.r1 > m.r2) winStr = `<span class="match-highlight">${m.t1.toUpperCase()} won by ${m.r1 - m.r2} runs</span>`;
                 else if (m.r2 > m.r1) winStr = `<span class="match-highlight">${m.t2.toUpperCase()} won by ${10 - (m.w2 || 0)} wickets</span>`;
-
                 let descStr = m.desc ? ` <span style="color:#aaa; font-style:italic;">— ${m.desc}</span>` : "";
-
                 rowHtml = `<td class="match-result-text" style="text-align: left;">${m.t1.toUpperCase()}: ${m.r1}/${m.w1} (${formatDisplayOvers(m.b1)}) &nbsp;|&nbsp; ${m.t2.toUpperCase()}: ${m.r2}/${m.w2} (${formatDisplayOvers(m.b2)}) &nbsp;—&nbsp; ${winStr}${descStr}</td>`;
             } else {
                 rowHtml = `<td style="color: #444; font-style: italic; text-align: left;">Awaiting Result</td>`;
@@ -1445,46 +1403,27 @@
 
         let careerStats = {};
         TEAMS.forEach(t => {
-            careerStats[t] = { 
-                ...CAREER_BASE[t],
-                m_played: CAREER_BASE[t].m_played || 0,
-                wkts_taken: CAREER_BASE[t].wkts_taken || 0
-            };
+            careerStats[t] = { ...CAREER_BASE[t], m_played: CAREER_BASE[t].m_played || 0, wkts_taken: CAREER_BASE[t].wkts_taken || 0 };
         });
-
         playedMatches.forEach(s => {
             let m = s.result;
-            
             if(careerStats[m.t1] && careerStats[m.t2]) {
                 careerStats[m.t1].m_played++;
-                careerStats[m.t1].r += m.r1;
-                careerStats[m.t1].b += m.b1;
-                careerStats[m.t1].rc += m.r2;
-                careerStats[m.t1].bb += m.b2;
+                careerStats[m.t1].r += m.r1; careerStats[m.t1].b += m.b1;
+                careerStats[m.t1].rc += m.r2; careerStats[m.t1].bb += m.b2;
                 careerStats[m.t1].wl_lost += (m.w1 || 0);
                 careerStats[m.t1].wkts_taken += (m.w2 || 0);
-
                 careerStats[m.t2].m_played++;
-                careerStats[m.t2].r += m.r2;
-                careerStats[m.t2].b += m.b2;
-                careerStats[m.t2].rc += m.r1;
-                careerStats[m.t2].bb += m.b1;
+                careerStats[m.t2].r += m.r2; careerStats[m.t2].b += m.b2;
+                careerStats[m.t2].rc += m.r1; careerStats[m.t2].bb += m.b1;
                 careerStats[m.t2].wl_lost += (m.w2 || 0);
                 careerStats[m.t2].wkts_taken += (m.w1 || 0);
-
-                if (m.r1 > m.r2) {
-                    careerStats[m.t1].w++;
-                    careerStats[m.t2].l++;
-                } else if (m.r2 > m.r1) {
-                    careerStats[m.t2].w++;
-                    careerStats[m.t1].l++;
-                }
+                if (m.r1 > m.r2) { careerStats[m.t1].w++; careerStats[m.t2].l++; }
+                else if (m.r2 > m.r1) { careerStats[m.t2].w++; careerStats[m.t1].l++; }
             }
         });
 
-        let careerHtml = '';
         let cStatsArr = [];
-
         for (let t of TEAMS) {
             let c = careerStats[t];
             let avg = c.wl_lost > 0 ? (c.r / c.wl_lost) : (c.r > 0 ? c.r : 0);
@@ -1493,87 +1432,45 @@
             let rr = c.b > 0 ? (c.r / (c.b / 6)) : 0;
             let wl = c.l > 0 ? (c.w / c.l) : (c.w > 0 ? c.w : CAREER_BASE[t].w);
             let wpm = c.m_played > 0 ? (c.wkts_taken / c.m_played) : 0;
-
             let basra = avg + sr;
-            
             let bewm = 0;
-            if (eco === 0 && wpm === 0) {
-                bewm = 0;
-            } else if (eco === 0) {
-                bewm = (wpm * 0.3);
-            } else {
-                bewm = 10 + (wpm * 0.3) - (eco * 0.7);
-            }
-
+            if (eco === 0 && wpm === 0) bewm = 0;
+            else if (eco === 0) bewm = (wpm * 0.3);
+            else bewm = 10 + (wpm * 0.3) - (eco * 0.7);
             let titles = ['mi', 'rcb', 'kkr'].includes(t) ? 1 : 0;
             let runnersUp = (t === 'pbks') ? 3 : 0;
-
             let value = (titles * 50000) + (runnersUp * 10000) + (wl * 2000) + (basra * 50) + (bewm * 500) - (eco * 100);
-            
-            if (c.m_played === 0) {
-                value = 0;
-            } else if (value < 0) {
-                value = 0; 
-            }
-
-            cStatsArr.push({
-                team: t,
-                wkts_taken: c.wkts_taken,
-                bewm: bewm, basra: basra,
-                r: c.r, b: c.b, rc: c.rc, bb: c.bb,
-                avg: avg, sr: sr, eco: eco, rr: rr, wl: wl,
-                value: value
-            });
+            if (c.m_played === 0) value = 0;
+            else if (value < 0) value = 0;
+            cStatsArr.push({ team: t, wkts_taken: c.wkts_taken, bewm, basra, r: c.r, b: c.b, rc: c.rc, bb: c.bb, avg, sr, eco, rr, wl, value });
         }
 
         cStatsArr.sort((a,b) => (a[careerSort.prop] > b[careerSort.prop] ? 1 : -1) * careerSort.dir);
 
-        cStatsArr.forEach((c, index) => {
-            let cTeamName = index === 0 ? `${c.team} 💎` : c.team;
-            careerHtml += `<tr>
-                <td style="text-transform: uppercase; font-weight: bold; color: #fff; text-align: left;">${cTeamName}</td>
-                <td>${c.r}</td>
-                <td>${c.b}</td>
-                <td>${c.rc}</td>
-                <td>${c.bb}</td>
-                <td>${c.wkts_taken}</td>
-                <td>${c.avg.toFixed(2)}</td>
-                <td>${c.sr.toFixed(2)}</td>
-                <td style="color: #d4af37; font-weight: bold;">${c.basra.toFixed(2)}</td>
-                <td>${c.eco.toFixed(2)}</td>
-                <td style="color: #d4af37; font-weight: bold;">${c.bewm.toFixed(2)}</td>
-                <td>${c.wl.toFixed(2)}</td>
-                <td style="color: #00e676; font-weight: bold;">$${c.value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-            </tr>`;
-        });
-
-        document.getElementById('career_body').innerHTML = careerHtml;
+        document.getElementById('career_body').innerHTML = cStatsArr.map(c => `<tr>
+            <td style="text-transform: uppercase; font-weight: bold; color: #fff; text-align: left;">${c.team}</td>
+            <td>${c.r}</td><td>${c.b}</td><td>${c.rc}</td><td>${c.bb}</td><td>${c.wkts_taken}</td>
+            <td>${c.avg.toFixed(2)}</td><td>${c.sr.toFixed(2)}</td>
+            <td style="color: #d4af37; font-weight: bold;">${c.basra.toFixed(2)}</td>
+            <td>${c.eco.toFixed(2)}</td>
+            <td style="color: #d4af37; font-weight: bold;">${c.bewm.toFixed(2)}</td>
+            <td>${c.wl.toFixed(2)}</td>
+            <td style="color: #00e676; font-weight: bold;">$${c.value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+        </tr>`).join('');
     }
 
     window.predictMatch = function() {
         const t1 = document.getElementById('pred_t1').value;
         const t2 = document.getElementById('pred_t2').value;
-        
         let resultDiv = document.getElementById('prediction_result');
-
-        if (t1 === t2) {
-            resultDiv.innerHTML = `<span style="color: #d50000;">Select different teams.</span>`;
-            return;
-        }
-
+        if (t1 === t2) { resultDiv.innerHTML = `<span style="color: #d50000;">Select different teams.</span>`; return; }
         let stats = window.currentStandings;
         let s1 = stats.find(s => s.team === t1);
         let s2 = stats.find(s => s.team === t2);
-
-        if (!s1 || !s2 || (s1.p === 0 && s2.p === 0)) {
-            resultDiv.innerHTML = `<span style="color: #aaa;">Not enough data yet to form predictions.</span>`;
-            return;
-        }
-
+        if (!s1 || !s2 || (s1.p === 0 && s2.p === 0)) { resultDiv.innerHTML = `<span style="color: #aaa;">Not enough data yet to form predictions.</span>`; return; }
         let h2hMatches = schedule.filter(s => s.played && s.result && 
             ((s.result.t1 === t1 && s.result.t2 === t2) || (s.result.t1 === t2 && s.result.t2 === t1))
         );
-
         let t1Wins = 0, t2Wins = 0, ties = 0;
         h2hMatches.forEach(s => {
             let m = s.result;
@@ -1581,23 +1478,18 @@
             else if (m.r2 > m.r1) { m.t2 === t1 ? t1Wins++ : t2Wins++; }
             else ties++;
         });
-
         let overallT1 = window.currentH2H[t1][t2];
         let overallT2 = window.currentH2H[t2][t1];
-
         let h2hHtml = `
             <div style="font-size: 0.9rem; color: #aaa; margin-bottom: 4px;">Overall H2H: <span style="color:#fff">${t1.toUpperCase()} ${overallT1} - ${overallT2} ${t2.toUpperCase()}</span></div>
             <div style="font-size: 0.9rem; color: #aaa; margin-bottom: 8px;">H2H This Season: <span style="color:#fff">${t1.toUpperCase()} ${t1Wins} - ${t2Wins} ${t2.toUpperCase()}</span> (Ties: ${ties})</div>
         `;
-
         const getFormScore = (formArr) => formArr.slice(-3).reduce((acc, val) => acc + (val==='W'?2:val==='T'?1:0), 0);
         let score1 = (s1.pts * 1.5) + (parseFloat(s1.nrr) * 5) + (getFormScore(s1.form) * 3);
         let score2 = (s2.pts * 1.5) + (parseFloat(s2.nrr) * 5) + (getFormScore(s2.form) * 3);
         let total = (score1 + score2) || 1; 
-        
         let p1 = Math.max(10, Math.min(90, (score1 / total) * 100));
         let p2 = 100 - p1;
-
         resultDiv.innerHTML = `
             ${h2hHtml}
             <div style="font-size: 1.1rem;">
