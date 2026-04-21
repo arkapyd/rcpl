@@ -13,6 +13,7 @@
             color: #e0e0e0; 
             margin: 0; 
             padding: 100px 20px 20px 20px; 
+            overflow-x: hidden;
         }
         
         .top-ribbon {
@@ -34,7 +35,7 @@
 
         .ribbon-text {
             font-family: 'Bebas Neue', sans-serif;
-            font-size: 3.5rem;
+            font-size: clamp(2rem, 4vw, 3.5rem);
             color: #d4af37;
             letter-spacing: 6px;
             white-space: nowrap;
@@ -45,8 +46,8 @@
         }
 
         .ribbon-logo {
-            width: 65px;
-            height: 65px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
             border: 2px solid #d4af37;
             box-shadow: 0 0 20px rgba(212, 175, 55, 0.8), 0 0 20px rgba(5, 5, 5, 0.9);
@@ -67,6 +68,16 @@
             grid-template-columns: 1fr 2fr; 
             gap: 20px; 
         }
+        
+        /* mobile responsiveness */
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .ribbon-text { margin: 0 10px; letter-spacing: 2px; }
+            .flex-split > div { min-width: 100%; }
+        }
+
         .left-col {
             display: none; 
         }
@@ -202,6 +213,14 @@
         tbody tr:hover td {
             background-color: #1e1e1e;
         }
+        
+        /* sortable headers styling */
+        .sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+        .sortable:hover { color: #fff; text-shadow: 0 0 8px rgba(212,175,55,0.4); }
+        .sort-icon { font-size: 0.7rem; color: #888; margin-left: 4px; display: inline-block; transition: transform 0.2s; }
+        .sort-asc .sort-icon { color: #d4af37; transform: rotate(180deg); }
+        .sort-desc .sort-icon { color: #d4af37; }
+
         .flex-split { 
             display: flex; 
             gap: 20px; 
@@ -227,9 +246,11 @@
             display: flex;
             gap: 20px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
         .group-box {
             flex: 1;
+            min-width: 250px;
             background: #121212;
             border: 1px solid #333;
             border-left: 3px solid #d4af37;
@@ -317,6 +338,34 @@
             transition: opacity 0.5s ease;
         }
 
+        /* toast notification css */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            background: #1a1a1a;
+            color: #fff;
+            border-left: 4px solid #d4af37;
+            padding: 12px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            font-size: 0.95rem;
+            opacity: 0;
+            transform: translateX(100%);
+            animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            min-width: 250px;
+        }
+        .toast.error { border-left-color: #d50000; }
+        .toast.success { border-left-color: #00e676; }
+        @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
+        @keyframes slideOut { to { opacity: 0; transform: translateY(-10px); } }
+
         .legacy-item {
             padding: 15px 20px;
             margin-bottom: 15px;
@@ -364,6 +413,7 @@
 <body>
 
 <div id="loading_overlay">Syncing With Cloud...</div>
+<div id="toast-container"></div>
 
 <div class="top-ribbon">
     <span class="ribbon-text">REAL CRICKET PREMIER</span>
@@ -472,14 +522,16 @@
 
         <div class="card">
             <h2 style="text-align: left;">Points Table</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Team</th><th>P</th><th>W</th><th>L</th><th>T</th><th>Pts</th><th>NRR</th><th>Form</th><th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="ptable_body"></tbody>
-            </table>
+            <div class="scrollable-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Team</th><th>P</th><th>W</th><th>L</th><th>T</th><th>Pts</th><th>NRR</th><th>Form</th><th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ptable_body"></tbody>
+                </table>
+            </div>
         </div>
 
         <div class="flex-split">
@@ -557,23 +609,24 @@
 
     <div class="card full-width">
         <h2 style="text-align: left;">Career Statistics</h2>
+        <p style="color:#aaa; font-size:0.85rem; margin-top:-5px;">Click any column header to sort.</p>
         <div class="scrollable-table">
             <table style="min-width: 1000px;">
                 <thead>
                     <tr>
-                        <th>Team</th>
-                        <th>Runs Scored</th>
-                        <th>Balls Faced</th>
-                        <th>Runs Conceded</th>
-                        <th>Balls Bowled</th>
-                        <th>Average</th>
-                        <th>Strike Rate</th>
-                        <th style="color:#d4af37;">BASRA</th>
-                        <th>Economy</th>
-                        <th style="color:#d4af37;">BEWM</th>
-                        <th>Run Rate</th>
-                        <th>W/L</th>
-                        <th>Value</th>
+                        <th style="text-align: left;">Team</th>
+                        <th class="sortable" onclick="window.sortCareer('r')" id="th_r">Runs Scored<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('b')" id="th_b">Balls Faced<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('rc')" id="th_rc">Runs Conceded<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('bb')" id="th_bb">Balls Bowled<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('wkts_taken')" id="th_wkts_taken">Wickets<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('avg')" id="th_avg">Average<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('sr')" id="th_sr">Strike Rate<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('basra')" id="th_basra" style="color:#d4af37;">BASRA<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('eco')" id="th_eco">Economy<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('bewm')" id="th_bewm" style="color:#d4af37;">BEWM<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('wl')" id="th_wl">W/L<span class="sort-icon">▼</span></th>
+                        <th class="sortable sort-desc" onclick="window.sortCareer('value')" id="th_value">Value<span class="sort-icon">▼</span></th>
                     </tr>
                 </thead>
                 <tbody id="career_body"></tbody>
@@ -708,6 +761,23 @@
     let schedule = [];
     let isDataLoaded = false;
     window.currentH2H = {};
+    
+    // sorting state
+    let careerSort = { prop: 'value', dir: -1 }; 
+
+    // custom toast notification system
+    window.showToast = function(msg, type = 'default') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerText = msg;
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s forwards';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    };
 
     window.scrollToLegacy = function(team) {
         const el = document.getElementById(`legacy_${team}`);
@@ -724,7 +794,7 @@
         const team = document.getElementById('sub_team').value;
         const email = input.value.trim();
         if(!email || !email.includes('@')) {
-            alert('Please enter a valid email address.');
+            window.showToast('Please enter a valid email address.', 'error');
             return;
         }
         push(ref(db, 'rcpl_subscribers'), {
@@ -732,22 +802,25 @@
             team: team,
             timestamp: new Date().toISOString()
         }).then(() => {
-            alert(`Successfully subscribed to RCPL Match Alerts for ${team.toUpperCase()}!`);
+            window.showToast(`Successfully subscribed to RCPL alerts for ${team.toUpperCase()}!`, 'success');
             input.value = '';
         }).catch((e) => {
-            alert('Something went wrong. Please try again.');
+            window.showToast('Something went wrong. Please try again.', 'error');
         });
     };
 
     window.sendMatchAlert = function() {
         const matchStr = document.getElementById('alert_match').value;
-        if (!matchStr) return alert("No unplayed matches available to alert.");
+        if (!matchStr) {
+            window.showToast("No unplayed matches available to alert.", "error");
+            return;
+        }
         
         const [t1, t2, id] = matchStr.split(',');
         const webhookUrl = "YOUR_MAKE_WEBHOOK_URL_HERE";
 
         if (webhookUrl === "YOUR_MAKE_WEBHOOK_URL_HERE") {
-            alert("To enable auto-emails, you must replace 'YOUR_MAKE_WEBHOOK_URL_HERE' in the code with your actual Make.com Webhook URL.");
+            window.showToast("Webhook URL missing. Replace placeholder in code.", "error");
             return;
         }
 
@@ -764,7 +837,7 @@
             }
 
             if(targetEmails.length === 0) {
-                alert(`No subscribers found for ${t1.toUpperCase()} or ${t2.toUpperCase()}.`);
+                window.showToast(`No subscribers found for ${t1.toUpperCase()} or ${t2.toUpperCase()}.`, "error");
                 return;
             }
 
@@ -778,9 +851,9 @@
                     emails: targetEmails
                 })
             }).then(res => {
-                alert(`Match alert successfully triggered! ${targetEmails.length} fans will be notified.`);
+                window.showToast(`Alert triggered! ${targetEmails.length} fans notified.`, "success");
             }).catch(e => {
-                alert("Failed to send alert to automation server.");
+                window.showToast("Failed to send alert to automation server.", "error");
             });
         });
     };
@@ -790,7 +863,7 @@
         const id2 = parseInt(document.getElementById('swap_j').value);
 
         if (!id1 || !id2 || id1 === id2) {
-            alert("Please enter two different valid match numbers.");
+            window.showToast("Please enter two different valid match numbers.", "error");
             return;
         }
 
@@ -798,7 +871,7 @@
         const idx2 = schedule.findIndex(m => m.id === id2);
 
         if (idx1 === -1 || idx2 === -1) {
-            alert("One or both match numbers not found in the schedule.");
+            window.showToast("One or both match numbers not found in the schedule.", "error");
             return;
         }
 
@@ -817,7 +890,28 @@
             
             document.getElementById('swap_i').value = '';
             document.getElementById('swap_j').value = '';
+            window.showToast("Matches swapped successfully.", "success");
         }
+    };
+
+    window.sortCareer = function(prop) {
+        if (careerSort.prop === prop) {
+            careerSort.dir *= -1; // toggle direction
+        } else {
+            careerSort.prop = prop;
+            careerSort.dir = -1; // default desc
+        }
+        
+        // visual update for headers
+        document.querySelectorAll('.sortable').forEach(th => {
+            th.classList.remove('sort-asc', 'sort-desc');
+        });
+        const activeTh = document.getElementById(`th_${prop}`);
+        if(activeTh) {
+            activeTh.classList.add(careerSort.dir === 1 ? 'sort-asc' : 'sort-desc');
+        }
+        
+        updateUI(); // re-render table
     };
 
     function pushToCloud() {
@@ -938,10 +1032,16 @@
             desc: document.getElementById('match_desc').value.trim()
         };
 
-        if (data.t1 === data.t2) return alert("Teams must be different.");
+        if (data.t1 === data.t2) {
+            window.showToast("Teams must be different.", "error");
+            return;
+        }
 
         let slot = schedule.find(x => !x.played && ((x.t1 === data.t1 && x.t2 === data.t2) || (x.t1 === data.t2 && x.t2 === data.t1)));
-        if (!slot) return alert("This matchup has already reached its maximum allowed matches based on group rules!");
+        if (!slot) {
+            window.showToast("This matchup has already reached its maximum allowed matches!", "error");
+            return;
+        }
 
         slot.played = true;
         slot.result = data;
@@ -950,12 +1050,14 @@
 
         ['r1','w1','r2','w2','match_desc'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('b1').value = 120; document.getElementById('b2').value = 120;
+        window.showToast("Match saved successfully.", "success");
     };
 
     window.clearData = function() {
         if(confirm("This will delete the database for everyone across the internet. Proceed?")) {
             schedule = generateSchedule();
             pushToCloud();
+            window.showToast("Tournament reset.", "success");
         }
     };
 
@@ -964,8 +1066,9 @@
         if (pass === "rcpl2026") {
             document.getElementById("admin_panel").style.display = "block";
             document.getElementById("view_panel").style.gridColumn = "auto";
+            window.showToast("Admin access granted.", "success");
         } else if (pass !== null) {
-            alert("Incorrect password.");
+            window.showToast("Incorrect password.", "error");
         }
     };
 
@@ -1138,7 +1241,8 @@
         TEAMS.forEach(t => {
             careerStats[t] = { 
                 ...CAREER_BASE[t],
-                m_played: CAREER_BASE[t].m_played || 0
+                m_played: CAREER_BASE[t].m_played || 0,
+                wkts_taken: CAREER_BASE[t].wkts_taken || 0
             };
         });
 
@@ -1208,6 +1312,7 @@
 
             cStatsArr.push({
                 team: t,
+                wkts_taken: c.wkts_taken,
                 bewm: bewm, basra: basra,
                 r: c.r, b: c.b, rc: c.rc, bb: c.bb,
                 avg: avg, sr: sr, eco: eco, rr: rr, wl: wl,
@@ -1215,7 +1320,8 @@
             });
         }
 
-        cStatsArr.sort((a,b) => b.value - a.value);
+        // Apply sorting based on state
+        cStatsArr.sort((a,b) => (a[careerSort.prop] > b[careerSort.prop] ? 1 : -1) * careerSort.dir);
 
         cStatsArr.forEach(c => {
             careerHtml += `<tr>
@@ -1224,12 +1330,12 @@
                 <td>${c.b}</td>
                 <td>${c.rc}</td>
                 <td>${c.bb}</td>
+                <td>${c.wkts_taken}</td>
                 <td>${c.avg.toFixed(2)}</td>
                 <td>${c.sr.toFixed(2)}</td>
                 <td style="color: #d4af37; font-weight: bold;">${c.basra.toFixed(2)}</td>
                 <td>${c.eco.toFixed(2)}</td>
                 <td style="color: #d4af37; font-weight: bold;">${c.bewm.toFixed(2)}</td>
-                <td>${c.rr.toFixed(2)}</td>
                 <td>${c.wl.toFixed(2)}</td>
                 <td style="color: #00e676; font-weight: bold;">$${c.value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
             </tr>`;
