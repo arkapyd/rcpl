@@ -370,67 +370,105 @@
         @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
         @keyframes slideOut { to { opacity: 0; transform: translateY(-10px); } }
 
+        /* entirely new legacy tab css */
         .legacy-item {
             position: relative;
             padding: 15px 20px;
             margin-bottom: 15px;
-            border-left: 3px solid #333;
+            border: 1px solid #333;
+            border-left: 4px solid #333;
             background-color: #151515;
-            background-size: cover;
-            background-position: right center;
-            background-repeat: no-repeat;
-            border-radius: 0 8px 8px 0;
+            border-radius: 8px;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             overflow: hidden;
         }
         
+        .legacy-item::before {
+            content: '';
+            position: absolute;
+            top: -20%; right: -5%; bottom: -20%; width: 50%;
+            background-size: contain;
+            background-position: right center;
+            background-repeat: no-repeat;
+            opacity: 0.05;
+            transition: all 0.3s ease;
+            z-index: 1;
+            pointer-events: none;
+        }
+
         .legacy-content {
             position: relative;
             z-index: 2;
         }
 
-        /* backgrounds for individual legacy tabs (ensure images are in same dir or update paths) */
-        #legacy_pbks { background-image: linear-gradient(rgba(21,21,21,0.92), rgba(21,21,21,0.92)), url('pbks.png'); }
-        #legacy_kkr { background-image: linear-gradient(rgba(21,21,21,0.92), rgba(21,21,21,0.92)), url('kkr.png'); }
-        #legacy_rcb { background-image: linear-gradient(rgba(21,21,21,0.92), rgba(21,21,21,0.92)), url('rcb.png'); }
-        #legacy_dc { background-image: linear-gradient(rgba(21,21,21,0.92), rgba(21,21,21,0.92)), url('dc.png'); }
-        #legacy_rr { background-image: linear-gradient(rgba(21,21,21,0.92), rgba(21,21,21,0.92)), url('rr.png'); }
-        #legacy_srh { background-image: linear-gradient(rgba(21,21,21,0.92), rgba(21,21,21,0.92)), url('srh.png'); }
-        #legacy_mi { background-image: linear-gradient(rgba(21,21,21,0.92), rgba(21,21,21,0.92)), url('mi.png'); }
-        #legacy_csk { background-image: linear-gradient(rgba(21,21,21,0.92), rgba(21,21,21,0.92)), url('csk.png'); }
-        #legacy_lsg { background-image: linear-gradient(rgba(21,21,21,0.92), rgba(21,21,21,0.92)), url('lsg.png'); }
-        #legacy_gt { background-image: linear-gradient(rgba(21,21,21,0.92), rgba(21,21,21,0.92)), url('gt.png'); }
-
-        /* specific hover states for legacy tabs */
-        #legacy_pbks:hover { border-left-color: #f05545; transform: scale(1.02); box-shadow: 0 4px 20px rgba(183, 28, 28, 0.25); background-color: #1a1010; }
-        #legacy_kkr:hover { border-left-color: #7c43bd; transform: scale(1.02); box-shadow: 0 4px 20px rgba(74, 20, 140, 0.25); background-color: #16101c; }
-        #legacy_rcb:hover { border-left-color: #ff1744; transform: scale(1.02); box-shadow: 0 4px 20px rgba(213, 0, 0, 0.25); background-color: #1c1010; }
-        #legacy_dc:hover { border-left-color: #5f5fc4; transform: scale(1.02); box-shadow: 0 4px 20px rgba(40, 53, 147, 0.25); background-color: #10101c; }
-        #legacy_rr:hover { border-left-color: #ff6090; transform: scale(1.02); box-shadow: 0 4px 20px rgba(233, 30, 99, 0.25); background-color: #1c1016; }
-        #legacy_srh:hover { border-left-color: #ff833a; transform: scale(1.02); box-shadow: 0 4px 20px rgba(230, 81, 0, 0.25); background-color: #1c1410; }
-        #legacy_mi:hover { border-left-color: #757de8; transform: scale(1.02); box-shadow: 0 4px 20px rgba(63, 81, 181, 0.25); background-color: #10121c; }
-        #legacy_csk:hover { border-left-color: #ffdf00; transform: scale(1.02); box-shadow: 0 4px 20px rgba(212, 175, 55, 0.25); background-color: #1c1b10; }
-        #legacy_lsg:hover { border-left-color: #62efff; transform: scale(1.02); box-shadow: 0 4px 20px rgba(0, 188, 212, 0.25); background-color: #101a1c; }
-        #legacy_gt:hover { border-left-color: #534bae; transform: scale(1.02); box-shadow: 0 4px 20px rgba(26, 35, 126, 0.25); background-color: #10101a; }
-
-        .legacy-item.highlight {
-            border-left-color: #d4af37;
-            background-color: #222;
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
-            transform: scale(1.03);
-        }
         .legacy-item h4 {
             margin: 0 0 8px 0;
             color: #fff;
             text-transform: uppercase;
             font-size: 1.1rem;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
         }
+
         .legacy-item p {
             margin: 0;
             color: #aaa;
             font-size: 0.95rem;
             line-height: 1.5;
+            transition: color 0.3s ease;
         }
+
+        .legacy-item:hover p { color: #e0e0e0; }
+
+        #legacy_pbks::before { background-image: url('pbks.png'); }
+        #legacy_kkr::before { background-image: url('kkr.png'); }
+        #legacy_rcb::before { background-image: url('rcb.png'); }
+        #legacy_dc::before { background-image: url('dc.png'); }
+        #legacy_rr::before { background-image: url('rr.png'); }
+        #legacy_srh::before { background-image: url('srh.png'); }
+        #legacy_mi::before { background-image: url('mi.png'); }
+        #legacy_csk::before { background-image: url('csk.png'); }
+        #legacy_lsg::before { background-image: url('lsg.png'); }
+        #legacy_gt::before { background-image: url('gt.png'); }
+
+        #legacy_pbks:hover { background-color: rgba(240, 85, 69, 0.12); border-color: rgba(240, 85, 69, 0.3); border-left-color: #f05545; transform: scale(1.02); box-shadow: 0 4px 20px rgba(240, 85, 69, 0.2); }
+        #legacy_pbks:hover::before { opacity: 0.2; transform: scale(1.05); }
+        #legacy_pbks:hover h4 { text-shadow: 0 0 10px rgba(240, 85, 69, 0.5); }
+
+        #legacy_kkr:hover { background-color: rgba(124, 67, 189, 0.12); border-color: rgba(124, 67, 189, 0.3); border-left-color: #7c43bd; transform: scale(1.02); box-shadow: 0 4px 20px rgba(124, 67, 189, 0.2); }
+        #legacy_kkr:hover::before { opacity: 0.2; transform: scale(1.05); }
+        #legacy_kkr:hover h4 { text-shadow: 0 0 10px rgba(124, 67, 189, 0.5); }
+
+        #legacy_rcb:hover { background-color: rgba(255, 23, 68, 0.12); border-color: rgba(255, 23, 68, 0.3); border-left-color: #ff1744; transform: scale(1.02); box-shadow: 0 4px 20px rgba(255, 23, 68, 0.2); }
+        #legacy_rcb:hover::before { opacity: 0.2; transform: scale(1.05); }
+        #legacy_rcb:hover h4 { text-shadow: 0 0 10px rgba(255, 23, 68, 0.5); }
+
+        #legacy_dc:hover { background-color: rgba(95, 95, 196, 0.12); border-color: rgba(95, 95, 196, 0.3); border-left-color: #5f5fc4; transform: scale(1.02); box-shadow: 0 4px 20px rgba(95, 95, 196, 0.2); }
+        #legacy_dc:hover::before { opacity: 0.2; transform: scale(1.05); }
+        #legacy_dc:hover h4 { text-shadow: 0 0 10px rgba(95, 95, 196, 0.5); }
+
+        #legacy_rr:hover { background-color: rgba(255, 96, 144, 0.12); border-color: rgba(255, 96, 144, 0.3); border-left-color: #ff6090; transform: scale(1.02); box-shadow: 0 4px 20px rgba(255, 96, 144, 0.2); }
+        #legacy_rr:hover::before { opacity: 0.2; transform: scale(1.05); }
+        #legacy_rr:hover h4 { text-shadow: 0 0 10px rgba(255, 96, 144, 0.5); }
+
+        #legacy_srh:hover { background-color: rgba(255, 131, 58, 0.12); border-color: rgba(255, 131, 58, 0.3); border-left-color: #ff833a; transform: scale(1.02); box-shadow: 0 4px 20px rgba(255, 131, 58, 0.2); }
+        #legacy_srh:hover::before { opacity: 0.2; transform: scale(1.05); }
+        #legacy_srh:hover h4 { text-shadow: 0 0 10px rgba(255, 131, 58, 0.5); }
+
+        #legacy_mi:hover { background-color: rgba(117, 125, 232, 0.12); border-color: rgba(117, 125, 232, 0.3); border-left-color: #757de8; transform: scale(1.02); box-shadow: 0 4px 20px rgba(117, 125, 232, 0.2); }
+        #legacy_mi:hover::before { opacity: 0.2; transform: scale(1.05); }
+        #legacy_mi:hover h4 { text-shadow: 0 0 10px rgba(117, 125, 232, 0.5); }
+
+        #legacy_csk:hover { background-color: rgba(255, 223, 0, 0.12); border-color: rgba(255, 223, 0, 0.3); border-left-color: #ffdf00; transform: scale(1.02); box-shadow: 0 4px 20px rgba(255, 223, 0, 0.2); }
+        #legacy_csk:hover::before { opacity: 0.2; transform: scale(1.05); }
+        #legacy_csk:hover h4 { text-shadow: 0 0 10px rgba(255, 223, 0, 0.5); }
+
+        #legacy_lsg:hover { background-color: rgba(98, 239, 255, 0.12); border-color: rgba(98, 239, 255, 0.3); border-left-color: #62efff; transform: scale(1.02); box-shadow: 0 4px 20px rgba(98, 239, 255, 0.2); }
+        #legacy_lsg:hover::before { opacity: 0.2; transform: scale(1.05); }
+        #legacy_lsg:hover h4 { text-shadow: 0 0 10px rgba(98, 239, 255, 0.5); }
+
+        #legacy_gt:hover { background-color: rgba(83, 75, 174, 0.12); border-color: rgba(83, 75, 174, 0.3); border-left-color: #534bae; transform: scale(1.02); box-shadow: 0 4px 20px rgba(83, 75, 174, 0.2); }
+        #legacy_gt:hover::before { opacity: 0.2; transform: scale(1.05); }
+        #legacy_gt:hover h4 { text-shadow: 0 0 10px rgba(83, 75, 174, 0.5); }
         
         .subscribe-wrap {
             display: flex;
