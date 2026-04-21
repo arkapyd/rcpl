@@ -15,6 +15,12 @@
             padding: 100px 20px 20px 20px; 
             overflow-x: hidden;
         }
+
+        /* global custom scrollbar */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 5px; border: 2px solid #050505; }
+        ::-webkit-scrollbar-thumb:hover { background: #d4af37; }
         
         .top-ribbon {
             position: fixed;
@@ -79,7 +85,14 @@
 
         .left-col {
             display: none; 
+            animation: slideInLeft 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
         .card { 
             background: #121212; 
             padding: 20px; 
@@ -241,8 +254,8 @@
             font-size: 0.75rem; 
             font-weight: bold; 
         }
-        .tag.q { background: #d4af37; color: #050505; }
-        .tag.e { background: #333; color: #888; border: 1px solid #444; }
+        .tag.q { background: #d4af37; color: #050505; box-shadow: 0 0 8px rgba(212, 175, 55, 0.6); }
+        .tag.e { background: transparent; color: #555; border: 1px dashed #444; }
         .tag.form-w { color: #00e676; font-weight: bold; }
         .tag.form-l { color: #ff5252; font-weight: bold; }
         .tag.form-t { color: #888; font-weight: bold; }
@@ -301,9 +314,6 @@
             border-radius: 4px;
             background: #0a0a0a;
         }
-        .scrollable-table::-webkit-scrollbar { height: 8px; width: 8px; }
-        .scrollable-table::-webkit-scrollbar-track { background: #050505; }
-        .scrollable-table::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 4px; }
 
         .scrollable-log {
             max-height: 400px;
@@ -312,9 +322,6 @@
             border: 1px solid #333;
             border-radius: 4px;
         }
-        .scrollable-log::-webkit-scrollbar { width: 8px; }
-        .scrollable-log::-webkit-scrollbar-track { background: #050505; }
-        .scrollable-log::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 4px; }
         
         .match-row:hover { background: #1a1a1a; }
         .match-fixture { width: 120px; font-weight: bold; color: #888; transition: color 0.2s ease; text-align: left; }
@@ -370,7 +377,6 @@
         @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
         @keyframes slideOut { to { opacity: 0; transform: translateY(-10px); } }
 
-        /* entirely new legacy tab css */
         .legacy-item {
             position: relative;
             padding: 15px 20px;
@@ -1235,9 +1241,11 @@
 
         let arr = Object.keys(table).map(t => {
             let nrr = (table[t].of > 0 ? table[t].rf/table[t].of : 0) - (table[t].oa > 0 ? table[t].ra/table[t].oa : 0);
-            return { team: t, ...table[t], nrr: nrr.toFixed(3) };
+            let nrrStr = nrr > 0 ? `+${nrr.toFixed(3)}` : nrr.toFixed(3);
+            if (nrr === 0) nrrStr = "0.000";
+            return { team: t, ...table[t], nrr: nrrStr };
         });
-        return arr.sort((a, b) => b.pts - a.pts || b.nrr - a.nrr);
+        return arr.sort((a, b) => b.pts - a.pts || parseFloat(b.nrr) - parseFloat(a.nrr));
     }
 
     function updateUI() {
