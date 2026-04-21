@@ -516,6 +516,17 @@
             margin: 0;
             padding: 8px 20px;
         }
+        
+        .fact-card {
+            background: #1a1a1a; 
+            padding: 15px; 
+            border-radius: 8px; 
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .fact-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
     </style>
 </head>
 <body>
@@ -685,22 +696,28 @@
             </div>
         </div>
 
-        <div class="flex-split">
-            <div class="card">
-                <h2 style="text-align: left;">Biggest Wins (By Runs)</h2>
-                <table>
-                    <thead><tr><th>Team</th><th>Margin</th><th>Opponent</th></tr></thead>
-                    <tbody id="biggest_wins_runs_body"></tbody>
-                </table>
-            </div>
-            <div class="card">
-                <h2 style="text-align: left;">Biggest Wins (By Wickets)</h2>
-                <table>
-                    <thead><tr><th>Team</th><th>Margin</th><th>Opponent</th></tr></thead>
-                    <tbody id="biggest_wins_wkts_body"></tbody>
-                </table>
+        <div class="card full-width no-hover-card">
+            <h2 style="text-align: left;">The RCPL Factfile: Strange Truths & Outlandish Records</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 15px;">
+                <div class="fact-card" style="border-top: 3px solid #f05545;">
+                    <h4 style="margin: 0 0 10px 0; color: #f05545; text-transform: uppercase;">The Punjab Curse</h4>
+                    <p style="margin: 0; color: #aaa; font-size: 0.9rem;">PBKS scores at an absurd <b>218.33 Strike Rate</b> and boasts the highest historical win ratio (5.58). Yet, they have famously choked in <b>all three</b> RCPL Grand Finals. They are the ultimate tragic juggernaut.</p>
+                </div>
+                <div class="fact-card" style="border-top: 3px solid #757de8;">
+                    <h4 style="margin: 0 0 10px 0; color: #757de8; text-transform: uppercase;">The S1 Fluke?</h4>
+                    <p style="margin: 0; color: #aaa; font-size: 0.9rem;">Mumbai Indians are the Season 1 Champions. However, their cumulative record sits at a shocking <b>2.55 Wins to 9.45 Losses</b>, suggesting they won the inaugural cup and immediately suffered a multi-season total collapse.</p>
+                </div>
+                <div class="fact-card" style="border-top: 3px solid #ffdf00;">
+                    <h4 style="margin: 0 0 10px 0; color: #ffdf00; text-transform: uppercase;">The Yellow Catastrophe</h4>
+                    <p style="margin: 0; color: #aaa; font-size: 0.9rem;">CSK holds the league's most painful record: a cumulative win count of just <b>1.19</b> across three entire seasons, paired with a sub-100 Strike Rate (98.20). Statistically, they are the punching bag of the league.</p>
+                </div>
+                <div class="fact-card" style="border-top: 3px solid #00e676;">
+                    <h4 style="margin: 0 0 10px 0; color: #00e676; text-transform: uppercase;">The KKR/RCB Supremacy</h4>
+                    <p style="margin: 0; color: #aaa; font-size: 0.9rem;">While PBKS dominants the group stages, KKR (S3) and RCB (S2) own the actual hardware. KKR holds a massive 3.91 W/L ratio, proving they are the quiet, ruthless assassins of the playoff bracket.</p>
+                </div>
             </div>
         </div>
+
     </div>
 
     <div class="card full-width">
@@ -891,19 +908,6 @@
         srh: { r: 871, b: 719, rc: 1046, bb: 602, w: 4.86, l: 7.14, wl_lost: 23.968, wkts_taken: 60, m_played: 12 },
         lsg: { r: 0, b: 0, rc: 0, bb: 0, w: 0, l: 0, wl_lost: 0, wkts_taken: 0, m_played: 0 },
         gt: { r: 0, b: 0, rc: 0, bb: 0, w: 0, l: 0, wl_lost: 0, wkts_taken: 0, m_played: 0 }
-    };
-
-    const H2H_BASE = {
-        mi: { csk:3, rcb:2, kkr:4, pbks:1, dc:2, rr:3, srh:4, lsg:0, gt:0 },
-        csk: { mi:2, rcb:0, kkr:0, pbks:0, dc:1, rr:3, srh:4, lsg:0, gt:0 },
-        rcb: { mi:4, csk:4, kkr:1, pbks:1, dc:2, rr:4, srh:5, lsg:0, gt:0 },
-        kkr: { mi:3, csk:4, rcb:3, pbks:1, dc:1, rr:4, srh:4, lsg:0, gt:0 },
-        pbks: { mi:4, csk:4, rcb:5, kkr:6, dc:2, rr:5, srh:4, lsg:0, gt:0 },
-        dc: { mi:1, csk:1, rcb:1, kkr:1, pbks:1, rr:1, srh:1, lsg:0, gt:0 },
-        rr: { mi:1, csk:2, rcb:0, kkr:0, pbks:0, dc:2, srh:3, lsg:0, gt:0 },
-        srh: { mi:0, csk:1, rcb:0, kkr:0, pbks:0, dc:2, rr:1, lsg:0, gt:0 },
-        lsg: { mi:0, csk:0, rcb:0, kkr:0, pbks:0, dc:0, rr:0, srh:0, gt:0 },
-        gt: { mi:0, csk:0, rcb:0, kkr:0, pbks:0, dc:0, rr:0, srh:0, lsg:0 }
     };
 
     let schedule = [];
@@ -1381,7 +1385,7 @@
             });
         }
 
-        standings.forEach((s, index) => {
+        standings.forEach((s) => {
             let formHtml = s.form.slice(-5).map(f => `<span class="form-dot dot-${f.toLowerCase()}" title="${f}"></span>`).join('');
             
             ptable.innerHTML += `<tr>
@@ -1420,8 +1424,6 @@
         let currentH2H = JSON.parse(JSON.stringify(H2H_BASE));
 
         let highestTotals = [];
-        let biggestWinsRuns = [];
-        let biggestWinsWkts = [];
 
         playedMatches.forEach(s => {
             let m = s.result;
@@ -1429,10 +1431,8 @@
             highestTotals.push({ team: m.t2, runs: m.r2, wkts: m.w2, vs: m.t1 });
 
             if (m.r1 > m.r2) {
-                biggestWinsRuns.push({ team: m.t1, margin: m.r1 - m.r2, vs: m.t2 });
                 currentH2H[m.t1][m.t2]++;
             } else if (m.r2 > m.r1) {
-                biggestWinsWkts.push({ team: m.t2, margin: 10 - (m.w2 || 0), vs: m.t1 });
                 currentH2H[m.t2][m.t1]++;
             }
         });
@@ -1441,19 +1441,9 @@
         window.renderH2HExplorer(window.currentH2H);
 
         highestTotals.sort((a, b) => b.runs - a.runs).slice(0, 5);
-        biggestWinsRuns.sort((a, b) => b.margin - a.margin).slice(0, 5);
-        biggestWinsWkts.sort((a, b) => b.margin - a.margin).slice(0, 5);
 
         document.getElementById('highest_totals_body').innerHTML = highestTotals.slice(0, 5).map(t =>
             `<tr><td style="text-transform: uppercase; text-align: left;">${t.team}</td><td style="color: #d4af37; font-weight: bold;">${t.runs}/${t.wkts}</td><td style="font-size:0.75rem; color:#888;">vs ${t.vs.toUpperCase()}</td></tr>`
-        ).join('');
-
-        document.getElementById('biggest_wins_runs_body').innerHTML = biggestWinsRuns.slice(0, 5).map(t =>
-            `<tr><td style="text-transform: uppercase; text-align: left;">${t.team}</td><td style="color: #d4af37; font-weight: bold;">${t.margin} Runs</td><td style="font-size:0.75rem; color:#888;">vs ${t.vs.toUpperCase()}</td></tr>`
-        ).join('');
-
-        document.getElementById('biggest_wins_wkts_body').innerHTML = biggestWinsWkts.slice(0, 5).map(t =>
-            `<tr><td style="text-transform: uppercase; text-align: left;">${t.team}</td><td style="color: #d4af37; font-weight: bold;">${t.margin} Wkts</td><td style="font-size:0.75rem; color:#888;">vs ${t.vs.toUpperCase()}</td></tr>`
         ).join('');
 
         let logTbody = document.getElementById('match_log_body');
@@ -1566,7 +1556,7 @@
 
         cStatsArr.sort((a,b) => (a[careerSort.prop] > b[careerSort.prop] ? 1 : -1) * careerSort.dir);
 
-        cStatsArr.forEach((c, index) => {
+        cStatsArr.forEach((c) => {
             careerHtml += `<tr>
                 <td style="text-transform: uppercase; font-weight: bold; color: #fff; text-align: left;">${c.team}</td>
                 <td>${c.r}</td>
