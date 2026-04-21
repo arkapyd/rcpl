@@ -15,283 +15,784 @@
             padding: 100px 20px 20px 20px; 
             overflow-x: hidden;
         }
+
         ::-webkit-scrollbar { width: 10px; height: 10px; }
         ::-webkit-scrollbar-track { background: #050505; }
         ::-webkit-scrollbar-thumb { background: #222; border-radius: 5px; border: 2px solid #050505; }
         ::-webkit-scrollbar-thumb:hover { background: #d4af37; }
+        
         .top-ribbon {
-            position: fixed; top: 0; left: 0; width: 100%; height: 80px;
-            background: rgba(15,15,15,0.95); border-bottom: 2px solid #d4af37;
-            display: flex; justify-content: center; align-items: center;
-            z-index: 1000; backdrop-filter: blur(10px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.8); overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background: rgba(15, 15, 15, 0.95);
+            border-bottom: 2px solid #d4af37;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
         }
+
         .ribbon-text {
             font-family: 'Bebas Neue', sans-serif;
-            font-size: clamp(2rem,4vw,3.5rem); color: #d4af37;
-            letter-spacing: 6px; white-space: nowrap;
-            text-shadow: 0 0 15px rgba(212,175,55,0.4);
-            user-select: none; margin: 0 25px; line-height: 80px;
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            color: #d4af37;
+            letter-spacing: 6px;
+            white-space: nowrap;
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+            user-select: none;
+            margin: 0 25px; 
+            line-height: 80px;
         }
+
         .ribbon-logo {
-            width: 55px; height: 55px; border-radius: 50%;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
             border: 2px solid #d4af37;
-            box-shadow: 0 0 20px rgba(212,175,55,0.8), 0 0 20px rgba(5,5,5,0.9);
-            object-fit: cover; z-index: 2; background-color: #050505;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.8), 0 0 20px rgba(5, 5, 5, 0.9);
+            object-fit: cover;
+            z-index: 2;
+            background-color: #050505;
             transition: opacity 0.4s ease;
         }
-        .ribbon-logo:hover { opacity: 0; }
-        .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+
+        .ribbon-logo:hover {
+            opacity: 0;
+        }
+
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            display: grid; 
+            grid-template-columns: 1fr 2fr; 
+            gap: 20px; 
+        }
+        
         @media (max-width: 900px) {
-            .container { grid-template-columns: 1fr; }
+            .container {
+                grid-template-columns: 1fr;
+            }
             .ribbon-text { margin: 0 10px; letter-spacing: 2px; }
             .flex-split > div { min-width: 100%; }
         }
-        .left-col { display: none; animation: slideInLeft 0.4s cubic-bezier(0.175,0.885,0.32,1.275); }
-        @keyframes slideInLeft { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:translateX(0); } }
-        .card {
-            background: #121212; padding: 20px; border-radius: 8px;
-            border: 1px solid #d4af37; box-shadow: 0 0 15px rgba(212,175,55,0.15);
-            margin-bottom: 20px;
-            transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275), box-shadow 0.3s ease;
+
+        .left-col {
+            display: none; 
+            animation: slideInLeft 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .card:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 8px 25px rgba(212,175,55,0.25); }
-        .card.no-hover-card:hover { transform: none; box-shadow: 0 0 15px rgba(212,175,55,0.15); }
-        .full-width { grid-column: 1 / -1; }
-        h2, h3 { margin-top: 0; color: #d4af37; transition: color 0.3s ease; }
-        h2 { font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .card:hover h2 { color: #ffdf00; }
-        .no-hover-card:hover h2 { color: #d4af37; }
-        .row { display: flex; gap: 10px; margin-bottom: 10px; }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .card { 
+            background: #121212; 
+            padding: 20px; 
+            border-radius: 8px; 
+            border: 1px solid #d4af37;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.15); 
+            margin-bottom: 20px; 
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.25);
+        }
+        .card.no-hover-card:hover {
+            transform: none;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
+        }
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        h2, h3 { 
+            margin-top: 0; 
+            color: #d4af37; 
+            transition: color 0.3s ease;
+        }
+        h2 {
+            font-size: 1.2rem; 
+            border-bottom: 1px solid #333; 
+            padding-bottom: 10px; 
+        }
+        .card:hover h2 {
+            color: #ffdf00;
+        }
+        .no-hover-card:hover h2 {
+            color: #d4af37; 
+        }
+        .row { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 10px; 
+        }
         .row > div { flex: 1; }
-        label { display: block; font-size: 0.8rem; margin-bottom: 4px; color: #aaa; transition: color 0.3s ease; }
-        input, select {
-            width: 100%; padding: 8px; border: 1px solid #333; border-radius: 4px;
-            background: #1a1a1a; color: #fff; box-sizing: border-box; transition: all 0.3s ease;
+        label { 
+            display: block; 
+            font-size: 0.8rem; 
+            margin-bottom: 4px; 
+            color: #aaa; 
+            transition: color 0.3s ease;
         }
-        option { background: #1a1a1a; color: #fff; }
-        input:hover, select:hover { border-color: #888; transform: scale(1.02); }
-        input:focus, select:focus { outline: none; border-color: #d4af37; box-shadow: 0 0 8px rgba(212,175,55,0.4); transform: scale(1.02); }
-        .row > div:hover label { color: #d4af37; }
-        button {
-            width: 100%; padding: 10px; background: #d4af37; color: #050505;
-            font-weight: bold; cursor: pointer; border: 1px solid #ffdf00;
-            border-radius: 4px; margin-top: 10px;
-            transition: all 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+        input, select { 
+            width: 100%; 
+            padding: 8px; 
+            border: 1px solid #333; 
+            border-radius: 4px; 
+            background: #1a1a1a; 
+            color: #fff; 
+            box-sizing: border-box; 
+            transition: all 0.3s ease;
         }
-        button:hover { background: #ffdf00; transform: translateY(-2px) scale(1.02); box-shadow: 0 5px 15px rgba(255,223,0,0.4); }
-        button:active { transform: scale(0.98); }
-        button.danger { background: transparent; color: #d50000; border: 1px solid #d50000; }
-        button.danger:hover { background: #d50000; color: #fff; box-shadow: 0 5px 15px rgba(213,0,0,0.4); }
-        button.action { background: transparent; color: #d4af37; border: 1px solid #d4af37; }
-        button.action:hover { background: #d4af37; color: #050505; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; position: relative; }
-        th, td { text-align: center; padding: 8px; border-bottom: 1px solid #222; transition: background-color 0.2s ease, color 0.2s ease; }
-        th { color: #d4af37; font-weight: normal; position: sticky; top: 0; background-color: #0a0a0a; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-        td:first-child, th:first-child { text-align: left; }
-        tbody tr { transition: all 0.2s ease; }
-        tbody tr:hover td { background-color: #1e1e1e; }
+        option {
+            background: #1a1a1a;
+            color: #fff;
+        }
+        input:hover, select:hover {
+            border-color: #888;
+            transform: scale(1.02);
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #d4af37;
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+            transform: scale(1.02);
+        }
+        .row > div:hover label {
+            color: #d4af37;
+        }
+        button { 
+            width: 100%;
+            padding: 10px;
+            background: #d4af37; 
+            color: #050505; 
+            font-weight: bold; 
+            cursor: pointer; 
+            border: 1px solid #ffdf00; 
+            border-radius: 4px;
+            margin-top: 10px; 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        button:hover { 
+            background: #ffdf00; 
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 5px 15px rgba(255, 223, 0, 0.4);
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        button.danger { 
+            background: transparent; 
+            color: #d50000; 
+            border: 1px solid #d50000; 
+        }
+        button.danger:hover {
+            background: #d50000;
+            color: #fff;
+            box-shadow: 0 5px 15px rgba(213, 0, 0, 0.4);
+        }
+        button.action {
+            background: transparent;
+            color: #d4af37;
+            border: 1px solid #d4af37;
+        }
+        button.action:hover {
+            background: #d4af37;
+            color: #050505;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 0.9rem; 
+            position: relative;
+        }
+        th, td { 
+            text-align: center; 
+            padding: 8px; 
+            border-bottom: 1px solid #222; 
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        th { 
+            color: #d4af37; 
+            font-weight: normal; 
+            position: sticky;
+            top: 0;
+            background-color: #0a0a0a;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        td:first-child, th:first-child {
+            text-align: left;
+        }
+        tbody tr {
+            transition: all 0.2s ease;
+        }
+        tbody tr:hover td {
+            background-color: #1e1e1e;
+        }
+        
         .sortable { cursor: pointer; user-select: none; white-space: nowrap; }
         .sortable:hover { color: #fff; text-shadow: 0 0 8px rgba(212,175,55,0.4); }
         .sort-icon { font-size: 0.7rem; color: #888; margin-left: 4px; display: inline-block; transition: transform 0.2s; }
         .sort-asc .sort-icon { color: #d4af37; transform: rotate(180deg); }
         .sort-desc .sort-icon { color: #d4af37; }
-        .flex-split { display: flex; gap: 20px; flex-wrap: wrap; }
-        .flex-split > div { flex: 1; min-width: 200px; }
-        .tag { padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
-        .tag.q { background: #d4af37; color: #050505; box-shadow: 0 0 8px rgba(212,175,55,0.6); }
+
+        .flex-split { 
+            display: flex; 
+            gap: 20px; 
+            flex-wrap: wrap;
+        }
+        .flex-split > div { 
+            flex: 1; 
+            min-width: 200px;
+        }
+        .tag { 
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            font-size: 0.75rem; 
+            font-weight: bold; 
+        }
+        .tag.q { background: #d4af37; color: #050505; box-shadow: 0 0 8px rgba(212, 175, 55, 0.6); }
         .tag.e { background: transparent; color: #555; border: 1px dashed #444; }
-        .form-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin: 0 3px; }
-        .dot-w { background-color: #00e676; box-shadow: 0 0 6px rgba(0,230,118,0.6); }
-        .dot-l { background-color: #ff5252; box-shadow: 0 0 6px rgba(255,82,82,0.6); }
+        
+        .form-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin: 0 3px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+        }
+        .dot-w { background-color: #00e676; box-shadow: 0 0 6px rgba(0, 230, 118, 0.6); }
+        .dot-l { background-color: #ff5252; box-shadow: 0 0 6px rgba(255, 82, 82, 0.6); }
         .dot-t { background-color: #aaa; }
-        .groups-container { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
+        
+        .groups-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
         .group-box {
-            flex: 1; min-width: 250px; background: #121212;
-            border: 1px solid #333; border-left: 3px solid #d4af37;
-            padding: 15px; border-radius: 8px; transition: all 0.3s ease;
+            flex: 1;
+            min-width: 250px;
+            background: #121212;
+            border: 1px solid #333;
+            border-left: 3px solid #d4af37;
+            padding: 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
         }
-        .group-box:hover { transform: translateY(-2px); border-color: #555; box-shadow: 0 4px 12px rgba(212,175,55,0.1); }
+        .group-box:hover {
+            transform: translateY(-2px);
+            border-color: #555;
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.1);
+        }
         .group-box h3 { border-bottom: none; padding-bottom: 0; margin-bottom: 10px; font-size: 1rem; text-align: left; }
+        
         .team-pill {
-            display: inline-block; padding: 4px 10px; margin: 4px 4px 4px 0;
-            background: #1a1a1a; border: 1px solid #444; color: #ccc;
-            border-radius: 15px; font-size: 0.8rem; text-transform: uppercase;
-            transition: all 0.3s cubic-bezier(0.175,0.885,0.32,1.275); cursor: pointer;
+            display: inline-block;
+            padding: 4px 10px;
+            margin: 4px 4px 4px 0;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            color: #ccc;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
         }
-        .team-kkr:hover { background-color:#4a148c;border-color:#7c43bd;color:#fff;box-shadow:0 4px 12px rgba(74,20,140,0.4);transform:scale(1.1) translateY(-2px); }
-        .team-csk:hover { background-color:#d4af37;border-color:#ffdf00;color:#000;box-shadow:0 4px 12px rgba(212,175,55,0.4);transform:scale(1.1) translateY(-2px); }
-        .team-rcb:hover { background-color:#d50000;border-color:#ff1744;color:#fff;box-shadow:0 4px 12px rgba(213,0,0,0.4);transform:scale(1.1) translateY(-2px); }
-        .team-pbks:hover { background-color:#b71c1c;border-color:#f05545;color:#fff;box-shadow:0 4px 12px rgba(183,28,28,0.4);transform:scale(1.1) translateY(-2px); }
-        .team-rr:hover { background-color:#e91e63;border-color:#ff6090;color:#fff;box-shadow:0 4px 12px rgba(233,30,99,0.4);transform:scale(1.1) translateY(-2px); }
-        .team-lsg:hover { background-color:#00bcd4;border-color:#62efff;color:#000;box-shadow:0 4px 12px rgba(0,188,212,0.4);transform:scale(1.1) translateY(-2px); }
-        .team-gt:hover { background-color:#1a237e;border-color:#534bae;color:#fff;box-shadow:0 4px 12px rgba(26,35,126,0.4);transform:scale(1.1) translateY(-2px); }
-        .team-mi:hover { background-color:#3f51b5;border-color:#757de8;color:#fff;box-shadow:0 4px 12px rgba(63,81,181,0.4);transform:scale(1.1) translateY(-2px); }
-        .team-srh:hover { background-color:#e65100;border-color:#ff833a;color:#fff;box-shadow:0 4px 12px rgba(230,81,0,0.4);transform:scale(1.1) translateY(-2px); }
-        .team-dc:hover { background-color:#283593;border-color:#5f5fc4;color:#fff;box-shadow:0 4px 12px rgba(40,53,147,0.4);transform:scale(1.1) translateY(-2px); }
-        .scrollable-table { overflow-x: auto; border: 1px solid #333; border-radius: 4px; background: #0a0a0a; position: relative; }
-        .scrollable-log { max-height: 400px; overflow-y: auto; background: #0a0a0a; border: 1px solid #333; border-radius: 4px; position: relative; }
+        
+        .team-kkr:hover { background-color: #4a148c; border-color: #7c43bd; color: #fff; box-shadow: 0 4px 12px rgba(74, 20, 140, 0.4); transform: scale(1.1) translateY(-2px); }
+        .team-csk:hover { background-color: #d4af37; border-color: #ffdf00; color: #000; box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4); transform: scale(1.1) translateY(-2px); }
+        .team-rcb:hover { background-color: #d50000; border-color: #ff1744; color: #fff; box-shadow: 0 4px 12px rgba(213, 0, 0, 0.4); transform: scale(1.1) translateY(-2px); }
+        .team-pbks:hover { background-color: #b71c1c; border-color: #f05545; color: #fff; box-shadow: 0 4px 12px rgba(183, 28, 28, 0.4); transform: scale(1.1) translateY(-2px); }
+        .team-rr:hover { background-color: #e91e63; border-color: #ff6090; color: #fff; box-shadow: 0 4px 12px rgba(233, 30, 99, 0.4); transform: scale(1.1) translateY(-2px); }
+        .team-lsg:hover { background-color: #00bcd4; border-color: #62efff; color: #000; box-shadow: 0 4px 12px rgba(0, 188, 212, 0.4); transform: scale(1.1) translateY(-2px); }
+        .team-gt:hover { background-color: #1a237e; border-color: #534bae; color: #fff; box-shadow: 0 4px 12px rgba(26, 35, 126, 0.4); transform: scale(1.1) translateY(-2px); }
+        .team-mi:hover { background-color: #3f51b5; border-color: #757de8; color: #fff; box-shadow: 0 4px 12px rgba(63, 81, 181, 0.4); transform: scale(1.1) translateY(-2px); }
+        .team-srh:hover { background-color: #e65100; border-color: #ff833a; color: #fff; box-shadow: 0 4px 12px rgba(230, 81, 0, 0.4); transform: scale(1.1) translateY(-2px); }
+        .team-dc:hover { background-color: #283593; border-color: #5f5fc4; color: #fff; box-shadow: 0 4px 12px rgba(40, 53, 147, 0.4); transform: scale(1.1) translateY(-2px); }
+
+        .scrollable-table {
+            overflow-x: auto;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background: #0a0a0a;
+            position: relative;
+        }
+
+        .scrollable-log {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            position: relative;
+        }
+        
         .match-row:hover { background: #1a1a1a; }
         .match-fixture { width: 120px; font-weight: bold; color: #888; transition: color 0.2s ease; text-align: left; }
         .match-row:hover .match-fixture { color: #d4af37; }
         .match-result-text { color: #aaa; text-align: left; }
         .match-highlight { color: #d4af37; font-weight: bold; }
-        .admin-trigger { position: fixed; bottom: 10px; right: 10px; color: #222; cursor: pointer; font-size: 10px; transition: color 0.3s ease; z-index: 2000; }
-        .admin-trigger:hover { color: #d4af37; }
-        #loading_overlay { position: fixed; top:0;left:0;width:100%;height:100%; background:#050505; display:flex;justify-content:center;align-items:center; color:#d4af37;font-size:1.5rem;z-index:9999; transition:opacity 0.5s ease; }
-        #toast-container { position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px; }
-        .toast { background:#1a1a1a;color:#fff;border-left:4px solid #d4af37;padding:12px 20px;border-radius:4px;box-shadow:0 4px 15px rgba(0,0,0,0.6);font-size:0.95rem;opacity:0;transform:translateX(100%);animation:slideIn 0.3s cubic-bezier(0.175,0.885,0.32,1.275) forwards;min-width:250px; }
-        .toast.error { border-left-color:#d50000; }
-        .toast.success { border-left-color:#00e676; }
-        @keyframes slideIn { to { opacity:1; transform:translateX(0); } }
-        @keyframes slideOut { to { opacity:0; transform:translateY(-10px); } }
-        @keyframes flashGold { 0%{background-color:rgba(212,175,55,0.2);}100%{background-color:transparent;} }
-        .flash-table { animation: flashGold 1s ease-out; }
 
-        /* Records */
-        .records-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:14px; margin-top:4px; }
-        .record-item {
-            background:#0d0d0d; border:1px solid #1e1e1e; border-left:3px solid #333;
-            border-radius:6px; padding:14px 16px; transition:all 0.25s ease;
+        .admin-trigger {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            color: #222; 
+            cursor: pointer;
+            font-size: 10px;
+            transition: color 0.3s ease;
+            z-index: 2000;
         }
-        .record-item:hover { border-color:#333; transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,0.5); }
-        .record-badge { font-size:0.65rem; font-weight:bold; letter-spacing:1.5px; text-transform:uppercase; color:#444; margin-bottom:6px; }
-        .record-value { font-size:1.45rem; font-weight:bold; line-height:1.1; margin-bottom:3px; }
-        .record-team { font-size:0.78rem; font-weight:bold; text-transform:uppercase; color:#777; margin-bottom:7px; }
-        .record-desc { font-size:0.78rem; color:#4a4a4a; line-height:1.55; }
-        .record-item.gold  { border-left-color:#d4af37; } .record-item.gold  .record-value { color:#d4af37; }
-        .record-item.red   { border-left-color:#ff5252; } .record-item.red   .record-value { color:#ff5252; }
-        .record-item.green { border-left-color:#00e676; } .record-item.green .record-value { color:#00e676; }
-        .record-item.blue  { border-left-color:#448aff; } .record-item.blue  .record-value { color:#448aff; }
-        .record-item.purple{ border-left-color:#b388ff; } .record-item.purple.record-value { color:#b388ff; }
-        .record-item.purple .record-value { color:#b388ff; }
-        .record-item.orange{ border-left-color:#ff833a; } .record-item.orange .record-value { color:#ff833a; }
+        .admin-trigger:hover { color: #d4af37; }
+        
+        #loading_overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #050505;
+            display: flex; justify-content: center; align-items: center;
+            color: #d4af37; font-size: 1.5rem; z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
 
-        /* H2H */
-        .h2h-team-btn { padding:5px 14px; background:transparent; color:#d4af37; border:1px solid #d4af37; border-radius:4px; cursor:pointer; font-size:0.8rem; font-weight:bold; width:auto; margin:0; transition:all 0.2s ease; }
-        .h2h-team-btn:hover, .h2h-team-btn.active { background:#d4af37; color:#050505; transform:none; box-shadow:none; }
-        .h2h-rival-row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid #1a1a1a; }
-        .h2h-rival-row:last-child { border-bottom:none; }
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            background: #1a1a1a;
+            color: #fff;
+            border-left: 4px solid #d4af37;
+            padding: 12px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            font-size: 0.95rem;
+            opacity: 0;
+            transform: translateX(100%);
+            animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            min-width: 250px;
+        }
+        .toast.error { border-left-color: #d50000; }
+        .toast.success { border-left-color: #00e676; }
+        @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
+        @keyframes slideOut { to { opacity: 0; transform: translateY(-10px); } }
+        
+        @keyframes flashGold {
+            0% { background-color: rgba(212, 175, 55, 0.2); }
+            100% { background-color: transparent; }
+        }
+        .flash-table {
+            animation: flashGold 1s ease-out;
+        }
 
-        .legacy-item { position:relative;padding:15px 20px;margin-bottom:15px;border:1px solid #333;border-left:4px solid #333;background-color:#151515;border-radius:8px;transition:all 0.3s cubic-bezier(0.175,0.885,0.32,1.275);overflow:hidden; }
-        .legacy-item::before { content:'';position:absolute;top:-20%;right:-5%;bottom:-20%;width:50%;background-size:contain;background-position:right center;background-repeat:no-repeat;opacity:0.05;transition:all 0.3s ease;z-index:1;pointer-events:none; }
-        .legacy-content { position:relative;z-index:2; }
-        .legacy-item h4 { margin:0 0 8px 0;color:#fff;text-transform:uppercase;font-size:1.1rem;transition:color 0.3s ease,text-shadow 0.3s ease; }
-        .legacy-item p { margin:0;color:#aaa;font-size:0.95rem;line-height:1.5;transition:color 0.3s ease; }
-        .legacy-item:hover p { color:#e0e0e0; }
-        #legacy_pbks::before{background-image:url('pbks.png');}#legacy_kkr::before{background-image:url('kkr.png');}#legacy_rcb::before{background-image:url('rcb.png');}#legacy_dc::before{background-image:url('dc.png');}#legacy_rr::before{background-image:url('rr.png');}#legacy_srh::before{background-image:url('srh.png');}#legacy_mi::before{background-image:url('mi.png');}#legacy_csk::before{background-image:url('csk.png');}#legacy_lsg::before{background-image:url('lsg.png');}#legacy_gt::before{background-image:url('gt.png');}
-        #legacy_pbks:hover{background-color:rgba(240,85,69,0.12);border-color:rgba(240,85,69,0.3);border-left-color:#f05545;transform:scale(1.02);box-shadow:0 4px 20px rgba(240,85,69,0.2);}#legacy_pbks:hover::before{opacity:0.2;transform:scale(1.05);}#legacy_pbks:hover h4{text-shadow:0 0 10px rgba(240,85,69,0.5);}
-        #legacy_kkr:hover{background-color:rgba(124,67,189,0.12);border-color:rgba(124,67,189,0.3);border-left-color:#7c43bd;transform:scale(1.02);box-shadow:0 4px 20px rgba(124,67,189,0.2);}#legacy_kkr:hover::before{opacity:0.2;transform:scale(1.05);}#legacy_kkr:hover h4{text-shadow:0 0 10px rgba(124,67,189,0.5);}
-        #legacy_rcb:hover{background-color:rgba(255,23,68,0.12);border-color:rgba(255,23,68,0.3);border-left-color:#ff1744;transform:scale(1.02);box-shadow:0 4px 20px rgba(255,23,68,0.2);}#legacy_rcb:hover::before{opacity:0.2;transform:scale(1.05);}#legacy_rcb:hover h4{text-shadow:0 0 10px rgba(255,23,68,0.5);}
-        #legacy_dc:hover{background-color:rgba(95,95,196,0.12);border-color:rgba(95,95,196,0.3);border-left-color:#5f5fc4;transform:scale(1.02);box-shadow:0 4px 20px rgba(95,95,196,0.2);}#legacy_dc:hover::before{opacity:0.2;transform:scale(1.05);}#legacy_dc:hover h4{text-shadow:0 0 10px rgba(95,95,196,0.5);}
-        #legacy_rr:hover{background-color:rgba(255,96,144,0.12);border-color:rgba(255,96,144,0.3);border-left-color:#ff6090;transform:scale(1.02);box-shadow:0 4px 20px rgba(255,96,144,0.2);}#legacy_rr:hover::before{opacity:0.2;transform:scale(1.05);}#legacy_rr:hover h4{text-shadow:0 0 10px rgba(255,96,144,0.5);}
-        #legacy_srh:hover{background-color:rgba(255,131,58,0.12);border-color:rgba(255,131,58,0.3);border-left-color:#ff833a;transform:scale(1.02);box-shadow:0 4px 20px rgba(255,131,58,0.2);}#legacy_srh:hover::before{opacity:0.2;transform:scale(1.05);}#legacy_srh:hover h4{text-shadow:0 0 10px rgba(255,131,58,0.5);}
-        #legacy_mi:hover{background-color:rgba(117,125,232,0.12);border-color:rgba(117,125,232,0.3);border-left-color:#757de8;transform:scale(1.02);box-shadow:0 4px 20px rgba(117,125,232,0.2);}#legacy_mi:hover::before{opacity:0.2;transform:scale(1.05);}#legacy_mi:hover h4{text-shadow:0 0 10px rgba(117,125,232,0.5);}
-        #legacy_csk:hover{background-color:rgba(255,223,0,0.12);border-color:rgba(255,223,0,0.3);border-left-color:#ffdf00;transform:scale(1.02);box-shadow:0 4px 20px rgba(255,223,0,0.2);}#legacy_csk:hover::before{opacity:0.2;transform:scale(1.05);}#legacy_csk:hover h4{text-shadow:0 0 10px rgba(255,223,0,0.5);}
-        #legacy_lsg:hover{background-color:rgba(98,239,255,0.12);border-color:rgba(98,239,255,0.3);border-left-color:#62efff;transform:scale(1.02);box-shadow:0 4px 20px rgba(98,239,255,0.2);}#legacy_lsg:hover::before{opacity:0.2;transform:scale(1.05);}#legacy_lsg:hover h4{text-shadow:0 0 10px rgba(98,239,255,0.5);}
-        #legacy_gt:hover{background-color:rgba(83,75,174,0.12);border-color:rgba(83,75,174,0.3);border-left-color:#534bae;transform:scale(1.02);box-shadow:0 4px 20px rgba(83,75,174,0.2);}#legacy_gt:hover::before{opacity:0.2;transform:scale(1.05);}#legacy_gt:hover h4{text-shadow:0 0 10px rgba(83,75,174,0.5);}
-        .subscribe-wrap { display:flex;align-items:center;gap:15px;flex-wrap:wrap; }
-        .subscribe-wrap input { flex:1;min-width:200px;margin:0; }
-        .subscribe-wrap button { width:auto;margin:0;padding:8px 20px; }
+        .legacy-item {
+            position: relative;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border: 1px solid #333;
+            border-left: 4px solid #333;
+            background-color: #151515;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+        }
+        
+        .legacy-item::before {
+            content: '';
+            position: absolute;
+            top: -20%; right: -5%; bottom: -20%; width: 50%;
+            background-size: contain;
+            background-position: right center;
+            background-repeat: no-repeat;
+            opacity: 0.05;
+            transition: all 0.3s ease;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .legacy-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .legacy-item h4 {
+            margin: 0 0 8px 0;
+            color: #fff;
+            text-transform: uppercase;
+            font-size: 1.1rem;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+
+        .legacy-item p {
+            margin: 0;
+            color: #aaa;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            transition: color 0.3s ease;
+        }
+
+        .legacy-item:hover p { color: #e0e0e0; }
+
+        #legacy_pbks::before { background-image: url('pbks.png'); }
+        #legacy_kkr::before { background-image: url('kkr.png'); }
+        #legacy_rcb::before { background-image: url('rcb.png'); }
+        #legacy_dc::before { background-image: url('dc.png'); }
+        #legacy_rr::before { background-image: url('rr.png'); }
+        #legacy_srh::before { background-image: url('srh.png'); }
+        #legacy_mi::before { background-image: url('mi.png'); }
+        #legacy_csk::before { background-image: url('csk.png'); }
+        #legacy_lsg::before { background-image: url('lsg.png'); }
+        #legacy_gt::before { background-image: url('gt.png'); }
+
+        #legacy_pbks:hover { background-color: rgba(240, 85, 69, 0.12); border-color: rgba(240, 85, 69, 0.3); border-left-color: #f05545; transform: scale(1.02); box-shadow: 0 4px 20px rgba(240, 85, 69, 0.2); }
+        #legacy_pbks:hover::before { opacity: 0.2; transform: scale(1.05); }
+        #legacy_pbks:hover h4 { text-shadow: 0 0 10px rgba(240, 85, 69, 0.5); }
+
+        #legacy_kkr:hover { background-color: rgba(124, 67, 189, 0.12); border-color: rgba(124, 67, 189, 0.3); border-left-color: #7c43bd; transform: scale(1.02); box-shadow: 0 4px 20px rgba(124, 67, 189, 0.2); }
+        #legacy_kkr:hover::before { opacity: 0.2; transform: scale(1.05); }
+        #legacy_kkr:hover h4 { text-shadow: 0 0 10px rgba(124, 67, 189, 0.5); }
+
+        #legacy_rcb:hover { background-color: rgba(255, 23, 68, 0.12); border-color: rgba(255, 23, 68, 0.3); border-left-color: #ff1744; transform: scale(1.02); box-shadow: 0 4px 20px rgba(255, 23, 68, 0.2); }
+        #legacy_rcb:hover::before { opacity: 0.2; transform: scale(1.05); }
+        #legacy_rcb:hover h4 { text-shadow: 0 0 10px rgba(255, 23, 68, 0.5); }
+
+        #legacy_dc:hover { background-color: rgba(95, 95, 196, 0.12); border-color: rgba(95, 95, 196, 0.3); border-left-color: #5f5fc4; transform: scale(1.02); box-shadow: 0 4px 20px rgba(95, 95, 196, 0.2); }
+        #legacy_dc:hover::before { opacity: 0.2; transform: scale(1.05); }
+        #legacy_dc:hover h4 { text-shadow: 0 0 10px rgba(95, 95, 196, 0.5); }
+
+        #legacy_rr:hover { background-color: rgba(255, 96, 144, 0.12); border-color: rgba(255, 96, 144, 0.3); border-left-color: #ff6090; transform: scale(1.02); box-shadow: 0 4px 20px rgba(255, 96, 144, 0.2); }
+        #legacy_rr:hover::before { opacity: 0.2; transform: scale(1.05); }
+        #legacy_rr:hover h4 { text-shadow: 0 0 10px rgba(255, 96, 144, 0.5); }
+
+        #legacy_srh:hover { background-color: rgba(255, 131, 58, 0.12); border-color: rgba(255, 131, 58, 0.3); border-left-color: #ff833a; transform: scale(1.02); box-shadow: 0 4px 20px rgba(255, 131, 58, 0.2); }
+        #legacy_srh:hover::before { opacity: 0.2; transform: scale(1.05); }
+        #legacy_srh:hover h4 { text-shadow: 0 0 10px rgba(255, 131, 58, 0.5); }
+
+        #legacy_mi:hover { background-color: rgba(117, 125, 232, 0.12); border-color: rgba(117, 125, 232, 0.3); border-left-color: #757de8; transform: scale(1.02); box-shadow: 0 4px 20px rgba(117, 125, 232, 0.2); }
+        #legacy_mi:hover::before { opacity: 0.2; transform: scale(1.05); }
+        #legacy_mi:hover h4 { text-shadow: 0 0 10px rgba(117, 125, 232, 0.5); }
+
+        #legacy_csk:hover { background-color: rgba(255, 223, 0, 0.12); border-color: rgba(255, 223, 0, 0.3); border-left-color: #ffdf00; transform: scale(1.02); box-shadow: 0 4px 20px rgba(255, 223, 0, 0.2); }
+        #legacy_csk:hover::before { opacity: 0.2; transform: scale(1.05); }
+        #legacy_csk:hover h4 { text-shadow: 0 0 10px rgba(255, 223, 0, 0.5); }
+
+        #legacy_lsg:hover { background-color: rgba(98, 239, 255, 0.12); border-color: rgba(98, 239, 255, 0.3); border-left-color: #62efff; transform: scale(1.02); box-shadow: 0 4px 20px rgba(98, 239, 255, 0.2); }
+        #legacy_lsg:hover::before { opacity: 0.2; transform: scale(1.05); }
+        #legacy_lsg:hover h4 { text-shadow: 0 0 10px rgba(98, 239, 255, 0.5); }
+
+        #legacy_gt:hover { background-color: rgba(83, 75, 174, 0.12); border-color: rgba(83, 75, 174, 0.3); border-left-color: #534bae; transform: scale(1.02); box-shadow: 0 4px 20px rgba(83, 75, 174, 0.2); }
+        #legacy_gt:hover::before { opacity: 0.2; transform: scale(1.05); }
+        #legacy_gt:hover h4 { text-shadow: 0 0 10px rgba(83, 75, 174, 0.5); }
+        
+        .subscribe-wrap {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .subscribe-wrap input {
+            flex: 1;
+            min-width: 200px;
+            margin: 0;
+        }
+        .subscribe-wrap button {
+            width: auto;
+            margin: 0;
+            padding: 8px 20px;
+        }
+
+        /* Milestone Records Styles */
+        .record-card {
+            background: #151515;
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            border-left: 4px solid #333;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+        }
+        .record-card h4 {
+            margin: 0 0 8px 0;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #aaa;
+            transition: color 0.3s;
+        }
+        .record-val {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 2px;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .record-sub {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+        .record-card p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #888;
+            line-height: 1.4;
+            flex-grow: 1;
+            transition: color 0.3s;
+        }
+
+        /* Milestone Team Hovers */
+        .record-pbks:hover { background-color: rgba(240, 85, 69, 0.08); border-color: rgba(240, 85, 69, 0.4); border-left-color: #f05545; transform: scale(1.03); box-shadow: 0 6px 20px rgba(240, 85, 69, 0.15); }
+        .record-pbks:hover h4 { color: #f05545; } .record-pbks:hover .record-val { color: #f05545; text-shadow: 0 0 10px rgba(240, 85, 69, 0.4); } .record-pbks:hover p { color: #ccc; }
+        
+        .record-kkr:hover { background-color: rgba(124, 67, 189, 0.08); border-color: rgba(124, 67, 189, 0.4); border-left-color: #7c43bd; transform: scale(1.03); box-shadow: 0 6px 20px rgba(124, 67, 189, 0.15); }
+        .record-kkr:hover h4 { color: #7c43bd; } .record-kkr:hover .record-val { color: #7c43bd; text-shadow: 0 0 10px rgba(124, 67, 189, 0.4); } .record-kkr:hover p { color: #ccc; }
+        
+        .record-rcb:hover { background-color: rgba(255, 23, 68, 0.08); border-color: rgba(255, 23, 68, 0.4); border-left-color: #ff1744; transform: scale(1.03); box-shadow: 0 6px 20px rgba(255, 23, 68, 0.15); }
+        .record-rcb:hover h4 { color: #ff1744; } .record-rcb:hover .record-val { color: #ff1744; text-shadow: 0 0 10px rgba(255, 23, 68, 0.4); } .record-rcb:hover p { color: #ccc; }
+        
+        .record-dc:hover { background-color: rgba(95, 95, 196, 0.08); border-color: rgba(95, 95, 196, 0.4); border-left-color: #5f5fc4; transform: scale(1.03); box-shadow: 0 6px 20px rgba(95, 95, 196, 0.15); }
+        .record-dc:hover h4 { color: #5f5fc4; } .record-dc:hover .record-val { color: #5f5fc4; text-shadow: 0 0 10px rgba(95, 95, 196, 0.4); } .record-dc:hover p { color: #ccc; }
+        
+        .record-rr:hover { background-color: rgba(255, 96, 144, 0.08); border-color: rgba(255, 96, 144, 0.4); border-left-color: #ff6090; transform: scale(1.03); box-shadow: 0 6px 20px rgba(255, 96, 144, 0.15); }
+        .record-rr:hover h4 { color: #ff6090; } .record-rr:hover .record-val { color: #ff6090; text-shadow: 0 0 10px rgba(255, 96, 144, 0.4); } .record-rr:hover p { color: #ccc; }
+        
+        .record-srh:hover { background-color: rgba(255, 131, 58, 0.08); border-color: rgba(255, 131, 58, 0.4); border-left-color: #ff833a; transform: scale(1.03); box-shadow: 0 6px 20px rgba(255, 131, 58, 0.15); }
+        .record-srh:hover h4 { color: #ff833a; } .record-srh:hover .record-val { color: #ff833a; text-shadow: 0 0 10px rgba(255, 131, 58, 0.4); } .record-srh:hover p { color: #ccc; }
+        
+        .record-mi:hover { background-color: rgba(117, 125, 232, 0.08); border-color: rgba(117, 125, 232, 0.4); border-left-color: #757de8; transform: scale(1.03); box-shadow: 0 6px 20px rgba(117, 125, 232, 0.15); }
+        .record-mi:hover h4 { color: #757de8; } .record-mi:hover .record-val { color: #757de8; text-shadow: 0 0 10px rgba(117, 125, 232, 0.4); } .record-mi:hover p { color: #ccc; }
+        
+        .record-csk:hover { background-color: rgba(255, 223, 0, 0.08); border-color: rgba(255, 223, 0, 0.4); border-left-color: #ffdf00; transform: scale(1.03); box-shadow: 0 6px 20px rgba(255, 223, 0, 0.15); }
+        .record-csk:hover h4 { color: #ffdf00; } .record-csk:hover .record-val { color: #ffdf00; text-shadow: 0 0 10px rgba(255, 223, 0, 0.4); } .record-csk:hover p { color: #ccc; }
+        
+        .record-lsg:hover { background-color: rgba(98, 239, 255, 0.08); border-color: rgba(98, 239, 255, 0.4); border-left-color: #62efff; transform: scale(1.03); box-shadow: 0 6px 20px rgba(98, 239, 255, 0.15); }
+        .record-lsg:hover h4 { color: #62efff; } .record-lsg:hover .record-val { color: #62efff; text-shadow: 0 0 10px rgba(98, 239, 255, 0.4); } .record-lsg:hover p { color: #ccc; }
+        
+        .record-gt:hover { background-color: rgba(83, 75, 174, 0.08); border-color: rgba(83, 75, 174, 0.4); border-left-color: #534bae; transform: scale(1.03); box-shadow: 0 6px 20px rgba(83, 75, 174, 0.15); }
+        .record-gt:hover h4 { color: #534bae; } .record-gt:hover .record-val { color: #534bae; text-shadow: 0 0 10px rgba(83, 75, 174, 0.4); } .record-gt:hover p { color: #ccc; }
     </style>
 </head>
 <body>
+
 <div id="loading_overlay">Syncing With Cloud...</div>
 <div id="toast-container"></div>
+
 <div class="top-ribbon">
     <span class="ribbon-text">REAL CRICKET PREMIER</span>
     <img src="logorcpl.jpg" alt="RCPL Logo" class="ribbon-logo">
     <span class="ribbon-text">LEAGUE SEASON 4</span>
 </div>
 
-<div class="container" id="main_app" style="opacity:0;transition:opacity 0.5s;">
+<div class="container" id="main_app" style="opacity: 0; transition: opacity 0.5s;">
     <div class="left-col" id="admin_panel">
-        <div class="card" style="border-color:#2962ff;box-shadow:0 0 15px rgba(41,98,255,0.15);">
-            <h2 style="color:#2962ff;text-align:left;">Push Match Alert</h2>
-            <div class="row"><div><label style="color:#aaa;">Upcoming Match</label><select id="alert_match"></select></div></div>
-            <button onclick="window.sendMatchAlert()" style="background:#2962ff;color:white;border-color:#0039cb;">Trigger Email Alert</button>
+        
+        <div class="card" style="border-color: #2962ff; box-shadow: 0 0 15px rgba(41, 98, 255, 0.15);">
+            <h2 style="color: #2962ff; text-align: left;">Push Match Alert</h2>
+            <div class="row">
+                <div>
+                    <label style="color:#aaa;">Upcoming Match</label>
+                    <select id="alert_match"></select>
+                </div>
+            </div>
+            <button onclick="window.sendMatchAlert()" style="background: #2962ff; color: white; border-color: #0039cb;">Trigger Email Alert</button>
         </div>
+
         <div class="card">
-            <h2 style="text-align:left;">Add Match Result</h2>
+            <h2 style="text-align: left;">Add Match Result</h2>
             <div class="row">
-                <div><label style="color:#d4af37;">Team 1 (Batting First)</label><select id="t1"></select></div>
-                <div><label>Runs</label><input type="number" id="r1" min="0"></div>
-                <div><label>Wickets Lost</label><input type="number" id="w1" min="0" max="10"></div>
-                <div><label>Balls</label><input type="number" id="b1" min="0" max="120" value="120"></div>
+                <div>
+                    <label style="color:#d4af37;">Team 1 (Batting First)</label>
+                    <select id="t1"></select>
+                </div>
+                <div>
+                    <label>Runs</label>
+                    <input type="number" id="r1" min="0">
+                </div>
+                <div>
+                    <label>Wickets Lost</label>
+                    <input type="number" id="w1" min="0" max="10">
+                </div>
+                <div>
+                    <label>Balls</label>
+                    <input type="number" id="b1" min="0" max="120" value="120">
+                </div>
             </div>
             <div class="row">
-                <div><label style="color:#d4af37;">Team 2 (Chasing)</label><select id="t2"></select></div>
-                <div><label>Runs</label><input type="number" id="r2" min="0"></div>
-                <div><label>Wickets Lost</label><input type="number" id="w2" min="0" max="10"></div>
-                <div><label>Balls</label><input type="number" id="b2" min="0" max="120" value="120"></div>
+                <div>
+                    <label style="color:#d4af37;">Team 2 (Chasing)</label>
+                    <select id="t2"></select>
+                </div>
+                <div>
+                    <label>Runs</label>
+                    <input type="number" id="r2" min="0">
+                </div>
+                <div>
+                    <label>Wickets Lost</label>
+                    <input type="number" id="w2" min="0" max="10">
+                </div>
+                <div>
+                    <label>Balls</label>
+                    <input type="number" id="b2" min="0" max="120" value="120">
+                </div>
             </div>
-            <div class="row" style="margin-top:10px;"><div style="flex:1;"><label>Match Summary (Optional)</label><input type="text" id="match_desc" placeholder="e.g. thrilling last over finish..."></div></div>
+            <div class="row" style="margin-top: 10px;">
+                <div style="flex: 1;">
+                    <label>Match Summary (Optional)</label>
+                    <input type="text" id="match_desc" placeholder="e.g. thrilling last over finish...">
+                </div>
+            </div>
             <button onclick="window.addMatch()">Save Match</button>
             <button class="danger" onclick="window.clearData()">Reset Tournament (Danger)</button>
-            <div style="margin-top:15px;padding-top:15px;border-top:1px solid #333;">
-                <label style="color:#d4af37;margin-bottom:5px;">Edit Past Match Summary</label>
-                <div class="row" style="margin-bottom:5px;"><div style="flex:1;"><select id="edit_summary_match"></select></div></div>
-                <div class="row" style="margin-bottom:5px;"><div style="flex:1;"><input type="text" id="edit_summary_text" placeholder="Enter new summary..."></div></div>
-                <button class="action" onclick="window.updateMatchSummary()" style="margin-top:0;">Update Summary</button>
+            
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #333;">
+                <label style="color:#d4af37; margin-bottom: 5px;">Edit Past Match Summary</label>
+                <div class="row" style="margin-bottom: 5px;">
+                    <div style="flex: 1;"><select id="edit_summary_match"></select></div>
+                </div>
+                <div class="row" style="margin-bottom: 5px;">
+                    <div style="flex: 1;"><input type="text" id="edit_summary_text" placeholder="Enter new summary or clear to remove..."></div>
+                </div>
+                <button class="action" onclick="window.updateMatchSummary()" style="margin-top: 0;">Update Summary</button>
             </div>
-            <div style="margin-top:15px;padding-top:15px;border-top:1px solid #333;">
-                <label style="color:#d4af37;margin-bottom:5px;">Swap Matches (by Match #)</label>
-                <div class="row" style="margin-bottom:5px;">
+
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #333;">
+                <label style="color:#d4af37; margin-bottom: 5px;">Swap Matches (by Match #)</label>
+                <div class="row" style="margin-bottom: 5px;">
                     <div><input type="number" id="swap_i" placeholder="Match A" min="1"></div>
                     <div><input type="number" id="swap_j" placeholder="Match B" min="1"></div>
                 </div>
-                <button class="action" onclick="window.swapMatches()" style="margin-top:0;">Swap Sequence</button>
+                <button class="action" onclick="window.swapMatches()" style="margin-top: 0;">Swap Sequence</button>
             </div>
-            <div style="margin-top:15px;padding-top:15px;border-top:1px solid #333;">
-                <label style="color:#d50000;margin-bottom:5px;">Erase Specific Match Result</label>
-                <div class="row" style="margin-bottom:5px;"><div style="flex:1;"><select id="reset_match_select"></select></div></div>
-                <button class="danger" onclick="window.resetSpecificMatch()" style="margin-top:0;">Erase Match Data</button>
+            
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #333;">
+                <label style="color:#d50000; margin-bottom: 5px;">Erase Specific Match Result</label>
+                <div class="row" style="margin-bottom: 5px;">
+                    <div style="flex: 1;"><select id="reset_match_select"></select></div>
+                </div>
+                <button class="danger" onclick="window.resetSpecificMatch()" style="margin-top: 0;">Erase Match Data</button>
             </div>
         </div>
+        
         <div class="card">
-            <h2 style="text-align:left;">H2H &amp; Win Predictor</h2>
+            <h2 style="text-align: left;">H2H & Win Predictor</h2>
             <div class="row">
-                <div><select id="pred_t1"></select></div>
-                <div style="text-align:center;line-height:35px;color:#d4af37;">vs</div>
-                <div><select id="pred_t2"></select></div>
+                <div>
+                    <select id="pred_t1"></select>
+                </div>
+                <div style="text-align: center; line-height: 35px; color: #d4af37; transition: transform 0.3s ease;">vs</div>
+                <div>
+                    <select id="pred_t2"></select>
+                </div>
             </div>
-            <button onclick="window.predictMatch()" class="action">Compare &amp; Predict</button>
-            <div id="prediction_result" style="margin-top:15px;text-align:center;transition:all 0.3s ease;"></div>
+            <button onclick="window.predictMatch()" class="action">Compare & Predict</button>
+            <div id="prediction_result" style="margin-top: 15px; text-align: center; transition: all 0.3s ease;"></div>
         </div>
     </div>
 
-    <div class="right-col" id="view_panel" style="grid-column:1 / -1;">
+    <div class="right-col" id="view_panel" style="grid-column: 1 / -1;">
         <div class="groups-container">
-            <div class="group-box"><h3>Group A</h3><div id="group_a_teams"></div></div>
-            <div class="group-box"><h3>Group B</h3><div id="group_b_teams"></div></div>
-        </div>
-        <div class="card">
-            <h2 style="text-align:left;">Points Table</h2>
-            <div class="scrollable-table">
-                <table><thead><tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>T</th><th>Pts</th><th>NRR</th><th>Form</th><th>Status</th></tr></thead>
-                <tbody id="ptable_body"></tbody></table>
+            <div class="group-box">
+                <h3>Group A</h3>
+                <div id="group_a_teams"></div>
+            </div>
+            <div class="group-box">
+                <h3>Group B</h3>
+                <div id="group_b_teams"></div>
             </div>
         </div>
-        <div class="flex-split">
-            <div class="card"><h2 style="text-align:left;">Orange Cap (Most Runs)</h2><table><thead><tr><th>Team</th><th>Runs</th></tr></thead><tbody id="orange_body"></tbody></table></div>
-            <div class="card"><h2 style="text-align:left;">Purple Cap (Most Wkts)</h2><table><thead><tr><th>Team</th><th>Wickets</th></tr></thead><tbody id="purple_body"></tbody></table></div>
-            <div class="card"><h2 style="text-align:left;">Highest Team Totals</h2><table><thead><tr><th>Team</th><th>Score</th><th>Opponent</th></tr></thead><tbody id="highest_totals_body"></tbody></table></div>
+
+        <div class="card">
+            <h2 style="text-align: left;">Points Table</h2>
+            <div class="scrollable-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Team</th><th>P</th><th>W</th><th>L</th><th>T</th><th>Pts</th><th>NRR</th><th>Form</th><th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ptable_body"></tbody>
+                </table>
+            </div>
         </div>
+
+        <div class="flex-split">
+            <div class="card">
+                <h2 style="text-align: left;">Orange Cap (Most Runs)</h2>
+                <table>
+                    <thead><tr><th>Team</th><th>Runs</th></tr></thead>
+                    <tbody id="orange_body"></tbody>
+                </table>
+            </div>
+            <div class="card">
+                <h2 style="text-align: left;">Purple Cap (Most Wkts)</h2>
+                <table>
+                    <thead><tr><th>Team</th><th>Wickets</th></tr></thead>
+                    <tbody id="purple_body"></tbody>
+                </table>
+            </div>
+            <div class="card">
+                <h2 style="text-align: left;">Highest Team Totals</h2>
+                <table>
+                    <thead><tr><th>Team</th><th>Score</th><th>Opponent</th></tr></thead>
+                    <tbody id="highest_totals_body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card full-width no-hover-card">
+            <h2 style="text-align: left; border:none; padding:0; margin-bottom:5px;">Records & Milestones</h2>
+            <p style="color:#aaa; font-size:0.85rem; margin-top:0; border-bottom:1px solid #333; padding-bottom:15px;">Live Season 4 tracking and all-time league history.</p>
+
+            <h3 style="margin-top:20px; font-size:1.05rem; color:#fff;">Season 4 Live Records</h3>
+            <div id="s4_records_grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                </div>
+
+            <h3 style="margin-top:20px; font-size:1.05rem; color:#fff;">All-Time League History</h3>
+            <div id="alltime_records_grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                </div>
+        </div>
+
     </div>
 
     <div class="card full-width">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-            <h2 style="text-align:left;border:none;padding:0;">Tournament Match Log</h2>
-            <span id="match_progress" style="color:#aaa;font-size:0.9rem;"></span>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="text-align: left; border: none; padding: 0;">Tournament Match Log</h2>
+            <span id="match_progress" style="color: #aaa; font-size: 0.9rem;"></span>
         </div>
-        <div class="scrollable-log" style="margin-top:10px;">
-            <table><thead><tr><th style="width:60px;">M#</th><th class="match-fixture">Fixture</th><th style="text-align:left;">Result</th></tr></thead>
-            <tbody id="match_log_body"></tbody></table>
+        <div class="scrollable-log" style="margin-top: 10px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">M#</th>
+                        <th class="match-fixture">Fixture</th>
+                        <th style="text-align: left;">Result</th>
+                    </tr>
+                </thead>
+                <tbody id="match_log_body"></tbody>
+            </table>
         </div>
     </div>
 
-    <div class="card full-width no-hover-card">
-        <h2 style="text-align:left;">Overall Head-to-Head (S1 - Present)</h2>
+    <div class="card full-width no-hover-card" id="h2h_card">
+        <h2 style="text-align:left;">Overall Head-to-Head (S1 – Present)</h2>
         <div id="h2h_team_btns" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1rem;"></div>
         <div id="h2h_panel" style="display:none;">
             <div style="display:flex;align-items:center;gap:16px;margin-bottom:1rem;flex-wrap:wrap;">
@@ -300,52 +801,55 @@
             </div>
             <div id="h2h_rivals"></div>
         </div>
-        <div id="h2h_empty" style="color:#555;font-size:0.9rem;padding:0.5rem 0;">Select a team above to view their rivalries.</div>
-    </div>
-
-    <div class="card full-width no-hover-card">
-        <h2 style="text-align:left;">Records &amp; Milestones</h2>
-        <p style="color:#444;font-size:0.8rem;margin:-4px 0 16px;">All-time records across S1–S3 plus live Season 4 data.</p>
-        <div class="records-grid" id="records_grid"></div>
+        <div id="h2h_empty" style="color:#555;font-size:0.9rem;padding:1rem 0; font-style: italic;">Select a team to view rivalries.</div>
     </div>
 
     <div class="card full-width">
-        <h2 style="text-align:left;">Career Statistics</h2>
-        <p style="color:#aaa;font-size:0.85rem;margin-top:-5px;">Click any column header to sort.</p>
+        <h2 style="text-align: left;">Career Statistics</h2>
+        <p style="color:#aaa; font-size:0.85rem; margin-top:-5px;">Click any column header to sort.</p>
         <div class="scrollable-table">
-            <table style="min-width:1000px;">
-                <thead><tr>
-                    <th style="text-align:left;">Team</th>
-                    <th class="sortable" onclick="window.sortCareer('r')" id="th_r">Runs Scored<span class="sort-icon">▼</span></th>
-                    <th class="sortable" onclick="window.sortCareer('b')" id="th_b">Balls Faced<span class="sort-icon">▼</span></th>
-                    <th class="sortable" onclick="window.sortCareer('rc')" id="th_rc">Runs Conceded<span class="sort-icon">▼</span></th>
-                    <th class="sortable" onclick="window.sortCareer('bb')" id="th_bb">Balls Bowled<span class="sort-icon">▼</span></th>
-                    <th class="sortable" onclick="window.sortCareer('wkts_taken')" id="th_wkts_taken">Wickets<span class="sort-icon">▼</span></th>
-                    <th class="sortable" onclick="window.sortCareer('avg')" id="th_avg">Average<span class="sort-icon">▼</span></th>
-                    <th class="sortable" onclick="window.sortCareer('sr')" id="th_sr">Strike Rate<span class="sort-icon">▼</span></th>
-                    <th class="sortable" onclick="window.sortCareer('basra')" id="th_basra" style="color:#d4af37;">BASRA<span class="sort-icon">▼</span></th>
-                    <th class="sortable" onclick="window.sortCareer('eco')" id="th_eco">Economy<span class="sort-icon">▼</span></th>
-                    <th class="sortable" onclick="window.sortCareer('bewm')" id="th_bewm" style="color:#d4af37;">BEWM<span class="sort-icon">▼</span></th>
-                    <th class="sortable" onclick="window.sortCareer('wl')" id="th_wl">W/L<span class="sort-icon">▼</span></th>
-                    <th class="sortable sort-desc" onclick="window.sortCareer('value')" id="th_value">Value<span class="sort-icon">▼</span></th>
-                </tr></thead>
+            <table style="min-width: 1000px;">
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Team</th>
+                        <th class="sortable" onclick="window.sortCareer('r')" id="th_r">Runs Scored<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('b')" id="th_b">Balls Faced<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('rc')" id="th_rc">Runs Conceded<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('bb')" id="th_bb">Balls Bowled<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('wkts_taken')" id="th_wkts_taken">Wickets<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('avg')" id="th_avg">Average<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('sr')" id="th_sr">Strike Rate<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('basra')" id="th_basra" style="color:#d4af37;">BASRA<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('eco')" id="th_eco">Economy<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('bewm')" id="th_bewm" style="color:#d4af37;">BEWM<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('wl')" id="th_wl">W/L<span class="sort-icon">▼</span></th>
+                        <th class="sortable sort-desc" onclick="window.sortCareer('value')" id="th_value">Value<span class="sort-icon">▼</span></th>
+                    </tr>
+                </thead>
                 <tbody id="career_body"></tbody>
             </table>
         </div>
     </div>
-
-    <div class="card full-width" style="border-color:#333;">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;">
-            <div style="flex:1;min-width:250px;">
-                <h2 style="border:none;padding:0;margin:0;text-align:left;">Get Match Alerts</h2>
-                <p style="color:#aaa;font-size:0.85rem;margin:5px 0 0 0;">Subscribe with your email to receive live match results and alerts when your team plays.</p>
+    
+    <div class="card full-width" style="border-color: #333;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div style="flex: 1; min-width: 250px;">
+                <h2 style="border: none; padding: 0; margin: 0; text-align: left;">Get Match Alerts</h2>
+                <p style="color: #aaa; font-size: 0.85rem; margin: 5px 0 0 0;">Subscribe with your email to receive live match results and alerts when your team plays.</p>
             </div>
             <div class="subscribe-wrap">
-                <select id="sub_team" style="width:auto;min-width:150px;background:#1a1a1a;color:#fff;">
+                <select id="sub_team" style="width: auto; min-width: 150px; background: #1a1a1a; color: #fff;">
                     <option value="all">All Teams / Playoffs</option>
-                    <option value="mi">MI</option><option value="csk">CSK</option><option value="rcb">RCB</option>
-                    <option value="kkr">KKR</option><option value="pbks">PBKS</option><option value="dc">DC</option>
-                    <option value="rr">RR</option><option value="srh">SRH</option><option value="lsg">LSG</option><option value="gt">GT</option>
+                    <option value="mi">MI</option>
+                    <option value="csk">CSK</option>
+                    <option value="rcb">RCB</option>
+                    <option value="kkr">KKR</option>
+                    <option value="pbks">PBKS</option>
+                    <option value="dc">DC</option>
+                    <option value="rr">RR</option>
+                    <option value="srh">SRH</option>
+                    <option value="lsg">LSG</option>
+                    <option value="gt">GT</option>
                 </select>
                 <input type="email" id="sub_email" placeholder="Enter your email address...">
                 <button onclick="window.subscribeEmail()">Subscribe</button>
@@ -354,566 +858,909 @@
     </div>
 
     <div class="card full-width no-hover-card">
-        <h2 style="text-align:left;">Franchise Legacies</h2>
-        <div id="legacy_pbks" class="legacy-item"><div class="legacy-content"><h4>Punjab Kings (PBKS)</h4><p>The perennial bridesmaids of the RCPL. Despite finishing as runners-up in all three previous seasons, they are statistically the most dominant team in league history. With an absurd cumulative W/L ratio of 5.58 and a strike rate over 218, they are the undisputed kings of the group stage, desperately hunting for their elusive maiden title.</p></div></div>
-        <div id="legacy_kkr" class="legacy-item"><div class="legacy-content"><h4>Kolkata Knight Riders (KKR)</h4><p>1-time RCPL Champions. They have maintained an elite level of consistency across all three seasons. Boasting a stellar cumulative win/loss ratio of 3.91 and aggressive batting, they are a complete package aiming for back-to-back titles.</p></div></div>
-        <div id="legacy_rcb" class="legacy-item"><div class="legacy-content"><h4>Royal Challengers Bangalore (RCB)</h4><p>1-time RCPL Champions. Known for their explosive batting firepower throughout the league's history, they consistently post massive numbers. They remain heavyweights with a fearsome top order.</p></div></div>
-        <div id="legacy_dc" class="legacy-item"><div class="legacy-content"><h4>Delhi Capitals (DC)</h4><p>A resilient squad that hangs tough in the middle of the pack. Their historical strike rate shows promise, but they need to convert close games into victories to improve their sub-1.00 win ratio and finally grab a title.</p></div></div>
-        <div id="legacy_rr" class="legacy-item"><div class="legacy-content"><h4>Rajasthan Royals (RR)</h4><p>The giant-killers who have historically struggled with consistency across all three seasons. They are looking to break out of the bottom half of the table and improve their overall win percentage.</p></div></div>
-        <div id="legacy_srh" class="legacy-item"><div class="legacy-content"><h4>Sunrisers Hyderabad (SRH)</h4><p>Facing an uphill battle historically, struggling with the ball and holding an economy rate over 10 across three cumulative seasons. They are looking for a complete structural turnaround this year.</p></div></div>
-        <div id="legacy_mi" class="legacy-item"><div class="legacy-content"><h4>Mumbai Indians (MI)</h4><p>A franchise with a glorious past and 1 RCPL Championship - won in the inaugural season. However, their cumulative stats reflect a massive struggle since their title run, holding an overall W/L ratio of just 0.27. They are desperate to reclaim their throne and rebuild their legacy.</p></div></div>
-        <div id="legacy_csk" class="legacy-item"><div class="legacy-content"><h4>Chennai Super Kings (CSK)</h4><p>It has been an incredibly difficult three seasons for the legendary yellow franchise, holding the lowest win rate (0.11) and strike rate (98.20) in cumulative RCPL history. They are in full rebuild mode and hungry for redemption.</p></div></div>
-        <div id="legacy_lsg" class="legacy-item"><div class="legacy-content"><h4>Lucknow Super Giants (LSG)</h4><p>A brand new entrant to the RCPL in Season 4. With a completely clean slate and zero baggage, they are the unpredictable wildcards ready to disrupt the established hierarchy.</p></div></div>
-        <div id="legacy_gt" class="legacy-item"><div class="legacy-content"><h4>Gujarat Titans (GT)</h4><p>Making their highly anticipated debut in Season 4. They have everything to prove and are ready to make a massive splash to build a new legacy from the ground up.</p></div></div>
+        <h2 style="text-align: left;">Franchise Legacies</h2>
+        
+        <div id="legacy_pbks" class="legacy-item">
+            <div class="legacy-content">
+                <h4>Punjab Kings (PBKS)</h4>
+                <p>The perennial bridesmaids of the RCPL. Despite finishing as runners-up in all three previous seasons, they are statistically the most dominant team in league history. With an absurd cumulative W/L ratio of 5.58 and a strike rate over 218, they are the undisputed kings of the group stage, desperately hunting for their elusive maiden title.</p>
+            </div>
+        </div>
+        <div id="legacy_kkr" class="legacy-item">
+            <div class="legacy-content">
+                <h4>Kolkata Knight Riders (KKR)</h4>
+                <p>1-time RCPL Champions. They have maintained an elite level of consistency across all three seasons. Boasting a stellar cumulative win/loss ratio of 3.91 and aggressive batting, they are a complete package aiming for back-to-back titles.</p>
+            </div>
+        </div>
+        <div id="legacy_rcb" class="legacy-item">
+            <div class="legacy-content">
+                <h4>Royal Challengers Bangalore (RCB)</h4>
+                <p>1-time RCPL Champions. Known for their explosive batting firepower throughout the league's history, they consistently post massive numbers. They remain heavyweights with a fearsome top order.</p>
+            </div>
+        </div>
+        <div id="legacy_dc" class="legacy-item">
+            <div class="legacy-content">
+                <h4>Delhi Capitals (DC)</h4>
+                <p>A resilient squad that hangs tough in the middle of the pack. Their historical strike rate shows promise, but they need to convert close games into victories to improve their sub-1.00 win ratio and finally grab a title.</p>
+            </div>
+        </div>
+        <div id="legacy_rr" class="legacy-item">
+            <div class="legacy-content">
+                <h4>Rajasthan Royals (RR)</h4>
+                <p>The giant-killers who have historically struggled with consistency across all three seasons. They are looking to break out of the bottom half of the table and improve their overall win percentage.</p>
+            </div>
+        </div>
+        <div id="legacy_srh" class="legacy-item">
+            <div class="legacy-content">
+                <h4>Sunrisers Hyderabad (SRH)</h4>
+                <p>Facing an uphill battle historically, struggling with the ball and holding an economy rate over 10 across three cumulative seasons. They are looking for a complete structural turnaround this year.</p>
+            </div>
+        </div>
+        <div id="legacy_mi" class="legacy-item">
+            <div class="legacy-content">
+                <h4>Mumbai Indians (MI)</h4>
+                <p>A franchise with a glorious past and 1 RCPL Championship - won in the inaugural season. However, their cumulative stats reflect a massive struggle since their title run, holding an overall W/L ratio of just 0.27. They are desperate to reclaim their throne and rebuild their legacy.</p>
+            </div>
+        </div>
+        <div id="legacy_csk" class="legacy-item">
+            <div class="legacy-content">
+                <h4>Chennai Super Kings (CSK)</h4>
+                <p>It has been an incredibly difficult three seasons for the legendary yellow franchise, holding the lowest win rate (0.11) and strike rate (98.20) in cumulative RCPL history. They are in full rebuild mode and hungry for redemption.</p>
+            </div>
+        </div>
+        <div id="legacy_lsg" class="legacy-item">
+            <div class="legacy-content">
+                <h4>Lucknow Super Giants (LSG)</h4>
+                <p>A brand new entrant to the RCPL in Season 4. With a completely clean slate and zero baggage, they are the unpredictable wildcards ready to disrupt the established hierarchy.</p>
+            </div>
+        </div>
+        <div id="legacy_gt" class="legacy-item">
+            <div class="legacy-content">
+                <h4>Gujarat Titans (GT)</h4>
+                <p>Making their highly anticipated debut in Season 4. They have everything to prove and are ready to make a massive splash to build a new legacy from the ground up.</p>
+            </div>
+        </div>
     </div>
+
 </div>
 
 <div class="admin-trigger" onclick="window.unlockAdmin()">Admin</div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, push, get, child } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, push, get, child } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyC_q2XGkzgWGVSX4_RSckQnQVrKNdVc6ek",
-  authDomain: "rcpls4.firebaseapp.com",
-  databaseURL: "https://rcpls4-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "rcpls4",
-  storageBucket: "rcpls4.firebasestorage.app",
-  messagingSenderId: "381635970086",
-  appId: "1:381635970086:web:56bba7dd966d6cc8b6d2e7"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const dbRef = ref(db, 'rcpl_tournament_data');
-
-const TEAMS = ['csk','mi','rcb','kkr','dc','rr','pbks','srh','lsg','gt'];
-const GROUP_A = ['kkr','mi','lsg','srh','dc'];
-const GROUP_B = ['csk','rcb','gt','pbks','rr'];
-const TOTAL_MATCHES_PER_TEAM = 14;
-
-const CAREER_BASE = {
-    pbks:{r:1465,b:671,rc:1023,bb:801,w:10.18,l:1.82,wl_lost:22.366,wkts_taken:60,m_played:12},
-    kkr: {r:1116,b:690,rc:988, bb:725,w:9.56, l:2.44,wl_lost:23.001,wkts_taken:60,m_played:12},
-    mi:  {r:1142,b:818,rc:1072,bb:746,w:2.55, l:9.45,wl_lost:27.268,wkts_taken:60,m_played:12},
-    rcb: {r:1067,b:677,rc:1040,bb:797,w:8.81, l:3.19,wl_lost:22.568,wkts_taken:60,m_played:12},
-    dc:  {r:1016,b:712,rc:1099,bb:724,w:5.10, l:6.90,wl_lost:23.733,wkts_taken:60,m_played:12},
-    csk: {r:708, b:721,rc:1005,bb:695,w:1.19, l:10.81,wl_lost:24.033,wkts_taken:60,m_played:12},
-    rr:  {r:913, b:733,rc:1066,bb:660,w:4.68, l:7.32,wl_lost:24.431,wkts_taken:60,m_played:12},
-    srh: {r:871, b:719,rc:1046,bb:602,w:4.86, l:7.14,wl_lost:23.968,wkts_taken:60,m_played:12},
-    lsg: {r:0,b:0,rc:0,bb:0,w:0,l:0,wl_lost:0,wkts_taken:0,m_played:0},
-    gt:  {r:0,b:0,rc:0,bb:0,w:0,l:0,wl_lost:0,wkts_taken:0,m_played:0}
-};
-
-const H2H_BASE = {
-    mi:  {csk:3,rcb:2,kkr:4,pbks:1,dc:2,rr:3,srh:4,lsg:0,gt:0},
-    csk: {mi:2,rcb:0,kkr:0,pbks:0,dc:1,rr:3,srh:4,lsg:0,gt:0},
-    rcb: {mi:4,csk:4,kkr:1,pbks:1,dc:2,rr:4,srh:5,lsg:0,gt:0},
-    kkr: {mi:3,csk:4,rcb:3,pbks:1,dc:1,rr:4,srh:4,lsg:0,gt:0},
-    pbks:{mi:4,csk:4,rcb:5,kkr:6,dc:2,rr:5,srh:4,lsg:0,gt:0},
-    dc:  {mi:1,csk:1,rcb:1,kkr:1,pbks:1,rr:1,srh:1,lsg:0,gt:0},
-    rr:  {mi:1,csk:2,rcb:0,kkr:0,pbks:0,dc:2,srh:3,lsg:0,gt:0},
-    srh: {mi:0,csk:1,rcb:0,kkr:0,pbks:0,dc:2,rr:1,lsg:0,gt:0},
-    lsg: {mi:0,csk:0,rcb:0,kkr:0,pbks:0,dc:0,rr:0,srh:0,gt:0},
-    gt:  {mi:0,csk:0,rcb:0,kkr:0,pbks:0,dc:0,rr:0,srh:0,lsg:0}
-};
-
-let schedule = [], isDataLoaded = false;
-window.currentH2H = {};
-let h2hSelected = null;
-let careerSort = { prop:'value', dir:-1 };
-
-window.showToast = function(msg, type='default') {
-    const c = document.getElementById('toast-container');
-    const t = document.createElement('div');
-    t.className = `toast ${type}`; t.innerText = msg; c.appendChild(t);
-    setTimeout(()=>{ t.style.animation='slideOut 0.3s forwards'; setTimeout(()=>t.remove(),300); },3000);
-};
-
-window.scrollToLegacy = function(team) {
-    const el = document.getElementById(`legacy_${team}`);
-    if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); document.querySelectorAll('.legacy-item').forEach(i=>i.classList.remove('highlight')); el.classList.add('highlight'); setTimeout(()=>el.classList.remove('highlight'),2000); }
-};
-
-window.subscribeEmail = function() {
-    const input=document.getElementById('sub_email'), team=document.getElementById('sub_team').value, email=input.value.trim();
-    if(!email||!email.includes('@')){ window.showToast('Please enter a valid email address.','error'); return; }
-    push(ref(db,'rcpl_subscribers'),{email,team,timestamp:new Date().toISOString()})
-        .then(()=>{ window.showToast(`Subscribed for ${team.toUpperCase()} alerts!`,'success'); input.value=''; })
-        .catch(()=>window.showToast('Something went wrong.','error'));
-};
-
-window.sendMatchAlert = function() {
-    const matchStr=document.getElementById('alert_match').value;
-    if(!matchStr){ window.showToast("No unplayed matches.","error"); return; }
-    const [t1,t2,id]=matchStr.split(',');
-    const webhookUrl="YOUR_MAKE_WEBHOOK_URL_HERE";
-    if(webhookUrl==="YOUR_MAKE_WEBHOOK_URL_HERE"){ window.showToast("Webhook URL missing.","error"); return; }
-    get(child(ref(db),'rcpl_subscribers')).then(snapshot=>{
-        let emails=[];
-        if(snapshot.exists()){ const s=snapshot.val(); for(let k in s){ if(s[k].team===t1||s[k].team===t2||s[k].team==='all') emails.push(s[k].email); } }
-        if(!emails.length){ window.showToast(`No subscribers found.`,"error"); return; }
-        fetch(webhookUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({team1:t1.toUpperCase(),team2:t2.toUpperCase(),matchId:id,emails})})
-            .then(()=>window.showToast(`Alert sent to ${emails.length} fans.`,"success"))
-            .catch(()=>window.showToast("Failed to send alert.","error"));
-    });
-};
-
-window.swapMatches = function() {
-    const id1=parseInt(document.getElementById('swap_i').value), id2=parseInt(document.getElementById('swap_j').value);
-    if(!id1||!id2||id1===id2){ window.showToast("Enter two different match numbers.","error"); return; }
-    const i1=schedule.findIndex(m=>m.id===id1), i2=schedule.findIndex(m=>m.id===id2);
-    if(i1===-1||i2===-1){ window.showToast("Match number(s) not found.","error"); return; }
-    if(confirm(`Swap Match ${id1} and Match ${id2}?`)){
-        const o1=schedule[i1].id,o2=schedule[i2].id, tmp=schedule[i1];
-        schedule[i1]=schedule[i2]; schedule[i2]=tmp; schedule[i1].id=o1; schedule[i2].id=o2;
-        pushToCloud(); document.getElementById('swap_i').value=''; document.getElementById('swap_j').value='';
-        window.showToast("Matches swapped.","success");
-    }
-};
-
-window.updateMatchSummary = function() {
-    const sel=document.getElementById('edit_summary_match'); if(!sel) return;
-    const matchId=parseInt(sel.value), newDesc=document.getElementById('edit_summary_text').value.trim();
-    if(!matchId){ window.showToast("Select a match.","error"); return; }
-    const idx=schedule.findIndex(m=>m.id===matchId);
-    if(idx!==-1&&schedule[idx].played){ schedule[idx].result.desc=newDesc; pushToCloud(); document.getElementById('edit_summary_text').value=''; window.showToast(`Summary updated for Match ${matchId}.`,"success"); }
-    else window.showToast("Could not update.","error");
-};
-
-window.resetSpecificMatch = function() {
-    const sel=document.getElementById('reset_match_select'); if(!sel) return;
-    const matchId=parseInt(sel.value);
-    if(!matchId){ window.showToast("Select a match.","error"); return; }
-    if(confirm(`Erase all data for Match ${matchId}? Cannot be undone.`)){
-        const idx=schedule.findIndex(m=>m.id===matchId);
-        if(idx!==-1){ schedule[idx].played=false; schedule[idx].result=null; pushToCloud(); window.showToast(`Match ${matchId} reset.`,"success"); }
-    }
-};
-
-window.sortCareer = function(prop) {
-    if(careerSort.prop===prop) careerSort.dir*=-1; else { careerSort.prop=prop; careerSort.dir=-1; }
-    document.querySelectorAll('.sortable').forEach(th=>th.classList.remove('sort-asc','sort-desc'));
-    const th=document.getElementById(`th_${prop}`); if(th) th.classList.add(careerSort.dir===1?'sort-asc':'sort-desc');
-    updateUI();
-};
-
-function pushToCloud(){ set(dbRef,{schedule}); }
-
-onValue(dbRef,snapshot=>{
-    const data=snapshot.val();
-    if(data&&data.schedule) schedule=data.schedule;
-    else { schedule=generateSchedule(); pushToCloud(); }
-    if(!isDataLoaded){
-        initUI(); isDataLoaded=true;
-        document.getElementById('loading_overlay').style.opacity='0';
-        setTimeout(()=>document.getElementById('loading_overlay').style.display='none',500);
-        document.getElementById('main_app').style.opacity='1';
-    }
-    updateUI();
-});
-
-function generateSchedule(){
-    let tmp=[];
-    for(let i=0;i<GROUP_A.length;i++) for(let j=i+1;j<GROUP_A.length;j++) tmp.push({id:0,t1:GROUP_A[i],t2:GROUP_A[j],played:false,result:null});
-    for(let i=0;i<GROUP_B.length;i++) for(let j=i+1;j<GROUP_B.length;j++) tmp.push({id:0,t1:GROUP_B[i],t2:GROUP_B[j],played:false,result:null});
-    for(let i=0;i<GROUP_A.length;i++) for(let j=0;j<GROUP_B.length;j++){ tmp.push({id:0,t1:GROUP_A[i],t2:GROUP_B[j],played:false,result:null}); tmp.push({id:0,t1:GROUP_B[j],t2:GROUP_A[i],played:false,result:null}); }
-    let final=[],success=false,attempts=0;
-    while(!success&&attempts<500){
-        attempts++;
-        let pool=[...tmp];
-        for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
-        final=[]; let last=[],valid=true;
-        while(pool.length>0){
-            let idx=pool.findIndex(m=>!last.includes(m.t1)&&!last.includes(m.t2));
-            if(idx!==-1){ let m=pool.splice(idx,1)[0]; final.push(m); last=[m.t1,m.t2]; } else { valid=false; break; }
-        }
-        if(valid) success=true;
-    }
-    if(!success) final=tmp;
-    let c=1; final.forEach(m=>m.id=c++);
-    return final;
-}
-
-function initUI(){
-    ['t1','t2','pred_t1','pred_t2'].forEach(id=>{
-        const el=document.getElementById(id); if(!el) return;
-        el.innerHTML=''; TEAMS.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.innerText=t.toUpperCase(); el.appendChild(o); });
-    });
-    if(document.getElementById('t2')) document.getElementById('t2').selectedIndex=1;
-    if(document.getElementById('pred_t2')) document.getElementById('pred_t2').selectedIndex=1;
-    document.getElementById('group_a_teams').innerHTML=GROUP_A.map(t=>`<span class="team-pill team-${t}" onclick="window.scrollToLegacy('${t}')">${t}</span>`).join('');
-    document.getElementById('group_b_teams').innerHTML=GROUP_B.map(t=>`<span class="team-pill team-${t}" onclick="window.scrollToLegacy('${t}')">${t}</span>`).join('');
-    const btnWrap=document.getElementById('h2h_team_btns');
-    TEAMS.forEach(t=>{ const b=document.createElement('button'); b.className='h2h-team-btn'; b.id='h2hbtn_'+t; b.textContent=t.toUpperCase(); b.onclick=()=>{ h2hSelected=t; renderH2HPanel(); }; btnWrap.appendChild(b); });
-}
-
-function renderH2HPanel(){
-    if(!h2hSelected) return;
-    const data=window.currentH2H;
-    document.querySelectorAll('.h2h-team-btn').forEach(b=>b.classList.toggle('active',b.id==='h2hbtn_'+h2hSelected));
-    const opps=TEAMS.filter(x=>x!==h2hSelected);
-    let tW=0,tL=0;
-    const rows=opps.map(opp=>{ const w=data[h2hSelected]?.[opp]??0,l=data[opp]?.[h2hSelected]??0; tW+=w; tL+=l; return{opp,w,l}; }).sort((a,b)=>(b.w-b.l)-(a.w-a.l));
-    const wl=tL>0?(tW/tL).toFixed(2):tW>0?'∞':'—';
-    document.getElementById('h2h_sel_name').textContent=h2hSelected.toUpperCase();
-    document.getElementById('h2h_summary').textContent=`${tW}W  ${tL}L  —  W/L ratio: ${wl}`;
-    const max=Math.max(...rows.map(r=>r.w+r.l),1);
-    document.getElementById('h2h_rivals').innerHTML=rows.map(r=>{
-        const wP=(r.w/max)*100,lP=(r.l/max)*100,col=r.w>r.l?'#00e676':r.l>r.w?'#ff5252':'#888';
-        return `<div class="h2h-rival-row">
-            <span style="min-width:44px;font-size:0.8rem;color:#aaa;">${r.opp.toUpperCase()}</span>
-            <div style="flex:1;display:flex;gap:3px;height:18px;">
-                <div style="width:${wP}%;min-width:${r.w?'18px':'0'};background:#00e676;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#050505;font-weight:bold;">${r.w||''}</div>
-                <div style="width:${lP}%;min-width:${r.l?'18px':'0'};background:#ff5252;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:bold;">${r.l||''}</div>
-                ${!r.w&&!r.l?'<span style="font-size:11px;color:#444;">no matches yet</span>':''}
-            </div>
-            <span style="min-width:40px;text-align:right;font-size:0.85rem;font-weight:bold;color:${col};">${r.w}–${r.l}</span>
-        </div>`;
-    }).join('');
-    document.getElementById('h2h_panel').style.display='block';
-    document.getElementById('h2h_empty').style.display='none';
-}
-
-function calcOvers(b){ return Math.floor(b/6)+((b%6)/6.0); }
-function fmtOvers(b){ return Math.floor(b/6)+'.'+(b%6); }
-
-window.addMatch = function(){
-    const data={
-        t1:document.getElementById('t1').value, r1:parseInt(document.getElementById('r1').value)||0,
-        w1:parseInt(document.getElementById('w1').value)||0, b1:parseInt(document.getElementById('b1').value)||0,
-        t2:document.getElementById('t2').value, r2:parseInt(document.getElementById('r2').value)||0,
-        w2:parseInt(document.getElementById('w2').value)||0, b2:parseInt(document.getElementById('b2').value)||0,
-        desc:document.getElementById('match_desc').value.trim()
+    const firebaseConfig = {
+      apiKey: "AIzaSyC_q2XGkzgWGVSX4_RSckQnQVrKNdVc6ek",
+      authDomain: "rcpls4.firebaseapp.com",
+      databaseURL: "https://rcpls4-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "rcpls4",
+      storageBucket: "rcpls4.firebasestorage.app",
+      messagingSenderId: "381635970086",
+      appId: "1:381635970086:web:56bba7dd966d6cc8b6d2e7"
     };
-    if(data.t1===data.t2){ window.showToast("Teams must be different.","error"); return; }
-    let slot=schedule.find(x=>!x.played&&((x.t1===data.t1&&x.t2===data.t2)||(x.t1===data.t2&&x.t2===data.t1)));
-    if(!slot){ window.showToast("This matchup has reached its maximum!","error"); return; }
-    slot.played=true; slot.result=data; pushToCloud();
-    ['r1','w1','r2','w2','match_desc'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('b1').value=120; document.getElementById('b2').value=120;
-    window.showToast("Match saved.","success");
-};
 
-window.clearData = function(){
-    if(confirm("This will delete the database for everyone. Proceed?")){ schedule=generateSchedule(); pushToCloud(); window.showToast("Tournament reset.","success"); }
-};
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const dbRef = ref(db, 'rcpl_tournament_data');
 
-window.unlockAdmin = function(){
-    const p=prompt("Enter admin password:");
-    if(p==="rcpl2026"){ document.getElementById("admin_panel").style.display="block"; document.getElementById("view_panel").style.gridColumn="auto"; window.showToast("Admin access granted.","success"); }
-    else if(p!==null) window.showToast("Incorrect password.","error");
-};
+    const TEAMS = ['csk', 'mi', 'rcb', 'kkr', 'dc', 'rr', 'pbks', 'srh', 'lsg', 'gt'];
+    const GROUP_A = ['kkr', 'mi', 'lsg', 'srh', 'dc'];
+    const GROUP_B = ['csk', 'rcb', 'gt', 'pbks', 'rr'];
+    const TOTAL_MATCHES_PER_TEAM = 14;
+    
+    const CAREER_BASE = {
+        pbks: { r: 1465, b: 671, rc: 1023, bb: 801, w: 10.18, l: 1.82, wl_lost: 22.366, wkts_taken: 60, m_played: 12 },
+        kkr: { r: 1116, b: 690, rc: 988, bb: 725, w: 9.56, l: 2.44, wl_lost: 23.001, wkts_taken: 60, m_played: 12 },
+        mi: { r: 1142, b: 818, rc: 1072, bb: 746, w: 2.55, l: 9.45, wl_lost: 27.268, wkts_taken: 60, m_played: 12 },
+        rcb: { r: 1067, b: 677, rc: 1040, bb: 797, w: 8.81, l: 3.19, wl_lost: 22.568, wkts_taken: 60, m_played: 12 },
+        dc: { r: 1016, b: 712, rc: 1099, bb: 724, w: 5.10, l: 6.90, wl_lost: 23.733, wkts_taken: 60, m_played: 12 },
+        csk: { r: 708, b: 721, rc: 1005, bb: 695, w: 1.19, l: 10.81, wl_lost: 24.033, wkts_taken: 60, m_played: 12 },
+        rr: { r: 913, b: 733, rc: 1066, bb: 660, w: 4.68, l: 7.32, wl_lost: 24.431, wkts_taken: 60, m_played: 12 },
+        srh: { r: 871, b: 719, rc: 1046, bb: 602, w: 4.86, l: 7.14, wl_lost: 23.968, wkts_taken: 60, m_played: 12 },
+        lsg: { r: 0, b: 0, rc: 0, bb: 0, w: 0, l: 0, wl_lost: 0, wkts_taken: 0, m_played: 0 },
+        gt: { r: 0, b: 0, rc: 0, bb: 0, w: 0, l: 0, wl_lost: 0, wkts_taken: 0, m_played: 0 }
+    };
 
-function generateTableData(){
-    let tbl={};
-    TEAMS.forEach(t=>tbl[t]={p:0,w:0,l:0,t:0,pts:0,rf:0,of:0,ra:0,oa:0,form:[],wkts_taken:0});
-    schedule.filter(s=>s.played&&s.result).forEach(s=>{
-        const m=s.result, o1=calcOvers(m.b1), o2=calcOvers(m.b2);
-        if(tbl[m.t1]&&tbl[m.t2]){
-            tbl[m.t1].p++;tbl[m.t2].p++;
-            tbl[m.t1].rf+=m.r1;tbl[m.t1].of+=o1;tbl[m.t1].ra+=m.r2;tbl[m.t1].oa+=o2;tbl[m.t1].wkts_taken+=(m.w2||0);
-            tbl[m.t2].rf+=m.r2;tbl[m.t2].of+=o2;tbl[m.t2].ra+=m.r1;tbl[m.t2].oa+=o1;tbl[m.t2].wkts_taken+=(m.w1||0);
-            if(m.r1>m.r2){tbl[m.t1].w++;tbl[m.t1].pts+=2;tbl[m.t1].form.push('W');tbl[m.t2].l++;tbl[m.t2].form.push('L');}
-            else if(m.r2>m.r1){tbl[m.t2].w++;tbl[m.t2].pts+=2;tbl[m.t2].form.push('W');tbl[m.t1].l++;tbl[m.t1].form.push('L');}
-            else{tbl[m.t1].t++;tbl[m.t1].pts++;tbl[m.t1].form.push('T');tbl[m.t2].t++;tbl[m.t2].pts++;tbl[m.t2].form.push('T');}
+    const H2H_BASE = {
+        mi: { csk:3, rcb:2, kkr:4, pbks:1, dc:2, rr:3, srh:4, lsg:0, gt:0 },
+        csk: { mi:2, rcb:0, kkr:0, pbks:0, dc:1, rr:3, srh:4, lsg:0, gt:0 },
+        rcb: { mi:4, csk:4, kkr:1, pbks:1, dc:2, rr:4, srh:5, lsg:0, gt:0 },
+        kkr: { mi:3, csk:4, rcb:3, pbks:1, dc:1, rr:4, srh:4, lsg:0, gt:0 },
+        pbks: { mi:4, csk:4, rcb:5, kkr:6, dc:2, rr:5, srh:4, lsg:0, gt:0 },
+        dc: { mi:1, csk:1, rcb:1, kkr:1, pbks:1, rr:1, srh:1, lsg:0, gt:0 },
+        rr: { mi:1, csk:2, rcb:0, kkr:0, pbks:0, dc:2, srh:3, lsg:0, gt:0 },
+        srh: { mi:0, csk:1, rcb:0, kkr:0, pbks:0, dc:2, rr:1, lsg:0, gt:0 },
+        lsg: { mi:0, csk:0, rcb:0, kkr:0, pbks:0, dc:0, rr:0, srh:0, gt:0 },
+        gt: { mi:0, csk:0, rcb:0, kkr:0, pbks:0, dc:0, rr:0, srh:0, lsg:0 }
+    };
+
+    let schedule = [];
+    let isDataLoaded = false;
+    window.currentH2H = {};
+    
+    let careerSort = { prop: 'value', dir: -1 }; 
+    let h2hSelected = null;
+
+    window.renderH2HExplorer = function(h2hData) {
+        const btnWrap = document.getElementById('h2h_team_btns');
+        if (!btnWrap) return;
+
+        if (!btnWrap.dataset.built) {
+            btnWrap.dataset.built = '1';
+            TEAMS.forEach(t => {
+                const b = document.createElement('button');
+                b.className = 'action';
+                b.id = 'h2hbtn_' + t;
+                b.textContent = t.toUpperCase();
+                b.style.cssText = 'width:auto;padding:5px 14px;margin:0;font-size:0.8rem;';
+                b.onclick = () => {
+                    h2hSelected = t;
+                    drawH2HPanel(h2hData);
+                };
+                btnWrap.appendChild(b);
+            });
         }
-    });
-    return Object.keys(tbl).map(t=>{
-        let nrr=(tbl[t].of>0?tbl[t].rf/tbl[t].of:0)-(tbl[t].oa>0?tbl[t].ra/tbl[t].oa:0);
-        let ns=nrr>0?`+${nrr.toFixed(3)}`:nrr.toFixed(3); if(nrr===0) ns="0.000";
-        return{team:t,...tbl[t],nrr:ns};
-    }).sort((a,b)=>b.pts-a.pts||parseFloat(b.nrr)-parseFloat(a.nrr));
-}
 
-function buildCareerStats(played){
-    let cs={};
-    TEAMS.forEach(t=>{ cs[t]={...CAREER_BASE[t],m_played:CAREER_BASE[t].m_played||0,wkts_taken:CAREER_BASE[t].wkts_taken||0}; });
-    played.forEach(s=>{
-        const m=s.result;
-        if(cs[m.t1]&&cs[m.t2]){
-            cs[m.t1].m_played++;cs[m.t1].r+=m.r1;cs[m.t1].b+=m.b1;cs[m.t1].rc+=m.r2;cs[m.t1].bb+=m.b2;cs[m.t1].wl_lost+=(m.w1||0);cs[m.t1].wkts_taken+=(m.w2||0);
-            cs[m.t2].m_played++;cs[m.t2].r+=m.r2;cs[m.t2].b+=m.b2;cs[m.t2].rc+=m.r1;cs[m.t2].bb+=m.b1;cs[m.t2].wl_lost+=(m.w2||0);cs[m.t2].wkts_taken+=(m.w1||0);
-            if(m.r1>m.r2){cs[m.t1].w++;cs[m.t2].l++;}else if(m.r2>m.r1){cs[m.t2].w++;cs[m.t1].l++;}
+        if (h2hSelected) drawH2HPanel(h2hData);
+
+        function drawH2HPanel(data) {
+            document.querySelectorAll('[id^="h2hbtn_"]').forEach(b => {
+                b.style.background = b.id === 'h2hbtn_' + h2hSelected ? '#d4af37' : 'transparent';
+                b.style.color = b.id === 'h2hbtn_' + h2hSelected ? '#050505' : '#d4af37';
+            });
+
+            const opponents = TEAMS.filter(x => x !== h2hSelected);
+            let totalW = 0, totalL = 0;
+
+            const rows = opponents.map(opp => {
+                const w = data[h2hSelected]?.[opp] ?? 0;
+                const l = data[opp]?.[h2hSelected] ?? 0;
+                totalW += w; totalL += l;
+                return { opp, w, l };
+            }).sort((a, b) => (b.w - b.l) - (a.w - a.l));
+
+            const wl = totalL > 0 ? (totalW/totalL).toFixed(2) : totalW > 0 ? '∞' : '—';
+            document.getElementById('h2h_sel_name').textContent = h2hSelected.toUpperCase();
+            document.getElementById('h2h_summary').textContent = `${totalW}W  ${totalL}L  —  W/L ratio: ${wl}`;
+
+            const maxTotal = Math.max(...rows.map(r => r.w + r.l), 1);
+
+            document.getElementById('h2h_rivals').innerHTML = rows.map(r => {
+                const wPct = (r.w / maxTotal) * 100;
+                const lPct = (r.l / maxTotal) * 100;
+                const col = r.w > r.l ? '#00e676' : r.l > r.w ? '#ff5252' : '#888';
+                return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0; border-bottom:1px solid #1a1a1a;">
+                    <span style="min-width:44px;font-size:0.8rem;color:#aaa;font-weight:bold;">${r.opp.toUpperCase()}</span>
+                    <div style="flex:1;display:flex;gap:3px;height:18px;">
+                        <div style="width:${wPct}%;min-width:${r.w?'18px':'0'};background:#00e676; border-radius:3px;display:flex;align-items:center;justify-content:center; font-size:11px;color:#050505;font-weight:bold;">${r.w||''}</div>
+                        <div style="width:${lPct}%;min-width:${r.l?'18px':'0'};background:#ff5252; border-radius:3px;display:flex;align-items:center;justify-content:center; font-size:11px;color:#fff;font-weight:bold;">${r.l||''}</div>
+                        ${!r.w && !r.l ? '<span style="font-size:11px;color:#444;line-height:18px;">no matches</span>' : ''}
+                    </div>
+                    <span style="min-width:36px;text-align:right;font-size:0.85rem; font-weight:bold;color:${col};">${r.w}–${r.l}</span>
+                </div>`;
+            }).join('');
+
+            document.getElementById('h2h_panel').style.display = 'block';
+            document.getElementById('h2h_empty').style.display = 'none';
         }
-    });
-    return cs;
-}
+    };
 
-function computeDerived(cs){
-    const d={};
-    for(const t of TEAMS){
-        const c=cs[t];
-        const sr  =c.b >0?(c.r/c.b)*100:0;
-        const eco =c.bb>0?(c.rc/(c.bb/6)):0;
-        const wl  =c.l >0?c.w/c.l:(c.w>0?c.w:CAREER_BASE[t].w);
-        const avg =c.wl_lost>0?c.r/c.wl_lost:0;
-        const basra=avg+sr;
-        const wpm =c.m_played>0?c.wkts_taken/c.m_played:0;
-        const bewm=(eco===0&&wpm===0)?0:eco===0?wpm*0.3:10+(wpm*0.3)-(eco*0.7);
-        d[t]={...c,sr,eco,wl,avg,basra,bewm};
-    }
-    return d;
-}
+    window.showToast = function(msg, type = 'default') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerText = msg;
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s forwards';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    };
 
-function renderRecords(cs, played){
-    const d=computeDerived(cs);
-    const elig=TEAMS.filter(t=>d[t].m_played>0);
-    const best =(arr,fn)=>arr.reduce((b,t)=>fn(d[t])>fn(d[b])?t:b,arr[0]);
-    const worst=(arr,fn)=>arr.reduce((b,t)=>fn(d[t])<fn(d[b])?t:b,arr[0]);
-    if(!elig.length){ document.getElementById('records_grid').innerHTML='<p style="color:#444;">No matches played yet.</p>'; return; }
+    window.scrollToLegacy = function(team) {
+        const el = document.getElementById(`legacy_${team}`);
+        if(el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.querySelectorAll('.legacy-item').forEach(item => item.classList.remove('highlight'));
+            el.classList.add('highlight');
+            setTimeout(() => { el.classList.remove('highlight'); }, 2000);
+        }
+    };
 
-    const topSR  =best(elig,x=>x.sr),   botSR  =worst(elig,x=>x.sr);
-    const topEco =worst(elig,x=>x.eco),  botEco =best(elig,x=>x.eco);
-    const topWL  =best(elig,x=>x.wl),    botWL  =worst(elig,x=>x.wl);
-    const topR   =best(elig,x=>x.r),     topRC  =best(elig,x=>x.rc);
-    const topBASRA=best(elig,x=>x.basra), topBEWM=best(elig,x=>x.bewm);
-    const topWkts=best(elig,x=>x.wkts_taken);
-
-    let highInns={runs:0,wkts:0,team:'',vs:''}, lowInns={runs:9999,wkts:0,team:'',vs:''};
-    played.forEach(s=>{
-        const m=s.result;
-        if(m.r1>highInns.runs) highInns={runs:m.r1,wkts:m.w1,team:m.t1.toUpperCase(),vs:m.t2.toUpperCase()};
-        if(m.r2>highInns.runs) highInns={runs:m.r2,wkts:m.w2,team:m.t2.toUpperCase(),vs:m.t1.toUpperCase()};
-        if(m.r1<lowInns.runs)  lowInns ={runs:m.r1,wkts:m.w1,team:m.t1.toUpperCase(),vs:m.t2.toUpperCase()};
-        if(m.r2<lowInns.runs)  lowInns ={runs:m.r2,wkts:m.w2,team:m.t2.toUpperCase(),vs:m.t1.toUpperCase()};
-    });
-
-    const pbksVsKkr=window.currentH2H['pbks']?.['kkr']??0;
-    const kkrVsPbks=window.currentH2H['kkr']?.['pbks']??0;
-
-    const records=[
-        {
-            color:'gold', badge:'The Bridesmaid Curse',
-            value:'3× Runner-Up, 0 Titles',
-            team:'PBKS — S1, S2 & S3',
-            desc:'Punjab have been the best team in three consecutive group stages and lost every single final. Statistically the most dominant franchise never to win the RCPL. A curse so consistent it almost looks deliberate.'
-        },
-        {
-            color:'gold', badge:'Highest Career Strike Rate',
-            value:`${d['pbks'].sr.toFixed(1)}`,
-            team:'PBKS — All Time',
-            desc:`Punjab score at a rate no other franchise has matched across RCPL history. They hit harder, faster, and more often than everyone else — and somehow still end up with a runner-up medal.`
-        },
-        {
-            color:'green', badge:'Most Career Runs',
-            value:d[topR].r.toLocaleString(),
-            team:topR.toUpperCase(),
-            desc:`${topR.toUpperCase()} have accumulated more runs than any franchise in RCPL history. A batting machine that simply does not stop scoring.`
-        },
-        {
-            color:'purple', badge:'Most Career Wickets',
-            value:d[topWkts].wkts_taken.toLocaleString(),
-            team:topWkts.toUpperCase(),
-            desc:`${topWkts.toUpperCase()} have taken more wickets than any other franchise across all of RCPL history — a testament to their relentless bowling attack match after match.`
-        },
-        {
-            color:'gold', badge:'Best Career W/L Ratio',
-            value:`${d[topWL].wl.toFixed(2)}`,
-            team:topWL.toUpperCase(),
-            desc:`For every loss ${topWL.toUpperCase()} have suffered, they have won ${d[topWL].wl.toFixed(2)} matches. Dominance like that is genuinely rare in any tournament format.`
-        },
-        {
-            color:'blue', badge:'Worst Career W/L Ratio',
-            value:`${d[botWL].wl.toFixed(2)}`,
-            team:botWL.toUpperCase(),
-            desc:`${botWL.toUpperCase()} have managed just ${d[botWL].wl.toFixed(2)} wins per loss across their RCPL career. The most lopsided losing record in league history — by a considerable distance.`
-        },
-        {
-            color:'red', badge:'Lowest Career Strike Rate',
-            value:`${d[botSR].sr.toFixed(1)}`,
-            team:botSR.toUpperCase(),
-            desc:`${botSR.toUpperCase()} have batted at a strike rate of ${d[botSR].sr.toFixed(1)} across their entire RCPL career — a T20 rate so cautious it borders on performance art. In a format designed for aggression, this stands as a remarkable anomaly.`
-        },
-        {
-            color:'red', badge:'Worst Bowling Economy',
-            value:`${d[botEco].eco.toFixed(2)} RPO`,
-            team:botEco.toUpperCase(),
-            desc:`${botEco.toUpperCase()} have leaked more runs per over than any team in league history. Batters have treated their bowling like a training session. The worst economy rate across all RCPL seasons.`
-        },
-        {
-            color:'purple', badge:'Best Bowling Economy',
-            value:`${d[topEco].eco.toFixed(2)} RPO`,
-            team:topEco.toUpperCase(),
-            desc:`${topEco.toUpperCase()} have been the most miserly bowling side the RCPL has ever seen. Conceding the fewest runs per over across the entire league history is a record quietly worth celebrating.`
-        },
-        {
-            color:'gold', badge:'Best BASRA (Batting Index)',
-            value:`${d[topBASRA].basra.toFixed(1)}`,
-            team:topBASRA.toUpperCase(),
-            desc:`BASRA combines batting average and strike rate into a single number. ${topBASRA.toUpperCase()} lead all franchises — meaning they score both efficiently and explosively, a rare combination that no rival has replicated.`
-        },
-        {
-            color:'green', badge:'Best BEWM (Bowling Index)',
-            value:`${d[topBEWM].bewm.toFixed(2)}`,
-            team:topBEWM.toUpperCase(),
-            desc:`BEWM rewards wicket-taking economy. ${topBEWM.toUpperCase()} sit atop this leaderboard across all of RCPL history, meaning their bowlers have consistently combined penetration with control.`
-        },
-        {
-            color:'orange', badge:'The MI Paradox',
-            value:'S1 Champions → 0.27 W/L',
-            team:'MI — Post-Title Collapse',
-            desc:'Mumbai Indians lifted the very first RCPL trophy and then proceeded to construct the most catastrophic post-championship decline in league history. A W/L of 0.27 in the seasons that followed. The higher they climbed, the harder they fell.'
-        },
-        {
-            color:'red', badge:'Most Runs Conceded (Career)',
-            value:d[topRC].rc.toLocaleString(),
-            team:topRC.toUpperCase(),
-            desc:`${topRC.toUpperCase()} have haemorrhaged more runs through their bowling than any other franchise — a figure built over match after match of boundary-heavy abuse. Their fielders have seen a lot of the rope.`
-        },
-        {
-            color:'blue', badge:'PBKS vs KKR — The Rivalry',
-            value:`${pbksVsKkr} – ${kkrVsPbks}`,
-            team:'PBKS leads all-time',
-            desc:`The defining clash of the RCPL era. The team that cannot win a title versus the reigning champions. PBKS dominate the head-to-head record — which makes every final appearance between them all the more agonising for Punjab fans.`
-        },
-        {
-            color:'blue', badge:'Most Balls Consumed (Career)',
-            value:`${d['mi'].b} balls`,
-            team:'MI',
-            desc:`Mumbai Indians have faced more deliveries at the crease than any other franchise in RCPL history — yet their cumulative run tally reflects alarming inefficiency with that time. More balls does not always mean more runs.`
-        },
-        ...(played.length>0&&highInns.runs>0?[{
-            color:'gold', badge:'Highest Team Total — Season 4',
-            value:`${highInns.runs}/${highInns.wkts}`,
-            team:`${highInns.team} vs ${highInns.vs}`,
-            desc:`The biggest innings total of Season 4 so far. A display that left the opposition stunned and the scorecard looking like a misprint.`
-        }]:[]),
-        ...(played.length>0&&lowInns.runs<9999?[{
-            color:'red', badge:'Lowest Team Total — Season 4',
-            value:`${lowInns.runs}/${lowInns.wkts}`,
-            team:`${lowInns.team} vs ${lowInns.vs}`,
-            desc:`The most embarrassing batting effort of Season 4 to date. A collapse so complete it deserves its own chapter.`
-        }]:[]),
-    ];
-
-    document.getElementById('records_grid').innerHTML=records.map(r=>`
-        <div class="record-item ${r.color}">
-            <div class="record-badge">${r.badge}</div>
-            <div class="record-value">${r.value}</div>
-            <div class="record-team">${r.team}</div>
-            <div class="record-desc">${r.desc}</div>
-        </div>`).join('');
-}
-
-function updateUI(){
-    const ptable=document.getElementById('ptable_body');
-    ptable.classList.add('flash-table'); setTimeout(()=>ptable.classList.remove('flash-table'),1000);
-
-    const standings=generateTableData();
-    ptable.innerHTML='';
-    if(standings.length>4){
-        const fp=standings[3].pts;
-        standings.forEach(s=>{
-            const mx=s.pts+((TOTAL_MATCHES_PER_TEAM-s.p)*2);
-            if(s.p===TOTAL_MATCHES_PER_TEAM&&s.pts>=fp) s.status='<span class="tag q">Q</span>';
-            else if(mx<fp&&fp>0) s.status='<span class="tag e">E</span>';
-            else s.status='-';
+    window.subscribeEmail = function() {
+        const input = document.getElementById('sub_email');
+        const team = document.getElementById('sub_team').value;
+        const email = input.value.trim();
+        if(!email || !email.includes('@')) {
+            window.showToast('Please enter a valid email address.', 'error');
+            return;
+        }
+        push(ref(db, 'rcpl_subscribers'), {
+            email: email,
+            team: team,
+            timestamp: new Date().toISOString()
+        }).then(() => {
+            window.showToast(`Successfully subscribed to RCPL alerts for ${team.toUpperCase()}!`, 'success');
+            input.value = '';
+        }).catch((e) => {
+            window.showToast('Something went wrong. Please try again.', 'error');
         });
+    };
+
+    window.sendMatchAlert = function() {
+        const matchStr = document.getElementById('alert_match').value;
+        if (!matchStr) {
+            window.showToast("No unplayed matches available to alert.", "error");
+            return;
+        }
+        
+        const [t1, t2, id] = matchStr.split(',');
+        const webhookUrl = "YOUR_MAKE_WEBHOOK_URL_HERE";
+
+        if (webhookUrl === "YOUR_MAKE_WEBHOOK_URL_HERE") {
+            window.showToast("Webhook URL missing. Replace placeholder in code.", "error");
+            return;
+        }
+
+        get(child(ref(db), 'rcpl_subscribers')).then((snapshot) => {
+            let targetEmails = [];
+            if (snapshot.exists()) {
+                const subs = snapshot.val();
+                for (let key in subs) {
+                    let s = subs[key];
+                    if (s.team === t1 || s.team === t2 || s.team === 'all') {
+                        targetEmails.push(s.email);
+                    }
+                }
+            }
+
+            if(targetEmails.length === 0) {
+                window.showToast(`No subscribers found for ${t1.toUpperCase()} or ${t2.toUpperCase()}.`, "error");
+                return;
+            }
+
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    team1: t1.toUpperCase(), 
+                    team2: t2.toUpperCase(), 
+                    matchId: id,
+                    emails: targetEmails
+                })
+            }).then(res => {
+                window.showToast(`Alert triggered! ${targetEmails.length} fans notified.`, "success");
+            }).catch(e => {
+                window.showToast("Failed to send alert to automation server.", "error");
+            });
+        });
+    };
+    
+    window.swapMatches = function() {
+        const id1 = parseInt(document.getElementById('swap_i').value);
+        const id2 = parseInt(document.getElementById('swap_j').value);
+
+        if (!id1 || !id2 || id1 === id2) {
+            window.showToast("Please enter two different valid match numbers.", "error");
+            return;
+        }
+
+        const idx1 = schedule.findIndex(m => m.id === id1);
+        const idx2 = schedule.findIndex(m => m.id === id2);
+
+        if (idx1 === -1 || idx2 === -1) {
+            window.showToast("One or both match numbers not found in the schedule.", "error");
+            return;
+        }
+
+        if (confirm(`Swap Match ${id1} and Match ${id2}?`)) {
+            let originalId1 = schedule[idx1].id;
+            let originalId2 = schedule[idx2].id;
+            
+            let temp = schedule[idx1];
+            schedule[idx1] = schedule[idx2];
+            schedule[idx2] = temp;
+            
+            schedule[idx1].id = originalId1;
+            schedule[idx2].id = originalId2;
+            
+            pushToCloud();
+            
+            document.getElementById('swap_i').value = '';
+            document.getElementById('swap_j').value = '';
+            window.showToast("Matches swapped successfully.", "success");
+        }
+    };
+
+    window.updateMatchSummary = function() {
+        const selectEl = document.getElementById('edit_summary_match');
+        if (!selectEl) return;
+        
+        const matchId = parseInt(selectEl.value);
+        const newDesc = document.getElementById('edit_summary_text').value.trim();
+
+        if (!matchId) {
+            window.showToast("Please select a match.", "error");
+            return;
+        }
+
+        const matchIndex = schedule.findIndex(m => m.id === matchId);
+        if (matchIndex !== -1 && schedule[matchIndex].played) {
+            schedule[matchIndex].result.desc = newDesc;
+            pushToCloud();
+            document.getElementById('edit_summary_text').value = '';
+            window.showToast(`Summary updated for Match ${matchId}.`, "success");
+        } else {
+            window.showToast("Could not update match.", "error");
+        }
+    };
+
+    window.resetSpecificMatch = function() {
+        const selectEl = document.getElementById('reset_match_select');
+        if (!selectEl) return;
+
+        const matchId = parseInt(selectEl.value);
+        if (!matchId) {
+            window.showToast("Select a match to reset.", "error");
+            return;
+        }
+
+        if (confirm(`Are you absolutely sure you want to erase all data for Match ${matchId}? This cannot be undone.`)) {
+            const matchIndex = schedule.findIndex(m => m.id === matchId);
+            if (matchIndex !== -1) {
+                schedule[matchIndex].played = false;
+                schedule[matchIndex].result = null;
+                pushToCloud();
+                window.showToast(`Match ${matchId} has been reset.`, "success");
+            }
+        }
+    };
+
+    window.sortCareer = function(prop) {
+        if (careerSort.prop === prop) {
+            careerSort.dir *= -1; 
+        } else {
+            careerSort.prop = prop;
+            careerSort.dir = -1; 
+        }
+        
+        document.querySelectorAll('.sortable').forEach(th => {
+            th.classList.remove('sort-asc', 'sort-desc');
+        });
+        const activeTh = document.getElementById(`th_${prop}`);
+        if(activeTh) {
+            activeTh.classList.add(careerSort.dir === 1 ? 'sort-asc' : 'sort-desc');
+        }
+        
+        updateUI(); 
+    };
+
+    function pushToCloud() {
+        set(dbRef, { schedule: schedule });
     }
-    standings.forEach(s=>{
-        const fh=s.form.slice(-5).map(f=>`<span class="form-dot dot-${f.toLowerCase()}" title="${f}"></span>`).join('');
-        ptable.innerHTML+=`<tr><td style="color:#fff;text-align:left;"><b>${s.team.toUpperCase()}</b></td><td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td><td style="color:#d4af37;"><b>${s.pts}</b></td><td>${s.nrr}</td><td>${fh||'-'}</td><td>${s.status||'-'}</td></tr>`;
+
+    onValue(dbRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data && data.schedule) {
+            schedule = data.schedule;
+        } else {
+            schedule = generateSchedule();
+            pushToCloud(); 
+        }
+        
+        if (!isDataLoaded) {
+            initUI();
+            isDataLoaded = true;
+            document.getElementById('loading_overlay').style.opacity = '0';
+            setTimeout(() => { document.getElementById('loading_overlay').style.display = 'none'; }, 500);
+            document.getElementById('main_app').style.opacity = '1';
+        }
+        updateUI();
     });
 
-    document.getElementById('orange_body').innerHTML=[...standings].sort((a,b)=>b.rf-a.rf).slice(0,5).map(s=>`<tr><td style="text-transform:uppercase;text-align:left;">${s.team}</td><td style="color:#d4af37;font-weight:bold;">${s.rf}</td></tr>`).join('');
-    document.getElementById('purple_body').innerHTML=[...standings].sort((a,b)=>b.wkts_taken-a.wkts_taken).slice(0,5).map(s=>`<tr><td style="text-transform:uppercase;text-align:left;">${s.team}</td><td style="color:#d4af37;font-weight:bold;">${s.wkts_taken}</td></tr>`).join('');
+    function generateSchedule() {
+        let tempSchedule = [];
+        let idCounter = 1;
 
-    const played=schedule.filter(s=>s.played&&s.result);
+        for (let i = 0; i < GROUP_A.length; i++) {
+            for (let j = i + 1; j < GROUP_A.length; j++) {
+                tempSchedule.push({ id: 0, t1: GROUP_A[i], t2: GROUP_A[j], played: false, result: null });
+            }
+        }
+        for (let i = 0; i < GROUP_B.length; i++) {
+            for (let j = i + 1; j < GROUP_B.length; j++) {
+                tempSchedule.push({ id: 0, t1: GROUP_B[i], t2: GROUP_B[j], played: false, result: null });
+            }
+        }
+        for (let i = 0; i < GROUP_A.length; i++) {
+            for (let j = 0; j < GROUP_B.length; j++) {
+                tempSchedule.push({ id: 0, t1: GROUP_A[i], t2: GROUP_B[j], played: false, result: null });
+                tempSchedule.push({ id: 0, t1: GROUP_B[j], t2: GROUP_A[i], played: false, result: null });
+            }
+        }
 
-    const alertSel=document.getElementById('alert_match');
-    if(alertSel) alertSel.innerHTML=schedule.filter(s=>!s.played).map(m=>`<option value="${m.t1},${m.t2},${m.id}">Match ${m.id}: ${m.t1.toUpperCase()} vs ${m.t2.toUpperCase()}</option>`).join('');
+        let finalSchedule = [];
+        let success = false;
+        let attempts = 0;
 
-    const editSel=document.getElementById('edit_summary_match'), resetSel=document.getElementById('reset_match_select');
-    if(editSel&&resetSel){
-        const opts=played.map(s=>`<option value="${s.id}">Match ${s.id}: ${s.result.t1.toUpperCase()} vs ${s.result.t2.toUpperCase()}</option>`).join('');
-        editSel.innerHTML=opts; resetSel.innerHTML=opts;
+        while (!success && attempts < 500) {
+            attempts++;
+            let pool = [...tempSchedule];
+            for (let i = pool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pool[i], pool[j]] = [pool[j], pool[i]];
+            }
+
+            finalSchedule = [];
+            let lastTeams = [];
+            let valid = true;
+
+            while (pool.length > 0) {
+                let matchIdx = pool.findIndex(m => !lastTeams.includes(m.t1) && !lastTeams.includes(m.t2));
+                if (matchIdx !== -1) {
+                    let m = pool.splice(matchIdx, 1)[0];
+                    finalSchedule.push(m);
+                    lastTeams = [m.t1, m.t2];
+                } else {
+                    valid = false; break;
+                }
+            }
+            if (valid) success = true;
+        }
+
+        if (!success) finalSchedule = tempSchedule; 
+        finalSchedule.forEach(m => m.id = idCounter++);
+        return finalSchedule;
     }
 
-    const h2h=JSON.parse(JSON.stringify(H2H_BASE));
-    let highestTotals=[];
-    played.forEach(s=>{
-        const m=s.result;
-        highestTotals.push({team:m.t1,runs:m.r1,wkts:m.w1,vs:m.t2},{team:m.t2,runs:m.r2,wkts:m.w2,vs:m.t1});
-        if(m.r1>m.r2) h2h[m.t1][m.t2]++;
-        else if(m.r2>m.r1) h2h[m.t2][m.t1]++;
-    });
-    window.currentH2H=h2h;
-    renderH2HPanel();
+    function initUI() {
+        const selects = ['t1', 't2', 'pred_t1', 'pred_t2'];
+        selects.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                el.innerHTML = '';
+                TEAMS.forEach(t => {
+                    let opt = document.createElement('option');
+                    opt.value = t; opt.innerText = t.toUpperCase();
+                    el.appendChild(opt);
+                });
+            }
+        });
+        if(document.getElementById('t2')) document.getElementById('t2').selectedIndex = 1;
+        if(document.getElementById('pred_t2')) document.getElementById('pred_t2').selectedIndex = 1;
 
-    highestTotals.sort((a,b)=>b.runs-a.runs);
-    document.getElementById('highest_totals_body').innerHTML=highestTotals.slice(0,5).map(t=>`<tr><td style="text-transform:uppercase;text-align:left;">${t.team}</td><td style="color:#d4af37;font-weight:bold;">${t.runs}/${t.wkts}</td><td style="font-size:0.75rem;color:#888;">vs ${t.vs.toUpperCase()}</td></tr>`).join('');
+        document.getElementById('group_a_teams').innerHTML = GROUP_A.map(t => `<span class="team-pill team-${t}" onclick="window.scrollToLegacy('${t}')">${t}</span>`).join('');
+        document.getElementById('group_b_teams').innerHTML = GROUP_B.map(t => `<span class="team-pill team-${t}" onclick="window.scrollToLegacy('${t}')">${t}</span>`).join('');
+    }
 
-    const logTbody=document.getElementById('match_log_body');
-    logTbody.innerHTML=''; let pc=0;
-    schedule.forEach(s=>{
-        let row='';
-        if(s.played&&s.result){
-            pc++; const m=s.result;
-            let win="Match Tied";
-            if(m.r1>m.r2) win=`<span class="match-highlight">${m.t1.toUpperCase()} won by ${m.r1-m.r2} runs</span>`;
-            else if(m.r2>m.r1) win=`<span class="match-highlight">${m.t2.toUpperCase()} won by ${10-(m.w2||0)} wickets</span>`;
-            const desc=m.desc?` <span style="color:#aaa;font-style:italic;">— ${m.desc}</span>`:'';
-            row=`<td class="match-result-text" style="text-align:left;">${m.t1.toUpperCase()}: ${m.r1}/${m.w1} (${fmtOvers(m.b1)}) &nbsp;|&nbsp; ${m.t2.toUpperCase()}: ${m.r2}/${m.w2} (${fmtOvers(m.b2)}) &nbsp;—&nbsp; ${win}${desc}</td>`;
-        } else row=`<td style="color:#444;font-style:italic;text-align:left;">Awaiting Result</td>`;
-        logTbody.innerHTML+=`<tr class="match-row"><td style="color:#666;text-align:left;">${s.id}</td><td class="match-fixture">${s.t1.toUpperCase()} vs ${s.t2.toUpperCase()}</td>${row}</tr>`;
-    });
-    document.getElementById('match_progress').innerText=`${pc} / 70 Completed`;
-    window.currentStandings=standings;
+    function calculateOvers(balls) { return Math.floor(balls / 6) + ((balls % 6) / 6.0); }
+    function formatDisplayOvers(balls) { return Math.floor(balls / 6) + "." + (balls % 6); }
 
-    const cs=buildCareerStats(played);
-    renderRecords(cs,played);
+    window.addMatch = function() {
+        const data = {
+            t1: document.getElementById('t1').value,
+            r1: parseInt(document.getElementById('r1').value) || 0,
+            w1: parseInt(document.getElementById('w1').value) || 0,
+            b1: parseInt(document.getElementById('b1').value) || 0,
+            t2: document.getElementById('t2').value,
+            r2: parseInt(document.getElementById('r2').value) || 0,
+            w2: parseInt(document.getElementById('w2').value) || 0,
+            b2: parseInt(document.getElementById('b2').value) || 0,
+            desc: document.getElementById('match_desc').value.trim()
+        };
 
-    const cArr=TEAMS.map(t=>{
-        const c=cs[t];
-        const avg=c.wl_lost>0?c.r/c.wl_lost:(c.r>0?c.r:0);
-        const sr=c.b>0?(c.r/c.b)*100:0;
-        const eco=c.bb>0?(c.rc/(c.bb/6)):0;
-        const wl=c.l>0?c.w/c.l:(c.w>0?c.w:CAREER_BASE[t].w);
-        const wpm=c.m_played>0?c.wkts_taken/c.m_played:0;
-        const basra=avg+sr;
-        const bewm=(eco===0&&wpm===0)?0:eco===0?wpm*0.3:10+(wpm*0.3)-(eco*0.7);
-        const titles=['mi','rcb','kkr'].includes(t)?1:0, ru=t==='pbks'?3:0;
-        let val=(titles*50000)+(ru*10000)+(wl*2000)+(basra*50)+(bewm*500)-(eco*100);
-        if(c.m_played===0) val=0; else if(val<0) val=0;
-        return{team:t,wkts_taken:c.wkts_taken,bewm,basra,r:c.r,b:c.b,rc:c.rc,bb:c.bb,avg,sr,eco,wl,value:val};
-    });
-    cArr.sort((a,b)=>(a[careerSort.prop]>b[careerSort.prop]?1:-1)*careerSort.dir);
-    document.getElementById('career_body').innerHTML=cArr.map(c=>`<tr>
-        <td style="text-transform:uppercase;font-weight:bold;color:#fff;text-align:left;">${c.team}</td>
-        <td>${c.r}</td><td>${c.b}</td><td>${c.rc}</td><td>${c.bb}</td><td>${c.wkts_taken}</td>
-        <td>${c.avg.toFixed(2)}</td><td>${c.sr.toFixed(2)}</td>
-        <td style="color:#d4af37;font-weight:bold;">${c.basra.toFixed(2)}</td>
-        <td>${c.eco.toFixed(2)}</td>
-        <td style="color:#d4af37;font-weight:bold;">${c.bewm.toFixed(2)}</td>
-        <td>${c.wl.toFixed(2)}</td>
-        <td style="color:#00e676;font-weight:bold;">$${c.value.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-    </tr>`).join('');
-}
+        if (data.t1 === data.t2) {
+            window.showToast("Teams must be different.", "error");
+            return;
+        }
 
-window.predictMatch = function(){
-    const t1=document.getElementById('pred_t1').value, t2=document.getElementById('pred_t2').value;
-    const rd=document.getElementById('prediction_result');
-    if(t1===t2){ rd.innerHTML=`<span style="color:#d50000;">Select different teams.</span>`; return; }
-    const s1=window.currentStandings?.find(s=>s.team===t1), s2=window.currentStandings?.find(s=>s.team===t2);
-    if(!s1||!s2||(s1.p===0&&s2.p===0)){ rd.innerHTML=`<span style="color:#aaa;">Not enough data yet.</span>`; return; }
-    let t1W=0,t2W=0,ties=0;
-    schedule.filter(s=>s.played&&s.result&&((s.result.t1===t1&&s.result.t2===t2)||(s.result.t1===t2&&s.result.t2===t1))).forEach(s=>{
-        const m=s.result;
-        if(m.r1>m.r2){m.t1===t1?t1W++:t2W++;}else if(m.r2>m.r1){m.t2===t1?t1W++:t2W++;}else ties++;
-    });
-    const oT1=window.currentH2H[t1][t2], oT2=window.currentH2H[t2][t1];
-    const fs=f=>f.slice(-3).reduce((a,v)=>a+(v==='W'?2:v==='T'?1:0),0);
-    let s1c=(s1.pts*1.5)+(parseFloat(s1.nrr)*5)+(fs(s1.form)*3);
-    let s2c=(s2.pts*1.5)+(parseFloat(s2.nrr)*5)+(fs(s2.form)*3);
-    const tot=(s1c+s2c)||1;
-    const p1=Math.max(10,Math.min(90,(s1c/tot)*100)), p2=100-p1;
-    rd.innerHTML=`
-        <div style="font-size:0.9rem;color:#aaa;margin-bottom:4px;">Overall H2H: <span style="color:#fff">${t1.toUpperCase()} ${oT1} - ${oT2} ${t2.toUpperCase()}</span></div>
-        <div style="font-size:0.9rem;color:#aaa;margin-bottom:8px;">H2H This Season: <span style="color:#fff">${t1.toUpperCase()} ${t1W} - ${t2W} ${t2.toUpperCase()}</span> (Ties: ${ties})</div>
-        <div style="font-size:1.1rem;"><span style="color:#d4af37;">${t1.toUpperCase()}:</span> <span style="color:#fff;">${p1.toFixed(1)}%</span> &nbsp;|&nbsp; <span style="color:#d4af37;">${t2.toUpperCase()}:</span> <span style="color:#fff;">${p2.toFixed(1)}%</span></div>`;
-};
+        let slot = schedule.find(x => !x.played && ((x.t1 === data.t1 && x.t2 === data.t2) || (x.t1 === data.t2 && x.t2 === data.t1)));
+        if (!slot) {
+            window.showToast("This matchup has already reached its maximum allowed matches!", "error");
+            return;
+        }
+
+        slot.played = true;
+        slot.result = data;
+
+        pushToCloud();
+
+        ['r1','w1','r2','w2','match_desc'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('b1').value = 120; document.getElementById('b2').value = 120;
+        window.showToast("Match saved successfully.", "success");
+    };
+
+    window.clearData = function() {
+        if(confirm("This will delete the database for everyone across the internet. Proceed?")) {
+            schedule = generateSchedule();
+            pushToCloud();
+            window.showToast("Tournament reset.", "success");
+        }
+    };
+
+    window.unlockAdmin = function() {
+        let pass = prompt("Enter admin password:");
+        if (pass === "rcpl2026") {
+            document.getElementById("admin_panel").style.display = "block";
+            document.getElementById("view_panel").style.gridColumn = "auto";
+            window.showToast("Admin access granted.", "success");
+        } else if (pass !== null) {
+            window.showToast("Incorrect password.", "error");
+        }
+    };
+
+    function generateTableData() {
+        let table = {};
+        TEAMS.forEach(t => table[t] = { p:0, w:0, l:0, t:0, pts:0, rf:0, of:0, ra:0, oa:0, form: [], wkts_taken: 0 });
+        let playedMatches = schedule.filter(s => s.played && s.result);
+        
+        playedMatches.forEach(s => {
+            let m = s.result; 
+            let o1 = calculateOvers(m.b1), o2 = calculateOvers(m.b2);
+            if (table[m.t1] && table[m.t2]) {
+                table[m.t1].p++; table[m.t2].p++;
+                
+                table[m.t1].rf += m.r1; table[m.t1].of += o1;
+                table[m.t1].ra += m.r2; table[m.t1].oa += o2;
+                table[m.t1].wkts_taken += (m.w2 || 0);
+
+                table[m.t2].rf += m.r2; table[m.t2].of += o2;
+                table[m.t2].ra += m.r1; table[m.t2].oa += o1;
+                table[m.t2].wkts_taken += (m.w1 || 0);
+                
+                if (m.r1 > m.r2) {
+                    table[m.t1].w++; table[m.t1].pts += 2; table[m.t1].form.push('W');
+                    table[m.t2].l++; table[m.t2].form.push('L');
+                } else if (m.r2 > m.r1) {
+                    table[m.t2].w++; table[m.t2].pts += 2; table[m.t2].form.push('W');
+                    table[m.t1].l++; table[m.t1].form.push('L');
+                } else {
+                    table[m.t1].t++; table[m.t1].pts += 1; table[m.t1].form.push('T');
+                    table[m.t2].t++; table[m.t2].pts += 1; table[m.t2].form.push('T');
+                }
+            }
+        });
+
+        let arr = Object.keys(table).map(t => {
+            let nrr = (table[t].of > 0 ? table[t].rf/table[t].of : 0) - (table[t].oa > 0 ? table[t].ra/table[t].oa : 0);
+            let nrrStr = nrr > 0 ? `+${nrr.toFixed(3)}` : nrr.toFixed(3);
+            if (nrr === 0) nrrStr = "0.000";
+            return { team: t, ...table[t], nrr: nrrStr };
+        });
+        return arr.sort((a, b) => b.pts - a.pts || parseFloat(b.nrr) - parseFloat(a.nrr));
+    }
+
+    function updateUI() {
+        let ptable = document.getElementById('ptable_body');
+        ptable.classList.add('flash-table');
+        setTimeout(() => ptable.classList.remove('flash-table'), 1000);
+
+        let standings = generateTableData();
+        ptable.innerHTML = '';
+
+        if (standings.length > 4) {
+            let fourthPlacePts = standings[3].pts;
+            standings.forEach(s => {
+                let maxPossible = s.pts + ((TOTAL_MATCHES_PER_TEAM - s.p) * 2);
+                if (s.p === TOTAL_MATCHES_PER_TEAM && s.pts >= fourthPlacePts) s.status = '<span class="tag q">Q</span>';
+                else if (maxPossible < fourthPlacePts && fourthPlacePts > 0) s.status = '<span class="tag e">E</span>';
+                else s.status = '-';
+            });
+        }
+
+        standings.forEach((s) => {
+            let formHtml = s.form.slice(-5).map(f => `<span class="form-dot dot-${f.toLowerCase()}" title="${f}"></span>`).join('');
+            
+            ptable.innerHTML += `<tr>
+                <td style="color: #fff; text-align: left;"><b>${s.team.toUpperCase()}</b></td>
+                <td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td>
+                <td style="color: #d4af37;"><b>${s.pts}</b></td><td>${s.nrr}</td>
+                <td>${formHtml || '-'}</td><td>${s.status || '-'}</td>
+            </tr>`;
+        });
+
+        const orangeStandings = [...standings].sort((a, b) => b.rf - a.rf).slice(0, 5);
+        document.getElementById('orange_body').innerHTML = orangeStandings.map(s => `<tr><td style="text-transform: uppercase; text-align: left;">${s.team}</td><td style="color: #d4af37; font-weight: bold;">${s.rf}</td></tr>`).join('');
+
+        const purpleStandings = [...standings].sort((a, b) => b.wkts_taken - a.wkts_taken).slice(0, 5);
+        document.getElementById('purple_body').innerHTML = purpleStandings.map(s => `<tr><td style="text-transform: uppercase; text-align: left;">${s.team}</td><td style="color: #d4af37; font-weight: bold;">${s.wkts_taken}</td></tr>`).join('');
+        
+        let playedMatches = schedule.filter(s => s.played && s.result);
+        
+        let unplayedMatches = schedule.filter(s => !s.played);
+        let alertSelect = document.getElementById('alert_match');
+        if (alertSelect) {
+            alertSelect.innerHTML = unplayedMatches.map(m => `<option value="${m.t1},${m.t2},${m.id}">Match ${m.id}: ${m.t1.toUpperCase()} vs ${m.t2.toUpperCase()}</option>`).join('');
+        }
+
+        let editSummarySelect = document.getElementById('edit_summary_match');
+        let resetSelect = document.getElementById('reset_match_select');
+        if (editSummarySelect && resetSelect) {
+            let optionsHtml = playedMatches.map(s => {
+                let m = s.result;
+                return `<option value="${s.id}">Match ${s.id}: ${m.t1.toUpperCase()} vs ${m.t2.toUpperCase()}</option>`;
+            }).join('');
+            editSummarySelect.innerHTML = optionsHtml;
+            resetSelect.innerHTML = optionsHtml;
+        }
+
+        let currentH2H = JSON.parse(JSON.stringify(H2H_BASE));
+        let highestTotals = [];
+
+        playedMatches.forEach(s => {
+            let m = s.result;
+            highestTotals.push({ team: m.t1, runs: m.r1, wkts: m.w1, vs: m.t2 });
+            highestTotals.push({ team: m.t2, runs: m.r2, wkts: m.w2, vs: m.t1 });
+
+            if (m.r1 > m.r2) {
+                currentH2H[m.t1][m.t2]++;
+            } else if (m.r2 > m.r1) {
+                currentH2H[m.t2][m.t1]++;
+            }
+        });
+
+        window.currentH2H = currentH2H;
+        window.renderH2HExplorer(window.currentH2H);
+
+        highestTotals.sort((a, b) => b.runs - a.runs).slice(0, 5);
+
+        document.getElementById('highest_totals_body').innerHTML = highestTotals.slice(0, 5).map(t =>
+            `<tr><td style="text-transform: uppercase; text-align: left;">${t.team}</td><td style="color: #d4af37; font-weight: bold;">${t.runs}/${t.wkts}</td><td style="font-size:0.75rem; color:#888;">vs ${t.vs.toUpperCase()}</td></tr>`
+        ).join('');
+
+        let logTbody = document.getElementById('match_log_body');
+        logTbody.innerHTML = '';
+        let playedCount = 0;
+
+        schedule.forEach(s => {
+            let rowHtml = ``;
+            if (s.played && s.result) {
+                playedCount++;
+                let m = s.result;
+                let winStr = "Match Tied";
+                if (m.r1 > m.r2) winStr = `<span class="match-highlight">${m.t1.toUpperCase()} won by ${m.r1 - m.r2} runs</span>`;
+                else if (m.r2 > m.r1) winStr = `<span class="match-highlight">${m.t2.toUpperCase()} won by ${10 - (m.w2 || 0)} wickets</span>`;
+
+                let descStr = m.desc ? ` <span style="color:#aaa; font-style:italic;">— ${m.desc}</span>` : "";
+
+                rowHtml = `<td class="match-result-text" style="text-align: left;">${m.t1.toUpperCase()}: ${m.r1}/${m.w1} (${formatDisplayOvers(m.b1)}) &nbsp;|&nbsp; ${m.t2.toUpperCase()}: ${m.r2}/${m.w2} (${formatDisplayOvers(m.b2)}) &nbsp;—&nbsp; ${winStr}${descStr}</td>`;
+            } else {
+                rowHtml = `<td style="color: #444; font-style: italic; text-align: left;">Awaiting Result</td>`;
+            }
+            logTbody.innerHTML += `<tr class="match-row"><td style="color: #666; text-align: left;">${s.id}</td><td class="match-fixture">${s.t1.toUpperCase()} vs ${s.t2.toUpperCase()}</td>${rowHtml}</tr>`;
+        });
+
+        document.getElementById('match_progress').innerText = `${playedCount} / 70 Completed`;
+        window.currentStandings = standings;
+
+        let careerStats = {};
+        TEAMS.forEach(t => {
+            careerStats[t] = { 
+                ...CAREER_BASE[t],
+                m_played: CAREER_BASE[t].m_played || 0,
+                wkts_taken: CAREER_BASE[t].wkts_taken || 0
+            };
+        });
+
+        playedMatches.forEach(s => {
+            let m = s.result;
+            if(careerStats[m.t1] && careerStats[m.t2]) {
+                careerStats[m.t1].m_played++;
+                careerStats[m.t1].r += m.r1;
+                careerStats[m.t1].b += m.b1;
+                careerStats[m.t1].rc += m.r2;
+                careerStats[m.t1].bb += m.b2;
+                careerStats[m.t1].wl_lost += (m.w1 || 0);
+                careerStats[m.t1].wkts_taken += (m.w2 || 0);
+
+                careerStats[m.t2].m_played++;
+                careerStats[m.t2].r += m.r2;
+                careerStats[m.t2].b += m.b2;
+                careerStats[m.t2].rc += m.r1;
+                careerStats[m.t2].bb += m.b1;
+                careerStats[m.t2].wl_lost += (m.w2 || 0);
+                careerStats[m.t2].wkts_taken += (m.w1 || 0);
+
+                if (m.r1 > m.r2) {
+                    careerStats[m.t1].w++;
+                    careerStats[m.t2].l++;
+                } else if (m.r2 > m.r1) {
+                    careerStats[m.t2].w++;
+                    careerStats[m.t1].l++;
+                }
+            }
+        });
+
+        let careerHtml = '';
+        let cStatsArr = [];
+
+        for (let t of TEAMS) {
+            let c = careerStats[t];
+            let avg = c.wl_lost > 0 ? (c.r / c.wl_lost) : (c.r > 0 ? c.r : 0);
+            let sr = c.b > 0 ? (c.r / c.b) * 100 : 0;
+            let eco = c.bb > 0 ? (c.rc / (c.bb / 6)) : 0;
+            let rr = c.b > 0 ? (c.r / (c.b / 6)) : 0;
+            let wl = c.l > 0 ? (c.w / c.l) : (c.w > 0 ? c.w : CAREER_BASE[t].w);
+            let wpm = c.m_played > 0 ? (c.wkts_taken / c.m_played) : 0;
+
+            let basra = avg + sr;
+            let bewm = 0;
+            if (eco === 0 && wpm === 0) bewm = 0;
+            else if (eco === 0) bewm = (wpm * 0.3);
+            else bewm = 10 + (wpm * 0.3) - (eco * 0.7);
+
+            let titles = ['mi', 'rcb', 'kkr'].includes(t) ? 1 : 0;
+            let runnersUp = (t === 'pbks') ? 3 : 0;
+
+            let value = (titles * 50000) + (runnersUp * 10000) + (wl * 2000) + (basra * 50) + (bewm * 500) - (eco * 100);
+            if (c.m_played === 0) value = 0;
+            else if (value < 0) value = 0; 
+
+            cStatsArr.push({
+                team: t, wkts_taken: c.wkts_taken, bewm: bewm, basra: basra,
+                r: c.r, b: c.b, rc: c.rc, bb: c.bb, avg: avg, sr: sr, eco: eco, rr: rr, wl: wl, value: value
+            });
+        }
+
+        // Generate dynamic milestones
+        let teamCounts = {};
+        TEAMS.forEach(t => teamCounts[t] = 0);
+        let allTimeRecs = [];
+
+        allTimeRecs.push({team: 'pbks', title: 'The Bridesmaid Curse', val: '3x Runner-Up', sub: 'S1, S2 & S3', desc: 'Statistically dominant, yet they have suffered defeat in every single grand final of the RCPL.'});
+        allTimeRecs.push({team: 'kkr', title: 'The S3 Champions', val: 'Elite W/L', sub: 'Reigning Kings', desc: 'They combine ruthless efficiency with aggressive striking to routinely dominate the playoff brackets.'});
+        allTimeRecs.push({team: 'rcb', title: 'The S2 Champions', val: 'Firepower', sub: 'Heavyweight Tier', desc: 'Known for posting massive explosive totals, they claimed the Season 2 hardware through sheer brute force.'});
+        allTimeRecs.push({team: 'mi', title: 'The S1 Paradox', val: 'S1 Champs', sub: 'Post-Title Collapse', desc: 'They won the inaugural season, only to immediately crater into an astonishingly low win ratio ever since.'});
+
+        let mostR = [...cStatsArr].sort((a,b)=>b.r - a.r)[0];
+        allTimeRecs.push({team: mostR.team, title: 'Most Career Runs', val: mostR.r, sub: mostR.team.toUpperCase(), desc: 'An absolute batting machine. No other franchise has accumulated as many runs across the league history.'});
+
+        let bestWL = [...cStatsArr].sort((a,b)=>b.wl - a.wl)[0];
+        allTimeRecs.push({team: bestWL.team, title: 'Best Win Ratio', val: bestWL.wl.toFixed(2), sub: bestWL.team.toUpperCase(), desc: 'The gold standard. They convert matches into victories at a rate that terrifies the opposition.'});
+
+        let worstEco = [...cStatsArr].sort((a,b)=>b.eco - a.eco)[0];
+        allTimeRecs.push({team: worstEco.team, title: 'Worst Economy', val: worstEco.eco.toFixed(2) + ' RPO', sub: worstEco.team.toUpperCase(), desc: 'Batters treat their bowling attack like a training session. They leak runs at a historic pace.'});
+
+        let bestBasra = [...cStatsArr].sort((a,b)=>b.basra - a.basra)[0];
+        allTimeRecs.push({team: bestBasra.team, title: 'Highest BASRA', val: bestBasra.basra.toFixed(1), sub: bestBasra.team.toUpperCase(), desc: 'The ultimate batting index. They perfectly balance aggressive strike rates with high run averages.'});
+
+        let lowestSR = [...cStatsArr].sort((a,b)=>a.sr - b.sr)[0];
+        allTimeRecs.push({team: lowestSR.team, title: 'Lowest Strike Rate', val: lowestSR.sr.toFixed(1), sub: lowestSR.team.toUpperCase(), desc: 'They bat with extreme, bordering on ridiculous, caution. An anomaly in an otherwise explosive league.'});
+
+        let mostW = [...cStatsArr].sort((a,b)=>b.wkts_taken - a.wkts_taken)[0];
+        allTimeRecs.push({team: mostW.team, title: 'Most Wickets', val: mostW.wkts_taken, sub: mostW.team.toUpperCase(), desc: 'Lethal penetration. Their bowlers have dismantled more batting lineups than any other franchise.'});
+
+        let worstWL = [...cStatsArr].sort((a,b)=>a.wl - b.wl)[0];
+        allTimeRecs.push({team: worstWL.team, title: 'Worst Win Ratio', val: worstWL.wl.toFixed(2), sub: worstWL.team.toUpperCase(), desc: 'A statistical nightmare. They have struggled immensely to find the winning formula across the years.'});
+
+        let filteredRecs = [];
+        allTimeRecs.forEach(r => {
+            if(teamCounts[r.team] < 3) {
+                filteredRecs.push(r);
+                teamCounts[r.team]++;
+            }
+        });
+
+        document.getElementById('alltime_records_grid').innerHTML = filteredRecs.map(r => `
+            <div class="record-card record-${r.team}">
+                <h4>${r.title}</h4>
+                <div class="record-val">${r.val}</div>
+                <div class="record-sub">${r.sub}</div>
+                <p>${r.desc}</p>
+            </div>
+        `).join('');
+
+        // S4 live records logic
+        if(playedMatches.length > 0) {
+            let hs = null, ls = null, bwRuns = null, bwWkts = null;
+            playedMatches.forEach(m => {
+                let r = m.result;
+                if(!hs || r.r1 > hs.runs) hs = {team: r.t1, runs: r.r1, wkts: r.w1, opp: r.t2};
+                if(!hs || r.r2 > hs.runs) hs = {team: r.t2, runs: r.r2, wkts: r.w2, opp: r.t1};
+
+                if(!ls || r.r1 < ls.runs) ls = {team: r.t1, runs: r.r1, wkts: r.w1, opp: r.t2};
+                if(!ls || r.r2 < ls.runs) ls = {team: r.t2, runs: r.r2, wkts: r.w2, opp: r.t1};
+
+                if (r.r1 > r.r2) {
+                    if(!bwRuns || (r.r1 - r.r2) > bwRuns.margin) bwRuns = {team: r.t1, margin: r.r1 - r.r2, opp: r.t2, type: 'Runs'};
+                } else if (r.r2 > r.r1) {
+                    if(!bwWkts || (10 - (r.w2||0)) > bwWkts.margin) bwWkts = {team: r.t2, margin: 10 - (r.w2||0), opp: r.t1, type: 'Wickets'};
+                }
+            });
+
+            let s4html = '';
+            s4html += `<div class="record-card record-${hs.team}"><h4>Highest Total</h4><div class="record-val">${hs.runs}/${hs.wkts}</div><div class="record-sub">${hs.team.toUpperCase()} vs ${hs.opp.toUpperCase()}</div><p>Setting the benchmark batting performance for the current season.</p></div>`;
+            s4html += `<div class="record-card record-${ls.team}"><h4>Lowest Total</h4><div class="record-val">${ls.runs}/${ls.wkts}</div><div class="record-sub">${ls.team.toUpperCase()} vs ${ls.opp.toUpperCase()}</div><p>An unfortunate batting collapse that this franchise will want to quickly move past.</p></div>`;
+            if (bwRuns) s4html += `<div class="record-card record-${bwRuns.team}"><h4>Biggest Win (Runs)</h4><div class="record-val">${bwRuns.margin} Runs</div><div class="record-sub">${bwRuns.team.toUpperCase()} def ${bwRuns.opp.toUpperCase()}</div><p>A completely dominant and one-sided defense of their total.</p></div>`;
+            if (bwWkts) s4html += `<div class="record-card record-${bwWkts.team}"><h4>Biggest Win (Wkts)</h4><div class="record-val">${bwWkts.margin} Wkts</div><div class="record-sub">${bwWkts.team.toUpperCase()} def ${bwWkts.opp.toUpperCase()}</div><p>A flawless chase that entirely dismantled the opposition's bowling attack.</p></div>`;
+            
+            document.getElementById('s4_records_grid').innerHTML = s4html;
+        } else {
+            document.getElementById('s4_records_grid').innerHTML = `<p style="color:#aaa; padding-left:10px;">Waiting for Season 4 matches to complete...</p>`;
+        }
+
+        cStatsArr.sort((a,b) => (a[careerSort.prop] > b[careerSort.prop] ? 1 : -1) * careerSort.dir);
+
+        cStatsArr.forEach((c) => {
+            careerHtml += `<tr>
+                <td style="text-transform: uppercase; font-weight: bold; color: #fff; text-align: left;">${c.team}</td>
+                <td>${c.r}</td>
+                <td>${c.b}</td>
+                <td>${c.rc}</td>
+                <td>${c.bb}</td>
+                <td>${c.wkts_taken}</td>
+                <td>${c.avg.toFixed(2)}</td>
+                <td>${c.sr.toFixed(2)}</td>
+                <td style="color: #d4af37; font-weight: bold;">${c.basra.toFixed(2)}</td>
+                <td>${c.eco.toFixed(2)}</td>
+                <td style="color: #d4af37; font-weight: bold;">${c.bewm.toFixed(2)}</td>
+                <td>${c.wl.toFixed(2)}</td>
+                <td style="color: #00e676; font-weight: bold;">$${c.value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            </tr>`;
+        });
+
+        document.getElementById('career_body').innerHTML = careerHtml;
+    }
+
+    window.predictMatch = function() {
+        const t1 = document.getElementById('pred_t1').value;
+        const t2 = document.getElementById('pred_t2').value;
+        
+        let resultDiv = document.getElementById('prediction_result');
+
+        if (t1 === t2) {
+            resultDiv.innerHTML = `<span style="color: #d50000;">Select different teams.</span>`;
+            return;
+        }
+
+        let stats = window.currentStandings;
+        let s1 = stats.find(s => s.team === t1);
+        let s2 = stats.find(s => s.team === t2);
+
+        if (!s1 || !s2 || (s1.p === 0 && s2.p === 0)) {
+            resultDiv.innerHTML = `<span style="color: #aaa;">Not enough data yet to form predictions.</span>`;
+            return;
+        }
+
+        let h2hMatches = schedule.filter(s => s.played && s.result && 
+            ((s.result.t1 === t1 && s.result.t2 === t2) || (s.result.t1 === t2 && s.result.t2 === t1))
+        );
+
+        let t1Wins = 0, t2Wins = 0, ties = 0;
+        h2hMatches.forEach(s => {
+            let m = s.result;
+            if (m.r1 > m.r2) { m.t1 === t1 ? t1Wins++ : t2Wins++; }
+            else if (m.r2 > m.r1) { m.t2 === t1 ? t1Wins++ : t2Wins++; }
+            else ties++;
+        });
+
+        let overallT1 = window.currentH2H[t1][t2];
+        let overallT2 = window.currentH2H[t2][t1];
+
+        let h2hHtml = `
+            <div style="font-size: 0.9rem; color: #aaa; margin-bottom: 4px;">Overall H2H: <span style="color:#fff">${t1.toUpperCase()} ${overallT1} - ${overallT2} ${t2.toUpperCase()}</span></div>
+            <div style="font-size: 0.9rem; color: #aaa; margin-bottom: 8px;">H2H This Season: <span style="color:#fff">${t1.toUpperCase()} ${t1Wins} - ${t2Wins} ${t2.toUpperCase()}</span> (Ties: ${ties})</div>
+        `;
+
+        const getFormScore = (formArr) => formArr.slice(-3).reduce((acc, val) => acc + (val==='W'?2:val==='T'?1:0), 0);
+        let score1 = (s1.pts * 1.5) + (parseFloat(s1.nrr) * 5) + (getFormScore(s1.form) * 3);
+        let score2 = (s2.pts * 1.5) + (parseFloat(s2.nrr) * 5) + (getFormScore(s2.form) * 3);
+        let total = (score1 + score2) || 1; 
+        
+        let p1 = Math.max(10, Math.min(90, (score1 / total) * 100));
+        let p2 = 100 - p1;
+
+        resultDiv.innerHTML = `
+            ${h2hHtml}
+            <div style="font-size: 1.1rem;">
+                <span style="color: #d4af37;">${t1.toUpperCase()}:</span> <span style="color: #fff;">${p1.toFixed(1)}%</span> 
+                &nbsp;|&nbsp; 
+                <span style="color: #d4af37;">${t2.toUpperCase()}:</span> <span style="color: #fff;">${p2.toFixed(1)}%</span>
+            </div>
+        `;
+    }
 </script>
 </body>
 </html>
