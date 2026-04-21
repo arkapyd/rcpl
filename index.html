@@ -16,7 +16,6 @@
             overflow-x: hidden;
         }
 
-        /* global custom scrollbar */
         ::-webkit-scrollbar { width: 10px; height: 10px; }
         ::-webkit-scrollbar-track { background: #050505; }
         ::-webkit-scrollbar-thumb { background: #222; border-radius: 5px; border: 2px solid #050505; }
@@ -212,6 +211,7 @@
             width: 100%; 
             border-collapse: collapse; 
             font-size: 0.9rem; 
+            position: relative;
         }
         th, td { 
             text-align: center; 
@@ -222,6 +222,11 @@
         th { 
             color: #d4af37; 
             font-weight: normal; 
+            position: sticky;
+            top: 0;
+            background-color: #0a0a0a;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
         }
         td:first-child, th:first-child {
             text-align: left;
@@ -256,9 +261,18 @@
         }
         .tag.q { background: #d4af37; color: #050505; box-shadow: 0 0 8px rgba(212, 175, 55, 0.6); }
         .tag.e { background: transparent; color: #555; border: 1px dashed #444; }
-        .tag.form-w { color: #00e676; font-weight: bold; }
-        .tag.form-l { color: #ff5252; font-weight: bold; }
-        .tag.form-t { color: #888; font-weight: bold; }
+        
+        .form-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin: 0 3px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+        }
+        .dot-w { background-color: #00e676; box-shadow: 0 0 6px rgba(0, 230, 118, 0.6); }
+        .dot-l { background-color: #ff5252; box-shadow: 0 0 6px rgba(255, 82, 82, 0.6); }
+        .dot-t { background-color: #aaa; }
         
         .groups-container {
             display: flex;
@@ -313,6 +327,7 @@
             border: 1px solid #333;
             border-radius: 4px;
             background: #0a0a0a;
+            position: relative;
         }
 
         .scrollable-log {
@@ -321,6 +336,7 @@
             background: #0a0a0a;
             border: 1px solid #333;
             border-radius: 4px;
+            position: relative;
         }
         
         .match-row:hover { background: #1a1a1a; }
@@ -376,6 +392,14 @@
         .toast.success { border-left-color: #00e676; }
         @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
         @keyframes slideOut { to { opacity: 0; transform: translateY(-10px); } }
+        
+        @keyframes flashGold {
+            0% { background-color: rgba(212, 175, 55, 0.2); }
+            100% { background-color: transparent; }
+        }
+        .flash-table {
+            animation: flashGold 1s ease-out;
+        }
 
         .legacy-item {
             position: relative;
@@ -584,6 +608,14 @@
                     <div><input type="number" id="swap_j" placeholder="Match B" min="1"></div>
                 </div>
                 <button class="action" onclick="window.swapMatches()" style="margin-top: 0;">Swap Sequence</button>
+            </div>
+            
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #333;">
+                <label style="color:#d50000; margin-bottom: 5px;">Erase Specific Match Result</label>
+                <div class="row" style="margin-bottom: 5px;">
+                    <div style="flex: 1;"><select id="reset_match_select"></select></div>
+                </div>
+                <button class="danger" onclick="window.resetSpecificMatch()" style="margin-top: 0;">Erase Match Data</button>
             </div>
         </div>
         
@@ -1030,6 +1062,27 @@
         }
     };
 
+    window.resetSpecificMatch = function() {
+        const selectEl = document.getElementById('reset_match_select');
+        if (!selectEl) return;
+
+        const matchId = parseInt(selectEl.value);
+        if (!matchId) {
+            window.showToast("Select a match to reset.", "error");
+            return;
+        }
+
+        if (confirm(`Are you absolutely sure you want to erase all data for Match ${matchId}? This cannot be undone.`)) {
+            const matchIndex = schedule.findIndex(m => m.id === matchId);
+            if (matchIndex !== -1) {
+                schedule[matchIndex].played = false;
+                schedule[matchIndex].result = null;
+                pushToCloud();
+                window.showToast(`Match ${matchId} has been reset.`, "success");
+            }
+        }
+    };
+
     window.sortCareer = function(prop) {
         if (careerSort.prop === prop) {
             careerSort.dir *= -1; 
@@ -1249,9 +1302,12 @@
     }
 
     function updateUI() {
+        let ptable = document.getElementById('ptable_body');
+        ptable.classList.add('flash-table');
+        setTimeout(() => ptable.classList.remove('flash-table'), 1000);
+
         let standings = generateTableData();
-        let tbody = document.getElementById('ptable_body');
-        tbody.innerHTML = '';
+        ptable.innerHTML = '';
 
         if (standings.length > 4) {
             let fourthPlacePts = standings[3].pts;
@@ -1263,10 +1319,12 @@
             });
         }
 
-        standings.forEach(s => {
-            let formHtml = s.form.slice(-3).map(f => `<span class="tag form-${f.toLowerCase()}">${f}</span>`).join(' ');
-            tbody.innerHTML += `<tr>
-                <td style="color: #fff; text-align: left;"><b>${s.team.toUpperCase()}</b></td>
+        standings.forEach((s, index) => {
+            let formHtml = s.form.slice(-5).map(f => `<span class="form-dot dot-${f.toLowerCase()}" title="${f}"></span>`).join('');
+            let teamName = index === 0 ? `${s.team.toUpperCase()} 👑` : s.team.toUpperCase();
+            
+            ptable.innerHTML += `<tr>
+                <td style="color: #fff; text-align: left;"><b>${teamName}</b></td>
                 <td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td>
                 <td style="color: #d4af37;"><b>${s.pts}</b></td><td>${s.nrr}</td>
                 <td>${formHtml || '-'}</td><td>${s.status || '-'}</td>
@@ -1288,11 +1346,14 @@
         }
 
         let editSummarySelect = document.getElementById('edit_summary_match');
-        if (editSummarySelect) {
-            editSummarySelect.innerHTML = playedMatches.map(s => {
+        let resetSelect = document.getElementById('reset_match_select');
+        if (editSummarySelect && resetSelect) {
+            let optionsHtml = playedMatches.map(s => {
                 let m = s.result;
                 return `<option value="${s.id}">Match ${s.id}: ${m.t1.toUpperCase()} vs ${m.t2.toUpperCase()}</option>`;
             }).join('');
+            editSummarySelect.innerHTML = optionsHtml;
+            resetSelect.innerHTML = optionsHtml;
         }
 
         let currentH2H = JSON.parse(JSON.stringify(H2H_BASE));
@@ -1467,9 +1528,10 @@
 
         cStatsArr.sort((a,b) => (a[careerSort.prop] > b[careerSort.prop] ? 1 : -1) * careerSort.dir);
 
-        cStatsArr.forEach(c => {
+        cStatsArr.forEach((c, index) => {
+            let cTeamName = index === 0 ? `${c.team} 💎` : c.team;
             careerHtml += `<tr>
-                <td style="text-transform: uppercase; font-weight: bold; color: #fff; text-align: left;">${c.team}</td>
+                <td style="text-transform: uppercase; font-weight: bold; color: #fff; text-align: left;">${cTeamName}</td>
                 <td>${c.r}</td>
                 <td>${c.b}</td>
                 <td>${c.rc}</td>
