@@ -219,8 +219,9 @@
         }
         .tag.q { background: #d4af37; color: #050505; }
         .tag.e { background: #333; color: #888; border: 1px solid #444; }
-        .tag.form-w { color: #d4af37; font-weight: bold; }
-        .tag.form-l { color: #888; font-weight: bold; }
+        .tag.form-w { color: #00e676; font-weight: bold; }
+        .tag.form-l { color: #ff5252; font-weight: bold; }
+        .tag.form-t { color: #888; font-weight: bold; }
         
         .groups-container {
             display: flex;
@@ -420,6 +421,12 @@
                 <div>
                     <label>Balls</label>
                     <input type="number" id="b2" min="0" max="120" value="120">
+                </div>
+            </div>
+            <div class="row" style="margin-top: 10px;">
+                <div style="flex: 1;">
+                    <label>Match Summary (Optional)</label>
+                    <input type="text" id="match_desc" placeholder="e.g. thrilling last over finish...">
                 </div>
             </div>
             <button onclick="window.addMatch()">Save Match</button>
@@ -796,16 +803,13 @@
         }
 
         if (confirm(`Swap Match ${id1} and Match ${id2}?`)) {
-            // cache the original ids
             let originalId1 = schedule[idx1].id;
             let originalId2 = schedule[idx2].id;
             
-            // swap the full objects in the array
             let temp = schedule[idx1];
             schedule[idx1] = schedule[idx2];
             schedule[idx2] = temp;
             
-            // restore the ids so they remain in chronological order
             schedule[idx1].id = originalId1;
             schedule[idx2].id = originalId2;
             
@@ -930,7 +934,8 @@
             t2: document.getElementById('t2').value,
             r2: parseInt(document.getElementById('r2').value) || 0,
             w2: parseInt(document.getElementById('w2').value) || 0,
-            b2: parseInt(document.getElementById('b2').value) || 0
+            b2: parseInt(document.getElementById('b2').value) || 0,
+            desc: document.getElementById('match_desc').value.trim()
         };
 
         if (data.t1 === data.t2) return alert("Teams must be different.");
@@ -943,7 +948,7 @@
 
         pushToCloud();
 
-        ['r1','w1','r2','w2'].forEach(id => document.getElementById(id).value = '');
+        ['r1','w1','r2','w2','match_desc'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('b1').value = 120; document.getElementById('b2').value = 120;
     };
 
@@ -1036,17 +1041,14 @@
         
         let playedMatches = schedule.filter(s => s.played && s.result);
         
-        // Populate Admin Alert Dropdown
         let unplayedMatches = schedule.filter(s => !s.played);
         let alertSelect = document.getElementById('alert_match');
         if (alertSelect) {
             alertSelect.innerHTML = unplayedMatches.map(m => `<option value="${m.t1},${m.t2},${m.id}">Match ${m.id}: ${m.t1.toUpperCase()} vs ${m.t2.toUpperCase()}</option>`).join('');
         }
 
-        // H2H Setup
         let currentH2H = JSON.parse(JSON.stringify(H2H_BASE));
 
-        // calculate highest totals & biggest wins
         let highestTotals = [];
         let biggestWinsRuns = [];
         let biggestWinsWkts = [];
@@ -1120,7 +1122,9 @@
                 if (m.r1 > m.r2) winStr = `<span class="match-highlight">${m.t1.toUpperCase()} won by ${m.r1 - m.r2} runs</span>`;
                 else if (m.r2 > m.r1) winStr = `<span class="match-highlight">${m.t2.toUpperCase()} won by ${10 - (m.w2 || 0)} wickets</span>`;
 
-                rowHtml = `<td class="match-result-text" style="text-align: left;">${m.t1.toUpperCase()}: ${m.r1}/${m.w1} (${formatDisplayOvers(m.b1)}) &nbsp;|&nbsp; ${m.t2.toUpperCase()}: ${m.r2}/${m.w2} (${formatDisplayOvers(m.b2)}) &nbsp;—&nbsp; ${winStr}</td>`;
+                let descStr = m.desc ? ` <span style="color:#aaa; font-style:italic;">— ${m.desc}</span>` : "";
+
+                rowHtml = `<td class="match-result-text" style="text-align: left;">${m.t1.toUpperCase()}: ${m.r1}/${m.w1} (${formatDisplayOvers(m.b1)}) &nbsp;|&nbsp; ${m.t2.toUpperCase()}: ${m.r2}/${m.w2} (${formatDisplayOvers(m.b2)}) &nbsp;—&nbsp; ${winStr}${descStr}</td>`;
             } else {
                 rowHtml = `<td style="color: #444; font-style: italic; text-align: left;">Awaiting Result</td>`;
             }
@@ -1130,7 +1134,6 @@
         document.getElementById('match_progress').innerText = `${playedCount} / 70 Completed`;
         window.currentStandings = standings;
 
-        // Process Career Stats
         let careerStats = {};
         TEAMS.forEach(t => {
             careerStats[t] = { 
@@ -1195,10 +1198,8 @@
             let titles = ['mi', 'rcb', 'kkr'].includes(t) ? 1 : 0;
             let runnersUp = (t === 'pbks') ? 3 : 0;
 
-            // Updated valuation formula
             let value = (titles * 50000) + (runnersUp * 10000) + (wl * 2000) + (basra * 50) + (bewm * 500) - (eco * 100);
             
-            // Absolute check for zero matches
             if (c.m_played === 0) {
                 value = 0;
             } else if (value < 0) {
