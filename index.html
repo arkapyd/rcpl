@@ -277,13 +277,13 @@
                 <div><label style="color:#d4af37;">Team 1 (Batting First)</label><select id="t1"></select></div>
                 <div><label>Runs</label><input type="number" id="r1" min="0"></div>
                 <div><label>Wickets Lost</label><input type="number" id="w1" min="0" max="10"></div>
-                <div><label>Balls</label><input type="number" id="b1" min="0" max="120" value="120"></div>
+                <div><label>Balls</label><input type="number" id="b1" min="0" max="30" value="30"></div>
             </div>
             <div class="row">
                 <div><label style="color:#d4af37;">Team 2 (Chasing)</label><select id="t2"></select></div>
                 <div><label>Runs</label><input type="number" id="r2" min="0"></div>
                 <div><label>Wickets Lost</label><input type="number" id="w2" min="0" max="10"></div>
-                <div><label>Balls</label><input type="number" id="b2" min="0" max="120" value="120"></div>
+                <div><label>Balls</label><input type="number" id="b2" min="0" max="30" value="30"></div>
             </div>
             <div class="row" style="margin-top:10px;"><div style="flex:1;"><label>Match Summary (Optional)</label><input type="text" id="match_desc" placeholder="e.g. thrilling last over finish..."></div></div>
             <button onclick="window.addMatch()">Save Match</button>
@@ -370,7 +370,6 @@
     <div class="card full-width no-hover-card">
         <h2 style="text-align:left;">Records &amp; Milestones</h2>
 
-        <!-- Season 4 live milestones -->
         <div style="margin-top:4px;">
             <div class="ms-section-label">&#9679; Season 4 — Live Milestones</div>
             <div class="ms-grid" id="s4_milestones_grid">
@@ -382,7 +381,6 @@
 
         <hr class="ms-divider">
 
-        <!-- All-time league records -->
         <div>
             <div class="ms-section-label">&#9670; All-Time League Records — S1 to Present</div>
             <p style="color:#3a3a3a;font-size:0.78rem;margin:-8px 0 16px;">Cumulative records spanning Seasons 1 through 3, updated with live Season 4 data.</p>
@@ -453,7 +451,6 @@
 </div>
 
 <div class="admin-trigger" onclick="window.unlockAdmin()">Admin</div>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
 import { getDatabase, ref, set, onValue, push, get, child } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
@@ -476,6 +473,9 @@ const TEAMS = ['csk','mi','rcb','kkr','dc','rr','pbks','srh','lsg','gt'];
 const GROUP_A = ['kkr','mi','lsg','srh','dc'];
 const GROUP_B = ['csk','rcb','gt','pbks','rr'];
 const TOTAL_MATCHES_PER_TEAM = 14;
+
+// 5-over format: max 30 balls per innings
+const MAX_BALLS = 30;
 
 const CAREER_BASE = {
     pbks:{r:1465,b:671,rc:1023,bb:801,w:10.18,l:1.82,wl_lost:22.366,wkts_taken:60,m_played:12},
@@ -508,7 +508,6 @@ window.currentH2H = {};
 let h2hSelected = null;
 let careerSort = { prop:'value', dir:-1 };
 
-// ─── Toast ───
 window.showToast = function(msg, type='default') {
     const c = document.getElementById('toast-container');
     const t = document.createElement('div');
@@ -677,7 +676,7 @@ window.addMatch = function(){
     if(!slot){ window.showToast("This matchup has reached its maximum!","error"); return; }
     slot.played=true; slot.result=data; pushToCloud();
     ['r1','w1','r2','w2','match_desc'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('b1').value=120; document.getElementById('b2').value=120;
+    document.getElementById('b1').value=30; document.getElementById('b2').value=30;
     window.showToast("Match saved.","success");
 };
 
@@ -743,6 +742,13 @@ function computeDerived(cs){
 }
 
 // ─── MILESTONES ────────────────────────────────────────────────────────────────
+// 5-over context:
+//   Max balls per innings: 30
+//   Par score: ~40–50. Good score: 55+. Elite: 70+
+//   Low score: <30. Competitive low: 30–39
+//   Big win margin (runs): 15+ is dominant. 20+ is a statement.
+//   Close win margin (runs): 1–5 is tight. 6–9 is close but not a nail-biter.
+//   Chasing: 5+ wickets in hand = comfortable. 8–9 = dominant.
 
 function msCard(teamCls, badge, value, teamLabel, desc, isS4=false){
     return `<div class="ms-card tc-${teamCls}">
@@ -755,63 +761,51 @@ function msCard(teamCls, badge, value, teamLabel, desc, isS4=false){
 }
 
 function renderMilestones(cs, d, played, h2h){
-    const elig = TEAMS.filter(t => d[t].m_played > 0);
 
-    // ── ALL-TIME RECORDS ── max 3 per team, diverse coverage
+    // ── ALL-TIME RECORDS ──
     const atCount = {};
     const canAT = t => (atCount[t]||0) < 3;
     const bumpAT = t => { atCount[t] = (atCount[t]||0) + 1; };
 
     const allTimeList = [
-        // PBKS — 3 entries, their full story
         { team:'pbks', badge:'The Bridesmaid Curse', val:'3× Runner-Up, 0 Titles', lbl:'PBKS — S1, S2 & S3',
           desc:'Three consecutive group-stage titles. Three consecutive final losses. The most statistically dominant franchise in RCPL history has never lifted a trophy. The consistency of the heartbreak is almost a record in itself.' },
         { team:'pbks', badge:'Highest Career Strike Rate', val:`${d['pbks'].sr.toFixed(1)}`, lbl:'PBKS — All Time',
-          desc:`Punjab score faster than any other franchise in RCPL history. In a format built for aggression, a career strike rate of ${d['pbks'].sr.toFixed(1)} is the gold standard — which makes every trophy-less season increasingly painful.` },
+          desc:`Punjab score faster than any other franchise in RCPL history. In a 5-over format where every ball counts double, a career strike rate of ${d['pbks'].sr.toFixed(1)} is the gold standard — which makes every trophy-less season increasingly painful.` },
         { team:'pbks', badge:'Best Career W/L Ratio', val:`${d['pbks'].wl.toFixed(2)}`, lbl:'PBKS — All Time',
           desc:`For every loss Punjab have suffered, they have won ${d['pbks'].wl.toFixed(2)} matches. No franchise in RCPL history has dominated opponents so thoroughly across all three seasons.` },
-        // KKR — 2 entries
         { team:'kkr', badge:'Reigning RCPL Champions', val:'1× Title', lbl:'KKR — Season 3 Winners',
           desc:'The Knight Riders are the side every rival is targeting. Their Season 3 campaign combined aggressive batting with disciplined bowling — a formula that proved devastatingly hard to counter.' },
         { team:'kkr', badge:'The Defining Rivalry', val:`${h2h['pbks']?.['kkr']??6}–${h2h['kkr']?.['pbks']??1} to PBKS`, lbl:'PBKS vs KKR — All Time',
           desc:'The most charged fixture in the RCPL. The perpetual bridesmaids versus the reigning champions. PBKS dominate the head-to-head, which makes every playoffs meeting between them genuinely unbearable.' },
-        // RCB — 1 entry
         { team:'rcb', badge:'Season 2 Champions', val:'1× Title', lbl:'RCB — Season 2 Winners',
           desc:'Royal Challengers sealed their maiden RCPL title in Season 2 on the back of their explosive batting. The top order remains among the most feared in the league\'s history.' },
-        // MI — 2 entries
         { team:'mi', badge:'Inaugural RCPL Champions', val:'1× Title', lbl:'MI — Season 1 Winners',
           desc:'Mumbai lifted the very first RCPL trophy in the inaugural season. The most decorated franchise in real-world cricket, they announced themselves as early benchmark-setters for what this league could become.' },
         { team:'mi', badge:'The MI Paradox', val:'0.27 W/L Post-Title', lbl:'MI — Post-S1 Collapse',
           desc:'From inaugural champions to the worst sustained win rate in the league. The freefall since Season 1 has been one of the RCPL\'s most remarkable stories — and they desperately need to reverse it.' },
-        // CSK — 2 entries
         { team:'csk', badge:'Lowest Career Win Rate', val:`${d['csk'].wl.toFixed(2)} W/L`, lbl:'CSK — All Time',
           desc:`A W/L ratio of ${d['csk'].wl.toFixed(2)} is the worst in RCPL history. The most celebrated franchise in real-world cricket has found life in this league an unrelenting grind. Full rebuild mode.` },
         { team:'csk', badge:'Lowest Career Strike Rate', val:`${d['csk'].sr.toFixed(1)}`, lbl:'CSK — All Time',
-          desc:`A career batting strike rate of ${d['csk'].sr.toFixed(1)} in a T20 competition — cautious even by red-ball standards. In a format defined by power and tempo, this has been a structural problem from day one.` },
-        // SRH — 1 entry
+          desc:`A career strike rate of ${d['csk'].sr.toFixed(1)} in a 5-over format is painful. With only 30 balls to face, scoring this slowly makes winning almost impossible — every boundary not hit is a run deficit that rarely gets recovered.` },
         { team:'srh', badge:'Worst Bowling Economy', val:`${d['srh'].eco.toFixed(2)} RPO`, lbl:'SRH — All Time',
-          desc:`SRH have conceded more runs per over than any other franchise in RCPL history. Batters have attacked their bowling with little fear. A structural turnaround with the ball is the season\'s defining challenge for them.` },
-        // DC — 1 entry
+          desc:`SRH have conceded more runs per over than any other franchise in RCPL history. In 5-over cricket, a single loose over can cost a game — they've been leaking them all season long.` },
         { team:'dc', badge:'The Middling Giant', val:`${d['dc'].wl.toFixed(2)} W/L`, lbl:'DC — All Time',
           desc:'Delhi sit firmly in the middle of the all-time table — never quite dominant enough to win a title, never poor enough to be written off. Finding that extra gear is the central story of their RCPL career.' },
-        // RR — 1 entry
         { team:'rr', badge:'Career Runs — Lower Half', val:`${d['rr'].r.toLocaleString()}`, lbl:'RR — All Time',
           desc:'Rajasthan have been consistent contributors without threatening the top of any leaderboard. A team capable of stunning any opponent on a given day, but too inconsistent to translate that into sustained success.' },
-        // LSG — 1 entry
         { team:'lsg', badge:'The New Wildcards', val:'Season 4 Debut', lbl:'LSG — Inaugural Season',
           desc:'Lucknow enter the RCPL with zero history and zero baggage. A clean slate is either a blank cheque or a void — and which it turns out to be depends entirely on how they handle debut-season pressure.' },
-        // GT — 1 entry
         { team:'gt', badge:'Debut Season', val:'Season 4 Entry', lbl:'GT — Inaugural Season',
           desc:'Gujarat Titans arrive ready to make a statement. Two new teams in Group B means a fresh rivalry is already brewing before a single ball has been bowled. Everything to play for, nothing to lose.' },
     ];
 
-    // Enforce max 3 per team strictly
     const atFiltered = allTimeList.filter(r => { if(!canAT(r.team)) return false; bumpAT(r.team); return true; });
     document.getElementById('alltime_milestones_grid').innerHTML = atFiltered.map(r =>
         msCard(r.team, r.badge, r.val, r.lbl, r.desc, false)
     ).join('');
 
-    // ── SEASON 4 MILESTONES ── dynamic
+    // ── SEASON 4 MILESTONES ── (5-over aware)
     const s4Grid = document.getElementById('s4_milestones_grid');
 
     if(played.length === 0){
@@ -831,12 +825,11 @@ function renderMilestones(cs, d, played, h2h){
         bumpS4(team);
     };
 
-    // Aggregate S4 stats
-    let highInns={runs:0,wkts:0,team:'',vs:'',balls:0};
+    let highInns={runs:-1,wkts:0,team:'',vs:'',balls:0};
     let lowInns={runs:9999,wkts:0,team:'',vs:'',balls:0};
-    let biggestRunWin={margin:0,winner:'',loser:'',wr:0,lr:0};
-    let biggestWktWin={wkts:0,winner:'',loser:''};
-    let closestGame={diff:9999,winner:'',loser:'',wr:0,lr:0};
+    let biggestRunWin={margin:-1,winner:'',loser:'',wr:0,lr:0};
+    let biggestWktWin={wkts:-1,winner:'',loser:''};
+    let closestGame={diff:9999,winner:'',loser:'',wr:0,lr:0,t1:'',t2:''};
     const s4W={},s4L={},s4Runs={},s4Wkts={},s4Form={};
     TEAMS.forEach(t=>{s4W[t]=0;s4L[t]=0;s4Runs[t]=0;s4Wkts[t]=0;s4Form[t]=[];});
 
@@ -847,6 +840,7 @@ function renderMilestones(cs, d, played, h2h){
         s4Wkts[m.t1]=(s4Wkts[m.t1]||0)+(m.w2||0);
         s4Wkts[m.t2]=(s4Wkts[m.t2]||0)+(m.w1||0);
 
+        // Track highest and lowest across both innings
         if(m.r1>highInns.runs) highInns={runs:m.r1,wkts:m.w1,team:m.t1,vs:m.t2,balls:m.b1};
         if(m.r2>highInns.runs) highInns={runs:m.r2,wkts:m.w2,team:m.t2,vs:m.t1,balls:m.b2};
         if(m.r1<lowInns.runs)  lowInns={runs:m.r1,wkts:m.w1,team:m.t1,vs:m.t2,balls:m.b1};
@@ -856,14 +850,13 @@ function renderMilestones(cs, d, played, h2h){
             s4W[m.t1]++;s4L[m.t2]++;s4Form[m.t1].push('W');s4Form[m.t2].push('L');
             const margin=m.r1-m.r2;
             if(margin>biggestRunWin.margin) biggestRunWin={margin,winner:m.t1,loser:m.t2,wr:m.r1,lr:m.r2};
-            const closeDiff=m.r1-m.r2;
-            if(closeDiff<closestGame.diff) closestGame={diff:closeDiff,winner:m.t1,loser:m.t2,wr:m.r1,lr:m.r2};
+            if(margin<closestGame.diff) closestGame={diff:margin,winner:m.t1,loser:m.t2,wr:m.r1,lr:m.r2,t1:'',t2:''};
         } else if(m.r2>m.r1){
             s4W[m.t2]++;s4L[m.t1]++;s4Form[m.t2].push('W');s4Form[m.t1].push('L');
             const wktsLeft=10-(m.w2||0);
             if(wktsLeft>biggestWktWin.wkts) biggestWktWin={wkts:wktsLeft,winner:m.t2,loser:m.t1};
-            const closeDiff=m.r2-m.r1;
-            if(closeDiff<closestGame.diff) closestGame={diff:closeDiff,winner:m.t2,loser:m.t1,wr:m.r2,lr:m.r1};
+            const diff=m.r2-m.r1;
+            if(diff<closestGame.diff) closestGame={diff,winner:m.t2,loser:m.t1,wr:m.r2,lr:m.r1,t1:'',t2:''};
         } else {
             s4Form[m.t1].push('T');s4Form[m.t2].push('T');
             if(0<closestGame.diff) closestGame={diff:0,winner:'',loser:'',wr:m.r1,lr:m.r2,t1:m.t1,t2:m.t2};
@@ -871,132 +864,185 @@ function renderMilestones(cs, d, played, h2h){
     });
 
     // Streak detection
-    const streaks={};
+    const streaks={},loseStreaks={};
     TEAMS.forEach(t=>{
         let cur=0,max=0;
         s4Form[t].forEach(r=>{ if(r==='W'){cur++;max=Math.max(max,cur);}else cur=0; });
         streaks[t]=max;
-    });
-    const loseStreaks={};
-    TEAMS.forEach(t=>{
-        let cur=0,max=0;
+        cur=0;max=0;
         s4Form[t].forEach(r=>{ if(r==='L'){cur++;max=Math.max(max,cur);}else cur=0; });
         loseStreaks[t]=max;
     });
 
     const teamsWithMatches = TEAMS.filter(t=>(s4W[t]+s4L[t])>0);
 
-    // 1. Highest total
-    if(highInns.runs>0){
-        const sr4=(highInns.balls>0?((highInns.runs/highInns.balls)*100).toFixed(1):'—');
-        pushS4(highInns.team, 'Highest Team Total — S4',
+    // ── 1. Highest innings ──
+    // In 5-over cricket, 60+ is genuinely elite, 50–59 is very good, 40–49 is competitive
+    if(highInns.runs >= 0){
+        const sr5=(highInns.balls>0?((highInns.runs/highInns.balls)*100).toFixed(1):'—');
+        let highDesc;
+        if(highInns.runs>=65)
+            highDesc=`An absolute assault across 5 overs. ${highInns.runs} runs at SR ${sr5} — a total that made the chase feel academic before the second innings had begun.`;
+        else if(highInns.runs>=50)
+            highDesc=`${highInns.runs} off 30 balls at SR ${sr5} is elite 5-over batting. A total that gives your bowlers something genuinely worth defending.`;
+        else
+            highDesc=`The highest innings of Season 4 so far. ${highInns.runs} runs — in a 5-over format where 40+ is competitive, this is the number everyone is chasing.`;
+        pushS4(highInns.team,'Highest Score — Season 4',
             `${highInns.runs}/${highInns.wkts}`,
             `${highInns.team.toUpperCase()} vs ${highInns.vs.toUpperCase()}`,
-            `The biggest innings posted in Season 4 so far. ${highInns.runs} runs at a strike rate of ${sr4} — a total that set the tone for the entire match from the moment the last ball was bowled.`);
+            highDesc);
     }
 
-    // 2. Lowest total — score-aware description
+    // ── 2. Lowest innings ──
+    // In 5-over cricket, under 30 is a collapse, 30–39 is below par, 40–49 is just about competitive
     if(lowInns.runs<9999){
         const lowSR=(lowInns.balls>0?((lowInns.runs/lowInns.balls)*100).toFixed(1):'—');
         let lowDesc;
-        if(lowInns.runs<70) lowDesc=`A batting implosion of the first order. ${lowInns.runs}/${lowInns.wkts} is the kind of total where the team bus is probably still warm enough to drive straight home.`;
-        else if(lowInns.runs<100) lowDesc=`Season 4's lowest total so far. ${lowInns.runs} runs gives your bowlers something to work with, but not much. A recovery job that felt uphill from the first over.`;
-        else lowDesc=`The lowest team total of Season 4 to date. At ${lowInns.runs}/${lowInns.wkts}, this was a sub-par batting effort — the kind that invites a chase and has the dressing room quiet at the break.`;
-        pushS4(lowInns.team, "Season 4's Lowest Total", `${lowInns.runs}/${lowInns.wkts}`,
-            `${lowInns.team.toUpperCase()} vs ${lowInns.vs.toUpperCase()}`, lowDesc);
+        if(lowInns.runs<20)
+            lowDesc=`${lowInns.runs} runs across 5 overs is a batting meltdown — there's nowhere to hide a collapse this size in a format this short. SR ${lowSR}. The dressing room won't look back at this one fondly.`;
+        else if(lowInns.runs<30)
+            lowDesc=`${lowInns.runs}/${lowInns.wkts} in a 5-over game is below salvageable. When you're averaging fewer than a run per ball in T5 cricket, the result is usually a foregone conclusion by over 3.`;
+        else if(lowInns.runs<40)
+            lowDesc=`${lowInns.runs} in 5 overs is below par for this format. It puts your bowlers under immediate pressure to restrict opponents to 30-something on a pitch where boundaries come freely.`;
+        else
+            lowDesc=`${lowInns.runs}/${lowInns.wkts} is the lowest total of Season 4 — just about competitive in 5-over terms, but it left no room for error with the ball.`;
+        pushS4(lowInns.team,"Lowest Score — Season 4",
+            `${lowInns.runs}/${lowInns.wkts}`,
+            `${lowInns.team.toUpperCase()} vs ${lowInns.vs.toUpperCase()}`,
+            lowDesc);
     }
 
-    // 3. Biggest win by runs
-    if(biggestRunWin.margin>0){
-        pushS4(biggestRunWin.winner, 'Biggest Win by Runs — S4',
+    // ── 3. Biggest win by runs ──
+    // In 5-over cricket: 1–5 runs = tight, 6–10 = decent margin, 11–15 = convincing, 16+ = dominant
+    if(biggestRunWin.margin >= 0){
+        let runWinDesc, runWinBadge;
+        if(biggestRunWin.margin>=20){
+            runWinBadge='Dominant Victory — Season 4';
+            runWinDesc=`In a format where 5 overs is the whole game, a ${biggestRunWin.margin}-run margin is a demolition job. ${biggestRunWin.winner.toUpperCase()} posted ${biggestRunWin.wr} and held ${biggestRunWin.loser.toUpperCase()} to ${biggestRunWin.lr} — this one was over before the halfway stage.`;
+        } else if(biggestRunWin.margin>=12){
+            runWinBadge='Convincing Win — Season 4';
+            runWinDesc=`${biggestRunWin.margin} runs in 5-over cricket is a clear win. ${biggestRunWin.winner.toUpperCase()} set ${biggestRunWin.wr} and their bowlers did the rest, keeping ${biggestRunWin.loser.toUpperCase()} to ${biggestRunWin.lr}. A performance with no real anxiety.`;
+        } else if(biggestRunWin.margin>=7){
+            runWinBadge='Biggest Win by Runs — S4';
+            runWinDesc=`${biggestRunWin.margin} runs separating the sides — a healthy margin in 5-over terms. ${biggestRunWin.winner.toUpperCase()} controlled both phases of the match, posting ${biggestRunWin.wr} and then restricting to ${biggestRunWin.lr}.`;
+        } else {
+            runWinBadge='Biggest Win by Runs — S4';
+            runWinDesc=`With only 30 balls in each innings, a ${biggestRunWin.margin}-run margin is the biggest we've seen by this measure in Season 4 — though in this format, every result is worth scrutinising closely.`;
+        }
+        pushS4(biggestRunWin.winner, runWinBadge,
             `${biggestRunWin.margin} runs`,
             `${biggestRunWin.winner.toUpperCase()} def. ${biggestRunWin.loser.toUpperCase()}`,
-            `The most one-sided batting victory in Season 4. ${biggestRunWin.winner.toUpperCase()} posted ${biggestRunWin.wr} and restricted ${biggestRunWin.loser.toUpperCase()} to ${biggestRunWin.lr} — a margin that was never in question.`);
+            runWinDesc);
     }
 
-    // 4. Biggest win by wickets
-    if(biggestWktWin.winner){
-        pushS4(biggestWktWin.winner, 'Most Dominant Chase — S4',
+    // ── 4. Biggest win chasing (wickets in hand) ──
+    // In 5-over: 8–9 wkts = barely broke a sweat. 6–7 = comfortable. 4–5 = solid.
+    if(biggestWktWin.wkts >= 0){
+        let wktDesc;
+        if(biggestWktWin.wkts>=8)
+            wktDesc=`${biggestWktWin.wkts} wickets in hand in a 5-over chase means ${biggestWktWin.winner.toUpperCase()} barely had to get out of first gear. ${biggestWktWin.loser.toUpperCase()} set a total, and the response made it look like a training exercise.`;
+        else if(biggestWktWin.wkts>=6)
+            wktDesc=`A ${biggestWktWin.wkts}-wicket win is a comfortable chase in any format — but in 5 overs, it means the target was effectively never in doubt. ${biggestWktWin.winner.toUpperCase()} handled it without drama.`;
+        else
+            wktDesc=`${biggestWktWin.winner.toUpperCase()} crossed the line with ${biggestWktWin.wkts} wickets to spare — the biggest winning margin by wickets in Season 4. Enough in hand to call it controlled, if not entirely serene.`;
+        pushS4(biggestWktWin.winner,'Most Dominant Chase — S4',
             `${biggestWktWin.wkts} wickets in hand`,
             `${biggestWktWin.winner.toUpperCase()} def. ${biggestWktWin.loser.toUpperCase()}`,
-            `The most comfortable chase of Season 4. ${biggestWktWin.winner.toUpperCase()} crossed the line with ${biggestWktWin.wkts} wickets to spare — a hunt so calm it barely registered as a contest.`);
+            wktDesc);
     }
 
-    // 5. Closest game
+    // ── 5. Closest finish ──
+    // In 5-over cricket: 1 run = absolute knife-edge. 2–3 = nail-biter. 4–6 = close.
+    // Anything above 6 is NOT a nail-biter in this format — it should not be described as one.
     if(closestGame.diff<9999){
         if(closestGame.diff===0&&closestGame.t1){
-            pushS4('multi', 'Tied Match — S4',
+            pushS4('multi','Tied Match — S4',
                 `${closestGame.wr} all`,
                 `${closestGame.t1.toUpperCase()} vs ${closestGame.t2.toUpperCase()}`,
-                'Twenty overs each and still inseparable. A tie in T20 cricket is a statistical rarity — both teams left everything on the field and still couldn\'t split themselves.');
+                '5 overs each and still inseparable. A tie in cricket is rare enough in any format — in a 30-ball game where someone\'s always swinging, it\'s genuinely remarkable.');
         } else if(closestGame.winner){
-            const margin1=closestGame.diff===1?'A single run was all that separated them':'The margin tells the story';
-            pushS4(closestGame.winner, 'Closest Finish — S4',
+            let closeDesc, closeBadge;
+            if(closestGame.diff===1){
+                closeBadge='Last-Ball Drama — S4';
+                closeDesc=`One run. In a 5-over game, that\'s the margin between triumph and heartbreak. ${closestGame.winner.toUpperCase()} ${closestGame.wr} vs ${closestGame.loser.toUpperCase()} ${closestGame.lr} — the kind of finish that makes people stay until the very last ball.`;
+            } else if(closestGame.diff<=3){
+                closeBadge='Closest Finish — S4';
+                closeDesc=`${closestGame.diff} runs in 5-over cricket is a genuine nail-biter. ${closestGame.winner.toUpperCase()} held on with ${closestGame.wr} against ${closestGame.loser.toUpperCase()}\'s ${closestGame.lr} — likely decided in the last over.`;
+            } else if(closestGame.diff<=6){
+                closeBadge='Closest Finish — S4';
+                closeDesc=`${closestGame.diff} runs is a close game in this format — tight enough that the chasing side was still in it going into the final over. ${closestGame.winner.toUpperCase()} ${closestGame.wr} def. ${closestGame.loser.toUpperCase()} ${closestGame.lr}.`;
+            } else {
+                closeBadge='Smallest Margin — S4';
+                closeDesc=`The narrowest winning margin of Season 4 so far: ${closestGame.diff} runs. In a longer format that would be close — in 5 overs, it\'s still the season\'s tightest result by this measure.`;
+            }
+            pushS4(closestGame.winner, closeBadge,
                 `Won by ${closestGame.diff} run${closestGame.diff===1?'':'s'}`,
-                `${closestGame.winner.toUpperCase()} ${closestGame.wr} — ${closestGame.loser?closestGame.loser.toUpperCase():''} ${closestGame.lr}`,
-                `${margin1}. ${closestGame.diff===1?'One run in a T20 match is as thin as margins get.':'A near-impossible game to call going into the final over.'} The best kind of advertisement for this tournament.`);
+                `${closestGame.winner.toUpperCase()} ${closestGame.wr} — ${closestGame.loser.toUpperCase()} ${closestGame.lr}`,
+                closeDesc);
         }
     }
 
-    // 6. Winning streak (≥3)
-    const bestStreakTeam = teamsWithMatches.sort((a,b)=>streaks[b]-streaks[a])[0];
+    // ── 6. Winning streak (≥3) ──
+    const bestStreakTeam = teamsWithMatches.slice().sort((a,b)=>streaks[b]-streaks[a])[0];
     if(bestStreakTeam && streaks[bestStreakTeam]>=3){
-        pushS4(bestStreakTeam, 'Current Winning Streak — S4',
+        pushS4(bestStreakTeam,'Current Winning Streak — S4',
             `${streaks[bestStreakTeam]} in a row`,
             `${bestStreakTeam.toUpperCase()} — Season 4`,
-            `${bestStreakTeam.toUpperCase()} are on a ${streaks[bestStreakTeam]}-match winning run and look unstoppable right now. Every team left on their fixture list is circling this date with serious concern.`);
+            `${bestStreakTeam.toUpperCase()} are on a ${streaks[bestStreakTeam]}-match winning run. In a 5-over format where momentum swings fast and every game is short, stringing wins together like this is a genuine statement of consistency.`);
     }
 
-    // 7. Most S4 runs
-    const topRunsTeam = teamsWithMatches.sort((a,b)=>s4Runs[b]-s4Runs[a])[0];
+    // ── 7. Most S4 runs ──
+    const topRunsTeam = teamsWithMatches.slice().sort((a,b)=>s4Runs[b]-s4Runs[a])[0];
     if(topRunsTeam && s4Runs[topRunsTeam]>0){
-        pushS4(topRunsTeam, 'Most Runs — Season 4',
+        pushS4(topRunsTeam,'Most Runs — Season 4',
             `${s4Runs[topRunsTeam]}`,
             `${topRunsTeam.toUpperCase()} — Season 4`,
-            `${topRunsTeam.toUpperCase()} lead all teams in runs scored this season. The bat has done the talking from the start, and the rest of the table has been forced to listen.`);
+            `${topRunsTeam.toUpperCase()} lead all teams in runs scored this season. With only 30 balls per innings, piling up the most runs in the competition means consistently batting at a level no one else has matched.`);
     }
 
-    // 8. Most S4 wickets
-    const topWktsTeam = teamsWithMatches.sort((a,b)=>s4Wkts[b]-s4Wkts[a])[0];
+    // ── 8. Most S4 wickets ──
+    const topWktsTeam = teamsWithMatches.slice().sort((a,b)=>s4Wkts[b]-s4Wkts[a])[0];
     if(topWktsTeam && s4Wkts[topWktsTeam]>0){
-        pushS4(topWktsTeam, 'Most Wickets — Season 4',
+        pushS4(topWktsTeam,'Most Wickets — Season 4',
             `${s4Wkts[topWktsTeam]} wkts`,
             `${topWktsTeam.toUpperCase()} — Season 4`,
-            `${topWktsTeam.toUpperCase()} have taken more wickets than any other side in Season 4. A bowling attack clicking at the right time of the tournament is always a dangerous sign for opponents.`);
+            `${topWktsTeam.toUpperCase()} have taken more wickets than any side this season. In 5-over cricket, wickets in hand directly dictates tempo — taking them early changes the whole shape of a 30-ball innings.`);
     }
 
-    // 9. Winless run (≥3 losses)
-    const worstLoseTeam = teamsWithMatches.sort((a,b)=>loseStreaks[b]-loseStreaks[a])[0];
+    // ── 9. Losing streak (≥3) ──
+    const worstLoseTeam = teamsWithMatches.slice().sort((a,b)=>loseStreaks[b]-loseStreaks[a])[0];
     if(worstLoseTeam && loseStreaks[worstLoseTeam]>=3){
-        pushS4(worstLoseTeam, 'Longest Losing Streak — S4',
-            `${loseStreaks[worstLoseTeam]} defeats`,
+        pushS4(worstLoseTeam,'Losing Streak — S4',
+            `${loseStreaks[worstLoseTeam]} on the trot`,
             `${worstLoseTeam.toUpperCase()} — Season 4`,
-            `${worstLoseTeam.toUpperCase()} have lost ${loseStreaks[worstLoseTeam]} consecutive games. Each defeat shortens the runway and makes the remaining fixtures feel heavier. A response is urgently needed.`);
+            `${loseStreaks[worstLoseTeam]} consecutive defeats. In a 5-over format there's no grinding your way back into form — each game is over in 60 balls and the next one comes fast. Something has to change, and quickly.`);
     }
 
-    // 10. Debut team strong start
+    // ── 10. Debut team strong start ──
     ['lsg','gt'].forEach(t=>{
         if(s4W[t]>0 && s4W[t]>s4L[t]){
-            pushS4(t, 'Debut Season Statement',
+            pushS4(t,'Debut Season Statement',
                 `${s4W[t]}W ${s4L[t]}L`,
                 `${t.toUpperCase()} — First RCPL Season`,
-                `${t.toUpperCase()} are winning in their debut RCPL season. The established sides have been served notice — the new franchises didn't come here just to make up the numbers.`);
+                `${t.toUpperCase()} are winning in their RCPL debut. No history, no precedent — and yet here they are, already beating established sides. The league has been put on notice.`);
         }
     });
 
-    // 11. Unbeaten team (all wins, >2 played)
+    // ── 11. Unbeaten record (>2 matches) ──
     teamsWithMatches.forEach(t=>{
         if(s4W[t]>2 && s4L[t]===0){
-            pushS4(t,'Unbeaten in Season 4',`${s4W[t]}W 0L`,`${t.toUpperCase()} — Perfect Record`,
-                `${t.toUpperCase()} have not lost a single game in Season 4. A perfect record this deep into the season is rare. The question is whether any side can end the streak before the playoffs.`);
+            pushS4(t,'Unbeaten in Season 4',
+                `${s4W[t]}W 0L`,
+                `${t.toUpperCase()} — Perfect Record`,
+                `${t.toUpperCase()} are yet to lose in Season 4. Every opponent has had their shot across 30 balls — none has found a way through yet.`);
         }
     });
 
-    // 12. High-scoring encounter (both teams 150+)
+    // ── 12. High-scoring match (both teams 55+ in 5 overs) ──
     let firecracker=null;
     played.forEach(s=>{
         const m=s.result;
-        if(m.r1>=150&&m.r2>=150){
+        if(m.r1>=55&&m.r2>=55){
             const total=m.r1+m.r2;
             if(!firecracker||total>firecracker.total) firecracker={total,t1:m.t1,t2:m.t2,r1:m.r1,r2:m.r2};
         }
@@ -1004,18 +1050,14 @@ function renderMilestones(cs, d, played, h2h){
     if(firecracker){
         const winner=firecracker.r1>firecracker.r2?firecracker.t1:firecracker.t2;
         pushS4(winner,'Highest-Scoring Match — S4',
-            `${firecracker.r1}+${firecracker.r2}=${firecracker.total} total runs`,
+            `${firecracker.r1}+${firecracker.r2}=${firecracker.total} total`,
             `${firecracker.t1.toUpperCase()} vs ${firecracker.t2.toUpperCase()}`,
-            `Both sides cracked 150 in the same game — the highest combined run tally of Season 4. Bowlers will want to forget this one. A crowd pleaser from first ball to last.`);
+            `Both sides cracked 55 in the same 5-over game — the highest combined total of Season 4. Every over produced runs, every ball was a boundary threat. Bowlers' nightmares are made of afternoons like this.`);
     }
 
-    if(s4cards.length===0){
-        s4Grid.innerHTML=`<div style="color:#555;font-size:0.85rem;grid-column:1/-1;padding:0.5rem 0;">
-            Season 4 is underway, but no standout patterns have emerged yet. Check back after more results.
-        </div>`;
-    } else {
-        s4Grid.innerHTML=s4cards.join('');
-    }
+    s4Grid.innerHTML = s4cards.length ? s4cards.join('') : `<div style="color:#555;font-size:0.85rem;grid-column:1/-1;padding:0.5rem 0;">
+        Season 4 is underway, but no standout patterns have emerged yet. Check back after more results.
+    </div>`;
 }
 
 // ─── Main UI update ────────────────────────────────────────────────────────────
@@ -1087,10 +1129,8 @@ function updateUI(){
     const cs=buildCareerStats(played);
     const d=computeDerived(cs);
 
-    // Render milestones
     renderMilestones(cs, d, played, h2h);
 
-    // Career stats table
     const cArr=TEAMS.map(t=>{
         const c=cs[t];
         const avg=c.wl_lost>0?c.r/c.wl_lost:(c.r>0?c.r:0);
