@@ -465,8 +465,6 @@ const TEAMS = ['csk','mi','rcb','kkr','dc','rr','pbks','srh','lsg','gt'];
 const GROUP_A = ['kkr','mi','lsg','srh','dc'];
 const GROUP_B = ['csk','rcb','gt','pbks','rr'];
 const TOTAL_MATCHES_PER_TEAM = 14;
-
-// 5-over format: max 30 balls per innings
 const MAX_BALLS = 30;
 
 const CAREER_BASE = {
@@ -482,18 +480,40 @@ const CAREER_BASE = {
     gt:  {r:0,b:0,rc:0,bb:0,w:0,l:0,wl_lost:0,wkts_taken:0,m_played:0}
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// H2H_BASE: S1–S3 win counts only.
+// CRITICAL: Every team key MUST have an entry for every other team, including
+// LSG and GT (even though they're 0). Missing keys cause `undefined++` = NaN
+// which silently corrupts all H2H totals for those rivalries.
+// ─────────────────────────────────────────────────────────────────────────────
 const H2H_BASE = {
-    mi:  {csk:3,rcb:2,kkr:4,pbks:1,dc:2,rr:3,srh:4,lsg:0,gt:0},
-    csk: {mi:2,rcb:0,kkr:0,pbks:0,dc:1,rr:3,srh:4,lsg:0,gt:0},
-    rcb: {mi:4,csk:4,kkr:1,pbks:1,dc:2,rr:4,srh:5,lsg:0,gt:0},
-    kkr: {mi:3,csk:4,rcb:3,pbks:1,dc:1,rr:4,srh:4,lsg:0,gt:0},
-    pbks:{mi:4,csk:4,rcb:5,kkr:6,dc:2,rr:5,srh:4,lsg:0,gt:0},
-    dc:  {mi:1,csk:1,rcb:1,kkr:1,pbks:1,rr:1,srh:1,lsg:0,gt:0},
-    rr:  {mi:1,csk:2,rcb:0,kkr:0,pbks:0,dc:2,srh:3,lsg:0,gt:0},
-    srh: {mi:0,csk:1,rcb:0,kkr:0,pbks:0,dc:2,rr:1,lsg:0,gt:0},
-    lsg: {mi:0,csk:0,rcb:0,kkr:0,pbks:0,dc:0,rr:0,srh:0,gt:0},
-    gt:  {mi:0,csk:0,rcb:0,kkr:0,pbks:0,dc:0,rr:0,srh:0,lsg:0}
+    mi:  {csk:3, rcb:2, kkr:4, pbks:1, dc:2, rr:3, srh:4, lsg:0, gt:0},
+    csk: {mi:2, rcb:0, kkr:0, pbks:0, dc:1, rr:3, srh:4, lsg:0, gt:0},
+    rcb: {mi:4, csk:4, kkr:1, pbks:1, dc:2, rr:4, srh:5, lsg:0, gt:0},
+    kkr: {mi:3, csk:4, rcb:3, pbks:1, dc:1, rr:4, srh:4, lsg:0, gt:0},
+    pbks:{mi:4, csk:4, rcb:5, kkr:6, dc:2, rr:5, srh:4, lsg:0, gt:0},
+    dc:  {mi:1, csk:1, rcb:1, kkr:1, pbks:1, rr:1, srh:1, lsg:0, gt:0},
+    rr:  {mi:1, csk:2, rcb:0, kkr:0, pbks:0, dc:2, srh:3, lsg:0, gt:0},
+    srh: {mi:0, csk:1, rcb:0, kkr:0, pbks:0, dc:2, rr:1, lsg:0, gt:0},
+    // LSG and GT debut in S4 — all S1-S3 counts are 0 but keys must exist
+    lsg: {mi:0, csk:0, rcb:0, kkr:0, pbks:0, dc:0, rr:0, srh:0, gt:0},
+    gt:  {mi:0, csk:0, rcb:0, kkr:0, pbks:0, dc:0, rr:0, srh:0, lsg:0}
 };
+
+// Helper: get a safe H2H win count — returns 0 if key is missing or NaN
+function h2hGet(h2h, t1, t2) {
+    const val = h2h[t1]?.[t2];
+    return (typeof val === 'number' && !isNaN(val)) ? val : 0;
+}
+
+// Helper: safely increment a H2H entry, initialising missing keys to 0 first
+function h2hInc(h2h, winner, loser) {
+    if (!h2h[winner]) h2h[winner] = {};
+    if (typeof h2h[winner][loser] !== 'number' || isNaN(h2h[winner][loser])) {
+        h2h[winner][loser] = 0;
+    }
+    h2h[winner][loser]++;
+}
 
 let schedule = [], isDataLoaded = false;
 window.currentH2H = {};
@@ -592,37 +612,23 @@ onValue(dbRef, snapshot=>{
 
 function generateSchedule(){
     const staticList = [
-        // matches 1-5: opening cross-group (all 10 teams play exactly once here)
-        {t1: 'pbks', t2: 'kkr'}, {t1: 'lsg', t2: 'gt'}, {t1: 'mi', t2: 'rcb'}, {t1: 'srh', t2: 'csk'}, {t1: 'dc', t2: 'rr'},
-
-        // matches 6-25: intra-group a & b (interleaved, 20 matches)
-        {t1: 'kkr', t2: 'mi'}, {t1: 'csk', t2: 'rcb'}, {t1: 'lsg', t2: 'srh'}, {t1: 'gt', t2: 'pbks'},
-        {t1: 'mi', t2: 'dc'}, {t1: 'rcb', t2: 'rr'}, {t1: 'kkr', t2: 'lsg'}, {t1: 'csk', t2: 'gt'},
-        {t1: 'srh', t2: 'dc'}, {t1: 'pbks', t2: 'rr'}, {t1: 'mi', t2: 'srh'}, {t1: 'rcb', t2: 'pbks'},
-        {t1: 'kkr', t2: 'dc'}, {t1: 'csk', t2: 'rr'}, {t1: 'mi', t2: 'lsg'}, {t1: 'rcb', t2: 'gt'},
-        {t1: 'kkr', t2: 'srh'}, {t1: 'csk', t2: 'pbks'}, {t1: 'lsg', t2: 'dc'}, {t1: 'gt', t2: 'rr'},
-
-        // matches 26-45: cross-group leg 1 (remaining 20 matches)
-        {t1: 'kkr', t2: 'gt'}, {t1: 'mi', t2: 'pbks'}, {t1: 'lsg', t2: 'rr'}, {t1: 'srh', t2: 'rcb'}, {t1: 'dc', t2: 'csk'},
-        {t1: 'kkr', t2: 'rcb'}, {t1: 'mi', t2: 'rr'}, {t1: 'lsg', t2: 'csk'}, {t1: 'srh', t2: 'pbks'}, {t1: 'dc', t2: 'gt'},
-        {t1: 'kkr', t2: 'csk'}, {t1: 'mi', t2: 'gt'}, {t1: 'lsg', t2: 'rcb'}, {t1: 'srh', t2: 'rr'}, {t1: 'dc', t2: 'pbks'},
-        {t1: 'kkr', t2: 'rr'}, {t1: 'mi', t2: 'csk'}, {t1: 'lsg', t2: 'pbks'}, {t1: 'srh', t2: 'gt'}, {t1: 'dc', t2: 'rcb'},
-
-        // matches 46-70: cross-group leg 2 (reverse fixtures, 25 matches)
-        {t1: 'kkr', t2: 'pbks'}, {t1: 'gt', t2: 'lsg'}, {t1: 'rcb', t2: 'mi'}, {t1: 'csk', t2: 'srh'}, {t1: 'rr', t2: 'dc'},
-        {t1: 'gt', t2: 'kkr'}, {t1: 'pbks', t2: 'mi'}, {t1: 'rr', t2: 'lsg'}, {t1: 'rcb', t2: 'srh'}, {t1: 'csk', t2: 'dc'},
-        {t1: 'rcb', t2: 'kkr'}, {t1: 'rr', t2: 'mi'}, {t1: 'csk', t2: 'lsg'}, {t1: 'pbks', t2: 'srh'}, {t1: 'gt', t2: 'dc'},
-        {t1: 'csk', t2: 'kkr'}, {t1: 'gt', t2: 'mi'}, {t1: 'rcb', t2: 'lsg'}, {t1: 'rr', t2: 'srh'}, {t1: 'pbks', t2: 'dc'},
-        {t1: 'rr', t2: 'kkr'}, {t1: 'csk', t2: 'mi'}, {t1: 'pbks', t2: 'lsg'}, {t1: 'gt', t2: 'srh'}, {t1: 'rcb', t2: 'dc'}
+        {t1:'pbks',t2:'kkr'},{t1:'lsg',t2:'gt'},{t1:'mi',t2:'rcb'},{t1:'srh',t2:'csk'},{t1:'dc',t2:'rr'},
+        {t1:'kkr',t2:'mi'},{t1:'csk',t2:'rcb'},{t1:'lsg',t2:'srh'},{t1:'gt',t2:'pbks'},
+        {t1:'mi',t2:'dc'},{t1:'rcb',t2:'rr'},{t1:'kkr',t2:'lsg'},{t1:'csk',t2:'gt'},
+        {t1:'srh',t2:'dc'},{t1:'pbks',t2:'rr'},{t1:'mi',t2:'srh'},{t1:'rcb',t2:'pbks'},
+        {t1:'kkr',t2:'dc'},{t1:'csk',t2:'rr'},{t1:'mi',t2:'lsg'},{t1:'rcb',t2:'gt'},
+        {t1:'kkr',t2:'srh'},{t1:'csk',t2:'pbks'},{t1:'lsg',t2:'dc'},{t1:'gt',t2:'rr'},
+        {t1:'kkr',t2:'gt'},{t1:'mi',t2:'pbks'},{t1:'lsg',t2:'rr'},{t1:'srh',t2:'rcb'},{t1:'dc',t2:'csk'},
+        {t1:'kkr',t2:'rcb'},{t1:'mi',t2:'rr'},{t1:'lsg',t2:'csk'},{t1:'srh',t2:'pbks'},{t1:'dc',t2:'gt'},
+        {t1:'kkr',t2:'csk'},{t1:'mi',t2:'gt'},{t1:'lsg',t2:'rcb'},{t1:'srh',t2:'rr'},{t1:'dc',t2:'pbks'},
+        {t1:'kkr',t2:'rr'},{t1:'mi',t2:'csk'},{t1:'lsg',t2:'pbks'},{t1:'srh',t2:'gt'},{t1:'dc',t2:'rcb'},
+        {t1:'kkr',t2:'pbks'},{t1:'gt',t2:'lsg'},{t1:'rcb',t2:'mi'},{t1:'csk',t2:'srh'},{t1:'rr',t2:'dc'},
+        {t1:'gt',t2:'kkr'},{t1:'pbks',t2:'mi'},{t1:'rr',t2:'lsg'},{t1:'rcb',t2:'srh'},{t1:'csk',t2:'dc'},
+        {t1:'rcb',t2:'kkr'},{t1:'rr',t2:'mi'},{t1:'csk',t2:'lsg'},{t1:'pbks',t2:'srh'},{t1:'gt',t2:'dc'},
+        {t1:'csk',t2:'kkr'},{t1:'gt',t2:'mi'},{t1:'rcb',t2:'lsg'},{t1:'rr',t2:'srh'},{t1:'pbks',t2:'dc'},
+        {t1:'rr',t2:'kkr'},{t1:'csk',t2:'mi'},{t1:'pbks',t2:'lsg'},{t1:'gt',t2:'srh'},{t1:'rcb',t2:'dc'}
     ];
-
-    return staticList.map((m, i) => ({
-        id: i + 1,
-        t1: m.t1,
-        t2: m.t2,
-        played: false,
-        result: null
-    }));
+    return staticList.map((m,i)=>({id:i+1,t1:m.t1,t2:m.t2,played:false,result:null}));
 }
 
 function initUI(){
@@ -640,17 +646,23 @@ function initUI(){
 
 function renderH2HPanel(){
     if(!h2hSelected) return;
-    const data=window.currentH2H;
+    const data = window.currentH2H;
     document.querySelectorAll('.h2h-team-btn').forEach(b=>b.classList.toggle('active',b.id==='h2hbtn_'+h2hSelected));
-    const opps=TEAMS.filter(x=>x!==h2hSelected);
-    let tW=0,tL=0;
-    const rows=opps.map(opp=>{ const w=data[h2hSelected]?.[opp]??0,l=data[opp]?.[h2hSelected]??0; tW+=w; tL+=l; return{opp,w,l}; }).sort((a,b)=>(b.w-b.l)-(a.w-a.l));
-    const wl=tL>0?(tW/tL).toFixed(2):tW>0?'∞':'—';
-    document.getElementById('h2h_sel_name').textContent=h2hSelected.toUpperCase();
-    document.getElementById('h2h_summary').textContent=`${tW}W  ${tL}L  —  W/L ratio: ${wl}`;
-    const max=Math.max(...rows.map(r=>r.w+r.l),1);
-    document.getElementById('h2h_rivals').innerHTML=rows.map(r=>{
-        const wP=(r.w/max)*100,lP=(r.l/max)*100,col=r.w>r.l?'#00e676':r.l>r.w?'#ff5252':'#888';
+    const opps = TEAMS.filter(x=>x!==h2hSelected);
+    let tW=0, tL=0;
+    const rows = opps.map(opp=>{
+        const w = h2hGet(data, h2hSelected, opp);
+        const l = h2hGet(data, opp, h2hSelected);
+        tW += w; tL += l;
+        return {opp, w, l};
+    }).sort((a,b)=>(b.w - b.l) - (a.w - a.l));
+    const wl = tL > 0 ? (tW/tL).toFixed(2) : tW > 0 ? '∞' : '—';
+    document.getElementById('h2h_sel_name').textContent = h2hSelected.toUpperCase();
+    document.getElementById('h2h_summary').textContent = `${tW}W  ${tL}L  —  W/L ratio: ${wl}`;
+    const max = Math.max(...rows.map(r=>r.w+r.l), 1);
+    document.getElementById('h2h_rivals').innerHTML = rows.map(r=>{
+        const wP=(r.w/max)*100, lP=(r.l/max)*100;
+        const col = r.w>r.l ? '#00e676' : r.l>r.w ? '#ff5252' : '#888';
         return `<div class="h2h-rival-row">
             <span style="min-width:44px;font-size:0.8rem;color:#aaa;">${r.opp.toUpperCase()}</span>
             <div style="flex:1;display:flex;gap:3px;height:18px;">
@@ -763,19 +775,12 @@ function renderMilestones(cs, d, played, h2h){
 
     const allTimeList = [
         { team:'pbks', badge:'The Bridesmaid Curse', val:'3× Runner-Up', lbl:'PBKS — S1, S2 & S3', desc:'Three consecutive group-stage triumphs. Three consecutive final chokes. The most statistically dominant team in history has never lifted a trophy. The consistency of their heartbreak is practically an art form.' },
-
         { team:'pbks', badge:'Highest Career Strike Rate', val:`${d['pbks'].sr.toFixed(1)}`, lbl:'PBKS — All Time', desc:`Punjab scores faster than anyone else in RCPL history. In a 5-over sprint where every ball dictates the momentum, striking at ${d['pbks'].sr.toFixed(1)} is the absolute gold standard.` },
-
         { team:'dc', badge:'Highest Career Win Rate', val:`${d['dc'].wl.toFixed(2)} W/L`, lbl:'DC — All Time Juggernaut', desc:`Forget the noise—Delhi quietly wins cricket matches. Boasting the league's highest win-to-loss ratio at ${d['dc'].wl.toFixed(2)}, they are a ruthless, well-oiled machine waiting to finally convert stats into a championship.` },
-
         { team:'multi', badge:'The Champions Club', val:'MI, RCB, KKR', lbl:'The Title Holders', desc:'Only three franchises know what it takes to climb the summit. MI seized the inaugural crown, RCB battered their way to Season 2 glory, and KKR reign as defending champions. The throne awaits its next king.' },
-
-        { team:'kkr', badge:'The Defining Rivalry', val:`${h2h['pbks']?.['kkr']??6}–${h2h['kkr']?.['pbks']??1} to PBKS`, lbl:'PBKS vs KKR — All Time', desc:'The most electric fixture in the RCPL. The perpetual runners-up against the reigning champions. PBKS utterly dominates the historical head-to-head, making every playoff encounter a psychological war.' },
-
+        { team:'kkr', badge:'The Defining Rivalry', val:`${h2hGet(h2h,'pbks','kkr')}–${h2hGet(h2h,'kkr','pbks')} to PBKS`, lbl:'PBKS vs KKR — All Time', desc:'The most electric fixture in the RCPL. The perpetual runners-up against the reigning champions. PBKS utterly dominates the historical head-to-head, making every playoff encounter a psychological war.' },
         { team:'csk', badge:'The Yellow Nightmare', val:`${d['csk'].wl.toFixed(2)} W/L`, lbl:'CSK — All Time', desc:`It has been a gruelling existence for the Super Kings. Holding the lowest win rate and striking at a sluggish ${d['csk'].sr.toFixed(1)}, they are in the midst of a massive structural rebuild. Nowhere to go but up.` },
-
         { team:'srh', badge:'Bowling Economy Crisis', val:`${d['srh'].eco.toFixed(2)} RPO`, lbl:'SRH — All Time', desc:`In 5-over cricket, bleeding runs is a death sentence. SRH has historically conceded more runs per over than any other franchise. Fixing the bowling attack is step one to escaping the basement.` },
-
         { team:'multi', badge:'The Expansion Threat', val:'LSG & GT Arrive', lbl:'Season 4 Debutants', desc:'Two brand new franchises enter the crucible. Zero history, zero baggage, and absolute tactical freedom. Lucknow and Gujarat are the ultimate wildcards, ready to tear up the established hierarchy.' }
     ];
 
@@ -803,14 +808,12 @@ function renderMilestones(cs, d, played, h2h){
         const m=s.result;
         s4Runs[m.t1]=(s4Runs[m.t1]||0)+m.r1; s4Runs[m.t2]=(s4Runs[m.t2]||0)+m.r2;
         s4Wkts[m.t1]=(s4Wkts[m.t1]||0)+(m.w2||0); s4Wkts[m.t2]=(s4Wkts[m.t2]||0)+(m.w1||0);
-
         if(m.r1>highInns.runs) highInns={runs:m.r1,wkts:m.w1,team:m.t1,vs:m.t2,balls:m.b1};
         if(m.r2>highInns.runs) highInns={runs:m.r2,wkts:m.w2,team:m.t2,vs:m.t1,balls:m.b2};
         if(m.r1<lowInns.runs)  lowInns={runs:m.r1,wkts:m.w1,team:m.t1,vs:m.t2,balls:m.b1};
         if(m.r2<lowInns.runs)  lowInns={runs:m.r2,wkts:m.w2,team:m.t2,vs:m.t1,balls:m.b2};
-
-        if(m.r1>m.r2){ s4W[m.t1]++;s4L[m.t2]++;s4Form[m.t1].push('W');s4Form[m.t2].push('L'); const margin=m.r1-m.r2; if(margin>biggestRunWin.margin) biggestRunWin={margin,winner:m.t1,loser:m.t2,wr:m.r1,lr:m.r2}; if(margin<closestGame.diff) closestGame={diff:margin,winner:m.t1,loser:m.t2,wr:m.r1,lr:m.r2,t1:'',t2:''}; } 
-        else if(m.r2>m.r1){ s4W[m.t2]++;s4L[m.t1]++;s4Form[m.t2].push('W');s4Form[m.t1].push('L'); const wktsLeft=10-(m.w2||0); if(wktsLeft>biggestWktWin.wkts) biggestWktWin={wkts:wktsLeft,winner:m.t2,loser:m.t1}; const diff=m.r2-m.r1; if(diff<closestGame.diff) closestGame={diff,winner:m.t2,loser:m.t1,wr:m.r2,lr:m.r1,t1:'',t2:''}; } 
+        if(m.r1>m.r2){ s4W[m.t1]++;s4L[m.t2]++;s4Form[m.t1].push('W');s4Form[m.t2].push('L'); const margin=m.r1-m.r2; if(margin>biggestRunWin.margin) biggestRunWin={margin,winner:m.t1,loser:m.t2,wr:m.r1,lr:m.r2}; if(margin<closestGame.diff) closestGame={diff:margin,winner:m.t1,loser:m.t2,wr:m.r1,lr:m.r2,t1:'',t2:''}; }
+        else if(m.r2>m.r1){ s4W[m.t2]++;s4L[m.t1]++;s4Form[m.t2].push('W');s4Form[m.t1].push('L'); const wktsLeft=10-(m.w2||0); if(wktsLeft>biggestWktWin.wkts) biggestWktWin={wkts:wktsLeft,winner:m.t2,loser:m.t1}; const diff=m.r2-m.r1; if(diff<closestGame.diff) closestGame={diff,winner:m.t2,loser:m.t1,wr:m.r2,lr:m.r1,t1:'',t2:''}; }
         else { s4Form[m.t1].push('T');s4Form[m.t2].push('T'); if(0<closestGame.diff) closestGame={diff:0,winner:'',loser:'',wr:m.r1,lr:m.r2,t1:m.t1,t2:m.t2}; }
     });
 
@@ -831,7 +834,6 @@ function renderMilestones(cs, d, played, h2h){
     ['lsg','gt'].forEach(t=>{ if(s4W[t]>0 && s4W[t]>s4L[t]){ pushS4(t,'Debut Season Statement', `${s4W[t]}W ${s4L[t]}L`, `${t.toUpperCase()} — First RCPL Season`, `${t.toUpperCase()} are winning in their RCPL debut. No history, no precedent — and yet here they are, already beating established sides. The league has been put on notice.`); } });
     teamsWithMatches.forEach(t=>{ if(s4W[t]>2 && s4L[t]===0){ pushS4(t,'Unbeaten in Season 4', `${s4W[t]}W 0L`, `${t.toUpperCase()} — Perfect Record`, `${t.toUpperCase()} are yet to lose in Season 4. Every opponent has had their shot across 30 balls — none has found a way through yet.`); } });
     let firecracker=null; played.forEach(s=>{ const m=s.result; if(m.r1>=55&&m.r2>=55){ const total=m.r1+m.r2; if(!firecracker||total>firecracker.total) firecracker={total,t1:m.t1,t2:m.t2,r1:m.r1,r2:m.r2}; } }); if(firecracker){ const winner=firecracker.r1>firecracker.r2?firecracker.t1:firecracker.t2; pushS4(winner,'Highest-Scoring Match — S4', `${firecracker.r1}+${firecracker.r2}=${firecracker.total} total`, `${firecracker.t1.toUpperCase()} vs ${firecracker.t2.toUpperCase()}`, `Both sides cracked 55 in the same 5-over game — the highest combined total of Season 4. Every over produced runs, every ball was a boundary threat. Bowlers' nightmares are made of afternoons like this.`); }
-
     s4Grid.innerHTML = s4cards.length ? s4cards.join('') : `<div style="color:#555;font-size:0.85rem;grid-column:1/-1;padding:0.5rem 0;">Season 4 is underway, but no standout patterns have emerged yet. Check back after more results.</div>`;
 }
 
@@ -868,16 +870,22 @@ function updateUI(){
         editSel.innerHTML=opts; resetSel.innerHTML=opts;
     }
 
-    const h2h=JSON.parse(JSON.stringify(H2H_BASE));
+    // ─────────────────────────────────────────────────────────────────────────
+    // Build H2H: start from a deep clone of S1-S3 base, then overlay S4 live.
+    // Use h2hInc() which safely handles missing/NaN keys (fixes LSG & GT bug).
+    // ─────────────────────────────────────────────────────────────────────────
+    const h2h = JSON.parse(JSON.stringify(H2H_BASE));
     let highestTotals=[];
     played.forEach(s=>{
         const m=s.result;
         highestTotals.push({team:m.t1,runs:m.r1,wkts:m.w1,vs:m.t2},{team:m.t2,runs:m.r2,wkts:m.w2,vs:m.t1});
-        if(m.r1>m.r2) h2h[m.t1][m.t2]++;
-        else if(m.r2>m.r1) h2h[m.t2][m.t1]++;
+        if(m.r1 > m.r2)      h2hInc(h2h, m.t1, m.t2);
+        else if(m.r2 > m.r1) h2hInc(h2h, m.t2, m.t1);
+        // ties: no H2H win credited to either side
     });
-    window.currentH2H=h2h;
-    renderH2HPanel();
+    window.currentH2H = h2h;
+    // Re-render panel immediately so button clicks always see fresh data
+    if(h2hSelected) renderH2HPanel();
 
     highestTotals.sort((a,b)=>b.runs-a.runs);
     document.getElementById('highest_totals_body').innerHTML=highestTotals.slice(0,5).map(t=>`<tr><td style="text-transform:uppercase;text-align:left;">${t.team}</td><td style="color:#d4af37;font-weight:bold;">${t.runs}/${t.wkts}</td><td style="font-size:0.75rem;color:#888;">vs ${t.vs.toUpperCase()}</td></tr>`).join('');
@@ -941,7 +949,8 @@ window.predictMatch = function(){
         const m=s.result;
         if(m.r1>m.r2){m.t1===t1?t1W++:t2W++;}else if(m.r2>m.r1){m.t2===t1?t1W++:t2W++;}else ties++;
     });
-    const oT1=window.currentH2H[t1]?.[t2]??0, oT2=window.currentH2H[t2]?.[t1]??0;
+    const oT1=h2hGet(window.currentH2H, t1, t2);
+    const oT2=h2hGet(window.currentH2H, t2, t1);
     const fs=f=>f.slice(-3).reduce((a,v)=>a+(v==='W'?2:v==='T'?1:0),0);
     let s1c=(s1.pts*1.5)+(parseFloat(s1.nrr)*5)+(fs(s1.form)*3);
     let s2c=(s2.pts*1.5)+(parseFloat(s2.nrr)*5)+(fs(s2.form)*3);
