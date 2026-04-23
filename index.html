@@ -593,27 +593,27 @@ onValue(dbRef, snapshot=>{
 function generateSchedule(){
     const staticList = [
         // matches 1-5: opening cross-group (all 10 teams play exactly once here)
-        {t1: 'kkr', t2: 'csk'}, {t1: 'mi', t2: 'rcb'}, {t1: 'lsg', t2: 'gt'}, {t1: 'srh', t2: 'pbks'}, {t1: 'dc', t2: 'rr'},
-        
+        {t1: 'pbks', t2: 'kkr'}, {t1: 'lsg', t2: 'gt'}, {t1: 'mi', t2: 'rcb'}, {t1: 'srh', t2: 'csk'}, {t1: 'dc', t2: 'rr'},
+
         // matches 6-25: intra-group a & b (interleaved, 20 matches)
         {t1: 'kkr', t2: 'mi'}, {t1: 'csk', t2: 'rcb'}, {t1: 'lsg', t2: 'srh'}, {t1: 'gt', t2: 'pbks'},
         {t1: 'mi', t2: 'dc'}, {t1: 'rcb', t2: 'rr'}, {t1: 'kkr', t2: 'lsg'}, {t1: 'csk', t2: 'gt'},
         {t1: 'srh', t2: 'dc'}, {t1: 'pbks', t2: 'rr'}, {t1: 'mi', t2: 'srh'}, {t1: 'rcb', t2: 'pbks'},
         {t1: 'kkr', t2: 'dc'}, {t1: 'csk', t2: 'rr'}, {t1: 'mi', t2: 'lsg'}, {t1: 'rcb', t2: 'gt'},
         {t1: 'kkr', t2: 'srh'}, {t1: 'csk', t2: 'pbks'}, {t1: 'lsg', t2: 'dc'}, {t1: 'gt', t2: 'rr'},
-        
+
         // matches 26-45: cross-group leg 1 (remaining 20 matches)
-        {t1: 'kkr', t2: 'rcb'}, {t1: 'mi', t2: 'gt'}, {t1: 'lsg', t2: 'pbks'}, {t1: 'srh', t2: 'rr'}, {t1: 'dc', t2: 'csk'},
-        {t1: 'kkr', t2: 'gt'}, {t1: 'mi', t2: 'pbks'}, {t1: 'lsg', t2: 'rr'}, {t1: 'srh', t2: 'csk'}, {t1: 'dc', t2: 'rcb'},
-        {t1: 'kkr', t2: 'pbks'}, {t1: 'mi', t2: 'rr'}, {t1: 'lsg', t2: 'csk'}, {t1: 'srh', t2: 'rcb'}, {t1: 'dc', t2: 'gt'},
-        {t1: 'kkr', t2: 'rr'}, {t1: 'mi', t2: 'csk'}, {t1: 'lsg', t2: 'rcb'}, {t1: 'srh', t2: 'gt'}, {t1: 'dc', t2: 'pbks'},
-        
+        {t1: 'kkr', t2: 'gt'}, {t1: 'mi', t2: 'pbks'}, {t1: 'lsg', t2: 'rr'}, {t1: 'srh', t2: 'rcb'}, {t1: 'dc', t2: 'csk'},
+        {t1: 'kkr', t2: 'rcb'}, {t1: 'mi', t2: 'rr'}, {t1: 'lsg', t2: 'csk'}, {t1: 'srh', t2: 'pbks'}, {t1: 'dc', t2: 'gt'},
+        {t1: 'kkr', t2: 'csk'}, {t1: 'mi', t2: 'gt'}, {t1: 'lsg', t2: 'rcb'}, {t1: 'srh', t2: 'rr'}, {t1: 'dc', t2: 'pbks'},
+        {t1: 'kkr', t2: 'rr'}, {t1: 'mi', t2: 'csk'}, {t1: 'lsg', t2: 'pbks'}, {t1: 'srh', t2: 'gt'}, {t1: 'dc', t2: 'rcb'},
+
         // matches 46-70: cross-group leg 2 (reverse fixtures, 25 matches)
-        {t1: 'csk', t2: 'kkr'}, {t1: 'rcb', t2: 'mi'}, {t1: 'gt', t2: 'lsg'}, {t1: 'pbks', t2: 'srh'}, {t1: 'rr', t2: 'dc'},
-        {t1: 'rcb', t2: 'kkr'}, {t1: 'gt', t2: 'mi'}, {t1: 'pbks', t2: 'lsg'}, {t1: 'rr', t2: 'srh'}, {t1: 'csk', t2: 'dc'},
-        {t1: 'gt', t2: 'kkr'}, {t1: 'pbks', t2: 'mi'}, {t1: 'rr', t2: 'lsg'}, {t1: 'csk', t2: 'srh'}, {t1: 'rcb', t2: 'dc'},
-        {t1: 'pbks', t2: 'kkr'}, {t1: 'rr', t2: 'mi'}, {t1: 'csk', t2: 'lsg'}, {t1: 'rcb', t2: 'srh'}, {t1: 'gt', t2: 'dc'},
-        {t1: 'rr', t2: 'kkr'}, {t1: 'csk', t2: 'mi'}, {t1: 'rcb', t2: 'lsg'}, {t1: 'gt', t2: 'srh'}, {t1: 'pbks', t2: 'dc'}
+        {t1: 'kkr', t2: 'pbks'}, {t1: 'gt', t2: 'lsg'}, {t1: 'rcb', t2: 'mi'}, {t1: 'csk', t2: 'srh'}, {t1: 'rr', t2: 'dc'},
+        {t1: 'gt', t2: 'kkr'}, {t1: 'pbks', t2: 'mi'}, {t1: 'rr', t2: 'lsg'}, {t1: 'rcb', t2: 'srh'}, {t1: 'csk', t2: 'dc'},
+        {t1: 'rcb', t2: 'kkr'}, {t1: 'rr', t2: 'mi'}, {t1: 'csk', t2: 'lsg'}, {t1: 'pbks', t2: 'srh'}, {t1: 'gt', t2: 'dc'},
+        {t1: 'csk', t2: 'kkr'}, {t1: 'gt', t2: 'mi'}, {t1: 'rcb', t2: 'lsg'}, {t1: 'rr', t2: 'srh'}, {t1: 'pbks', t2: 'dc'},
+        {t1: 'rr', t2: 'kkr'}, {t1: 'csk', t2: 'mi'}, {t1: 'pbks', t2: 'lsg'}, {t1: 'gt', t2: 'srh'}, {t1: 'rcb', t2: 'dc'}
     ];
 
     return staticList.map((m, i) => ({
