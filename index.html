@@ -799,7 +799,7 @@ function computeDerived(cs){
         const sr  =c.b >0?(c.r/c.b)*100:0;
         const eco =c.bb>0?(c.rc/(c.bb/6)):0;
         const wl  =c.l >0?c.w/c.l:(c.w>0?c.w:CAREER_BASE[t].w);
-        const avg =c.wl_lost>0?c.r/c.wl_lost:0;
+        const avg =c.m_played>0?c.r/c.m_played:0;
         const basra=avg+sr;
         const wpm =c.m_played>0?c.wkts_taken/c.m_played:0;
         const bewm=(eco===0&&wpm===0)?0:eco===0?wpm*0.3:10+(wpm*0.3)-(eco*0.7);
@@ -829,7 +829,7 @@ function computeDerivedSeason(cs){
         const sr  =c.b >0?(c.r/c.b)*100:0;
         const eco =c.bb>0?(c.rc/(c.bb/6)):0;
         const wl  =c.l >0?c.w/c.l:(c.w>0?c.w:0);
-        const avg =c.wl_lost>0?c.r/c.wl_lost:(c.r>0?c.r:0);
+        const avg =c.m_played>0?c.r/c.m_played:0;
         const basra=avg+sr;
         const wpm =c.m_played>0?c.wkts_taken/c.m_played:0;
         const bewm=(eco===0&&wpm===0)?0:eco===0?wpm*0.3:10+(wpm*0.3)-(eco*0.7);
@@ -932,10 +932,7 @@ function renderMilestones(cs, d, played, h2h, s4d){
     const l_sr = total_b > 0 ? (total_r / total_b) * 100 : 0;
     const l_eco = total_bb > 0 ? (total_rc / (total_bb / 6)) : 0;
     const l_wpm = total_m > 0 ? (total_w / total_m) : 0;
-    
-    let total_lost_wkts = 0;
-    teamsWithMatches.forEach(t => total_lost_wkts += (s4d[t].wl_lost || 0));
-    const l_avg_val = total_lost_wkts > 0 ? (total_r / total_lost_wkts) : (total_r > 0 ? total_r : 0);
+    const l_avg_val = total_m > 0 ? (total_r / total_m) : 0;
 
     let max_dev_sr=0, out_sr=null;
     let max_dev_eco=0, out_eco=null;
@@ -1155,7 +1152,7 @@ function updateUI(){
 
     const cArr=TEAMS.map(t=>{
         const c=cs[t];
-        const avg=c.wl_lost>0?c.r/c.wl_lost:(c.r>0?c.r:0);
+        const avg=c.m_played>0?c.r/c.m_played:0;
         const sr=c.b>0?(c.r/c.b)*100:0;
         const eco=c.bb>0?(c.rc/(c.bb/6)):0;
         const wl=c.l>0?c.w/c.l:(c.w>0?c.w:CAREER_BASE[t].w);
