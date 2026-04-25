@@ -322,6 +322,40 @@
 
 
 
+        /* ── TABS ── */
+
+        .tab-bar {
+
+            display: flex; gap: 4px; margin-bottom: 16px;
+
+            border-bottom: 1px solid #333; padding-bottom: 0;
+
+        }
+
+        .tab-btn {
+
+            background: transparent; color: #666; border: none; border-bottom: 2px solid transparent;
+
+            padding: 8px 18px; cursor: pointer; font-size: 0.85rem; font-weight: bold;
+
+            letter-spacing: 0.5px; text-transform: uppercase; margin-top: 0;
+
+            transition: color 0.2s ease, border-color 0.2s ease; width: auto;
+
+            border-radius: 0;
+
+        }
+
+        .tab-btn:hover { color: #d4af37; transform: none; box-shadow: none; }
+
+        .tab-btn.active { color: #d4af37; border-bottom-color: #d4af37; }
+
+        .tab-panel { display: none; }
+
+        .tab-panel.active { display: block; }
+
+
+
         /* ── RECORDS / MILESTONES ── */
 
         .ms-section-label {
@@ -423,6 +457,34 @@
             border-radius: 4px; background: rgba(212,175,55,0.1);
 
             color: #d4af37; border: 1px solid rgba(212,175,55,0.25);
+
+            margin-bottom: 10px;
+
+        }
+
+        .ms-outlier-pill {
+
+            display: inline-block; font-size: 9px; font-weight: 700;
+
+            letter-spacing: 1.5px; text-transform: uppercase; padding: 2px 7px;
+
+            border-radius: 4px; background: rgba(255,82,82,0.1);
+
+            color: #ff5252; border: 1px solid rgba(255,82,82,0.25);
+
+            margin-bottom: 10px;
+
+        }
+
+        .ms-selfcomp-pill {
+
+            display: inline-block; font-size: 9px; font-weight: 700;
+
+            letter-spacing: 1.5px; text-transform: uppercase; padding: 2px 7px;
+
+            border-radius: 4px; background: rgba(0,188,212,0.1);
+
+            color: #26c6da; border: 1px solid rgba(0,188,212,0.25);
 
             margin-bottom: 10px;
 
@@ -772,49 +834,111 @@
 
 
 
+    <!-- ── STATISTICS CARD with tabs ── -->
+
     <div class="card full-width">
 
-        <h2 style="text-align:left;">Career Statistics</h2>
+        <h2 style="text-align:left;">Statistics</h2>
 
-        <p style="color:#aaa;font-size:0.85rem;margin-top:-5px;">Click any column header to sort.</p>
+        <p style="color:#aaa;font-size:0.85rem;margin-top:-5px;">Click any column header to sort. Season 4 stats reflect only matches played this season.</p>
 
-        <div class="scrollable-table">
+        <div class="tab-bar">
 
-            <table style="min-width:1000px;">
+            <button class="tab-btn active" id="tab_career_btn" onclick="window.switchStatsTab('career')">Career</button>
 
-                <thead><tr>
+            <button class="tab-btn" id="tab_s4_btn" onclick="window.switchStatsTab('s4')">Season 4</button>
 
-                    <th style="text-align:left;">Team</th>
+        </div>
 
-                    <th class="sortable" onclick="window.sortCareer('r')"     id="th_r">Runs Scored<span class="sort-icon">▼</span></th>
+        <!-- Career Stats Panel -->
 
-                    <th class="sortable" onclick="window.sortCareer('b')"     id="th_b">Balls Faced<span class="sort-icon">▼</span></th>
+        <div class="tab-panel active" id="tab_career_panel">
 
-                    <th class="sortable" onclick="window.sortCareer('rc')"    id="th_rc">Runs Conceded<span class="sort-icon">▼</span></th>
+            <div class="scrollable-table">
 
-                    <th class="sortable" onclick="window.sortCareer('bb')"    id="th_bb">Balls Bowled<span class="sort-icon">▼</span></th>
+                <table style="min-width:1000px;">
 
-                    <th class="sortable" onclick="window.sortCareer('wkts_taken')" id="th_wkts_taken">Wickets<span class="sort-icon">▼</span></th>
+                    <thead><tr>
 
-                    <th class="sortable" onclick="window.sortCareer('avg')"   id="th_avg">Average<span class="sort-icon">▼</span></th>
+                        <th style="text-align:left;">Team</th>
 
-                    <th class="sortable" onclick="window.sortCareer('sr')"    id="th_sr">Strike Rate<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('r')"     id="th_r">Runs Scored<span class="sort-icon">▼</span></th>
 
-                    <th class="sortable" onclick="window.sortCareer('basra')" id="th_basra" style="color:#d4af37;">BASRA<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('b')"     id="th_b">Balls Faced<span class="sort-icon">▼</span></th>
 
-                    <th class="sortable" onclick="window.sortCareer('eco')"   id="th_eco">Economy<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('rc')"    id="th_rc">Runs Conceded<span class="sort-icon">▼</span></th>
 
-                    <th class="sortable" onclick="window.sortCareer('bewm')"  id="th_bewm" style="color:#d4af37;">BEWM<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('bb')"    id="th_bb">Balls Bowled<span class="sort-icon">▼</span></th>
 
-                    <th class="sortable" onclick="window.sortCareer('wl')"    id="th_wl">W/L<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('wkts_taken')" id="th_wkts_taken">Wickets<span class="sort-icon">▼</span></th>
 
-                    <th class="sortable sort-desc" onclick="window.sortCareer('value')" id="th_value">Value<span class="sort-icon">▼</span></th>
+                        <th class="sortable" onclick="window.sortCareer('avg')"   id="th_avg">Average<span class="sort-icon">▼</span></th>
 
-                </tr></thead>
+                        <th class="sortable" onclick="window.sortCareer('sr')"    id="th_sr">Strike Rate<span class="sort-icon">▼</span></th>
 
-                <tbody id="career_body"></tbody>
+                        <th class="sortable" onclick="window.sortCareer('basra')" id="th_basra" style="color:#d4af37;">BASRA<span class="sort-icon">▼</span></th>
 
-            </table>
+                        <th class="sortable" onclick="window.sortCareer('eco')"   id="th_eco">Economy<span class="sort-icon">▼</span></th>
+
+                        <th class="sortable" onclick="window.sortCareer('bewm')"  id="th_bewm" style="color:#d4af37;">BEWM<span class="sort-icon">▼</span></th>
+
+                        <th class="sortable" onclick="window.sortCareer('wl')"    id="th_wl">W/L<span class="sort-icon">▼</span></th>
+
+                        <th class="sortable sort-desc" onclick="window.sortCareer('value')" id="th_value">Value<span class="sort-icon">▼</span></th>
+
+                    </tr></thead>
+
+                    <tbody id="career_body"></tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <!-- Season 4 Stats Panel -->
+
+        <div class="tab-panel" id="tab_s4_panel">
+
+            <div class="scrollable-table">
+
+                <table style="min-width:1000px;">
+
+                    <thead><tr>
+
+                        <th style="text-align:left;">Team</th>
+
+                        <th class="sortable" onclick="window.sortS4('r')"          id="s4th_r">Runs Scored<span class="sort-icon">▼</span></th>
+
+                        <th class="sortable" onclick="window.sortS4('b')"          id="s4th_b">Balls Faced<span class="sort-icon">▼</span></th>
+
+                        <th class="sortable" onclick="window.sortS4('rc')"         id="s4th_rc">Runs Conceded<span class="sort-icon">▼</span></th>
+
+                        <th class="sortable" onclick="window.sortS4('bb')"         id="s4th_bb">Balls Bowled<span class="sort-icon">▼</span></th>
+
+                        <th class="sortable" onclick="window.sortS4('wkts_taken')" id="s4th_wkts_taken">Wickets<span class="sort-icon">▼</span></th>
+
+                        <th class="sortable" onclick="window.sortS4('avg')"        id="s4th_avg">Average<span class="sort-icon">▼</span></th>
+
+                        <th class="sortable" onclick="window.sortS4('sr')"         id="s4th_sr">Strike Rate<span class="sort-icon">▼</span></th>
+
+                        <th class="sortable" onclick="window.sortS4('basra')"      id="s4th_basra" style="color:#d4af37;">BASRA<span class="sort-icon">▼</span></th>
+
+                        <th class="sortable" onclick="window.sortS4('eco')"        id="s4th_eco">Economy<span class="sort-icon">▼</span></th>
+
+                        <th class="sortable" onclick="window.sortS4('bewm')"       id="s4th_bewm" style="color:#d4af37;">BEWM<span class="sort-icon">▼</span></th>
+
+                        <th class="sortable" onclick="window.sortS4('wl')"         id="s4th_wl">W/L<span class="sort-icon">▼</span></th>
+
+                        <th class="sortable" onclick="window.sortS4('nrr')"        id="s4th_nrr">NRR<span class="sort-icon">▼</span></th>
+
+                    </tr></thead>
+
+                    <tbody id="s4_stats_body"></tbody>
+
+                </table>
+
+            </div>
 
         </div>
 
@@ -1026,11 +1150,13 @@ let h2hSelected = null;
 
 let careerSort = { prop:'value', dir:-1 };
 
-// Track the last next-match ID so we only re-generate the one-liner when it changes
+let s4Sort = { prop:'r', dir:-1 };
 
 let _lastNextMatchId = null;
 
 let _cachedOneLiner = null;
+
+let _currentS4Stats = {};
 
 
 
@@ -1174,11 +1300,39 @@ window.sortCareer = function(prop) {
 
     if(careerSort.prop===prop) careerSort.dir*=-1; else { careerSort.prop=prop; careerSort.dir=-1; }
 
-    document.querySelectorAll('.sortable').forEach(th=>th.classList.remove('sort-asc','sort-desc'));
+    document.querySelectorAll('#tab_career_panel .sortable').forEach(th=>th.classList.remove('sort-asc','sort-desc'));
 
     const th=document.getElementById(`th_${prop}`); if(th) th.classList.add(careerSort.dir===1?'sort-asc':'sort-desc');
 
     updateUI();
+
+};
+
+
+
+window.sortS4 = function(prop) {
+
+    if(s4Sort.prop===prop) s4Sort.dir*=-1; else { s4Sort.prop=prop; s4Sort.dir=-1; }
+
+    document.querySelectorAll('#tab_s4_panel .sortable').forEach(th=>th.classList.remove('sort-asc','sort-desc'));
+
+    const th=document.getElementById(`s4th_${prop}`); if(th) th.classList.add(s4Sort.dir===1?'sort-asc':'sort-desc');
+
+    renderS4StatsTable(_currentS4Stats);
+
+};
+
+
+
+window.switchStatsTab = function(tab) {
+
+    document.getElementById('tab_career_btn').classList.toggle('active', tab==='career');
+
+    document.getElementById('tab_s4_btn').classList.toggle('active', tab==='s4');
+
+    document.getElementById('tab_career_panel').classList.toggle('active', tab==='career');
+
+    document.getElementById('tab_s4_panel').classList.toggle('active', tab==='s4');
 
 };
 
@@ -1442,9 +1596,9 @@ function generateTableData(){
 
         let ns=nrr>0?`+${nrr.toFixed(3)}`:nrr.toFixed(3); if(nrr===0) ns="0.000";
 
-        return{team:t,...tbl[t],nrr:ns};
+        return{team:t,...tbl[t],nrr:ns,nrrNum:nrr};
 
-    }).sort((a,b)=>b.pts-a.pts||parseFloat(b.nrr)-parseFloat(a.nrr));
+    }).sort((a,b)=>b.pts-a.pts||b.nrrNum-a.nrrNum);
 
 }
 
@@ -1473,6 +1627,78 @@ function buildCareerStats(played){
     });
 
     return cs;
+
+}
+
+
+
+// ── Build Season 4 only stats ──
+
+function buildS4Stats(played){
+
+    let cs={};
+
+    TEAMS.forEach(t=>{ cs[t]={r:0,b:0,rc:0,bb:0,w:0,l:0,wl_lost:0,wkts_taken:0,m_played:0,rf:0,of:0,ra:0,oa:0}; });
+
+    played.forEach(s=>{
+
+        const m=s.result;
+
+        const o1=calcOvers(m.b1), o2=calcOvers(m.b2);
+
+        if(cs[m.t1]&&cs[m.t2]){
+
+            cs[m.t1].m_played++;cs[m.t1].r+=m.r1;cs[m.t1].b+=m.b1;cs[m.t1].rc+=m.r2;cs[m.t1].bb+=m.b2;cs[m.t1].wl_lost+=(m.w1||0);cs[m.t1].wkts_taken+=(m.w2||0);
+
+            cs[m.t1].rf+=m.r1;cs[m.t1].of+=o1;cs[m.t1].ra+=m.r2;cs[m.t1].oa+=o2;
+
+            cs[m.t2].m_played++;cs[m.t2].r+=m.r2;cs[m.t2].b+=m.b2;cs[m.t2].rc+=m.r1;cs[m.t2].bb+=m.b1;cs[m.t2].wl_lost+=(m.w2||0);cs[m.t2].wkts_taken+=(m.w1||0);
+
+            cs[m.t2].rf+=m.r2;cs[m.t2].of+=o2;cs[m.t2].ra+=m.r1;cs[m.t2].oa+=o1;
+
+            if(m.r1>m.r2){cs[m.t1].w++;cs[m.t2].l++;}else if(m.r2>m.r1){cs[m.t2].w++;cs[m.t1].l++;}
+
+        }
+
+    });
+
+    return cs;
+
+}
+
+
+
+function computeDerivedS4(cs){
+
+    const d={};
+
+    for(const t of TEAMS){
+
+        const c=cs[t];
+
+        const sr   = c.b  > 0 ? (c.r  / c.b)  * 100 : 0;
+
+        const eco  = c.bb > 0 ? (c.rc / (c.bb / 6)) : 0;
+
+        const wl   = c.l  > 0 ? c.w / c.l : (c.w > 0 ? c.w : 0);
+
+        const avg  = c.wl_lost > 0 ? c.r / c.wl_lost : 0;
+
+        const basra = avg + sr;
+
+        const wpm  = c.m_played > 0 ? c.wkts_taken / c.m_played : 0;
+
+        const bewm = (eco===0&&wpm===0) ? 0 : eco===0 ? wpm*0.3 : 10+(wpm*0.3)-(eco*0.7);
+
+        const nrrNum = c.of > 0 ? (c.rf/c.of) - (c.oa > 0 ? c.ra/c.oa : 0) : 0;
+
+        const nrr = nrrNum > 0 ? `+${nrrNum.toFixed(3)}` : nrrNum.toFixed(3);
+
+        d[t] = {...c, sr, eco, wl, avg, basra, bewm, nrr, nrrNum};
+
+    }
+
+    return d;
 
 }
 
@@ -1510,11 +1736,87 @@ function computeDerived(cs){
 
 
 
-function msCard(teamCls, badge, value, teamLabel, desc, isS4=false){
+// ── Season 4 stats table renderer ──
+
+function renderS4StatsTable(d){
+
+    _currentS4Stats = d;
+
+    const teamsWithData = TEAMS.filter(t => d[t] && d[t].m_played > 0);
+
+    if(!teamsWithData.length){
+
+        document.getElementById('s4_stats_body').innerHTML = `<tr><td colspan="13" style="color:#555;text-align:center;padding:20px;">No Season 4 matches played yet.</td></tr>`;
+
+        return;
+
+    }
+
+    const arr = TEAMS.map(t => ({team:t, ...d[t]}));
+
+    arr.sort((a,b) => {
+
+        let av = a[s4Sort.prop] ?? 0;
+
+        let bv = b[s4Sort.prop] ?? 0;
+
+        // nrr stored as string — use nrrNum for sort
+
+        if(s4Sort.prop==='nrr'){ av = a.nrrNum ?? 0; bv = b.nrrNum ?? 0; }
+
+        return (av > bv ? 1 : -1) * s4Sort.dir;
+
+    });
+
+    document.getElementById('s4_stats_body').innerHTML = arr.map(c => {
+
+        if(c.m_played === 0) return `<tr>
+
+            <td style="text-transform:uppercase;font-weight:bold;color:#555;text-align:left;">${c.team}</td>
+
+            <td colspan="12" style="color:#333;font-style:italic;">No matches played</td>
+
+        </tr>`;
+
+        return `<tr>
+
+            <td style="text-transform:uppercase;font-weight:bold;color:#fff;text-align:left;">${c.team}</td>
+
+            <td>${c.r}</td><td>${c.b}</td><td>${c.rc}</td><td>${c.bb}</td><td>${c.wkts_taken}</td>
+
+            <td>${c.avg.toFixed(2)}</td><td>${c.sr.toFixed(2)}</td>
+
+            <td style="color:#d4af37;font-weight:bold;">${c.basra.toFixed(2)}</td>
+
+            <td>${c.eco.toFixed(2)}</td>
+
+            <td style="color:#d4af37;font-weight:bold;">${c.bewm.toFixed(2)}</td>
+
+            <td>${c.wl.toFixed(2)}</td>
+
+            <td style="color:${c.nrrNum>=0?'#00e676':'#ff5252'};font-weight:bold;">${c.nrr}</td>
+
+        </tr>`;
+
+    }).join('');
+
+}
+
+
+
+function msCard(teamCls, badge, value, teamLabel, desc, isS4=false, pillType='s4'){
+
+    let pill = '';
+
+    if(isS4 && pillType==='s4')      pill = '<div class="ms-s4-pill">Season 4</div>';
+
+    else if(isS4 && pillType==='outlier') pill = '<div class="ms-outlier-pill">Outlier</div>';
+
+    else if(isS4 && pillType==='selfcomp') pill = '<div class="ms-selfcomp-pill">vs Career</div>';
 
     return `<div class="ms-card tc-${teamCls}">
 
-        ${isS4 ? '<div class="ms-s4-pill">Season 4</div>' : ''}
+        ${pill}
 
         <div class="ms-badge">${badge}</div>
 
@@ -1525,6 +1827,30 @@ function msCard(teamCls, badge, value, teamLabel, desc, isS4=false){
         <div class="ms-desc">${desc}</div>
 
     </div>`;
+
+}
+
+
+
+// ── Outlier detection helpers ──
+
+// Returns teams whose stat differs from field average by >= threshold (z-score style)
+
+function findOutliers(d4, statFn, teamsWithData, highGood) {
+
+    const vals = teamsWithData.map(t => ({t, v: statFn(d4[t])})).filter(x => isFinite(x.v) && x.v > 0);
+
+    if(vals.length < 3) return [];
+
+    const mean = vals.reduce((s,x) => s+x.v, 0) / vals.length;
+
+    const std  = Math.sqrt(vals.reduce((s,x) => s+(x.v-mean)**2, 0) / vals.length);
+
+    if(std < 0.01) return [];
+
+    return vals.map(x => ({...x, z:(x.v-mean)/std})).filter(x => Math.abs(x.z) >= 1.5)
+
+               .sort((a,b) => Math.abs(b.z)-Math.abs(a.z));
 
 }
 
@@ -1574,6 +1900,16 @@ function renderMilestones(cs, d, played, h2h){
 
 
 
+    // ── Build season 4 raw stats ──
+
+    const s4cs = buildS4Stats(played);
+
+    const d4   = computeDerivedS4(s4cs);
+
+    const teamsWithData = TEAMS.filter(t => s4cs[t].m_played >= 2); // need ≥2 matches for meaningful outlier stats
+
+
+
     const s4tc = {};
 
     const canS4 = t => (s4tc[t]||0) < 3;
@@ -1582,9 +1918,15 @@ function renderMilestones(cs, d, played, h2h){
 
     const s4cards = [];
 
-    const pushS4 = (team, badge, val, lbl, desc) => { if(!canS4(team)) return; s4cards.push(msCard(team, badge, val, lbl, desc, true)); bumpS4(team); };
+    const pushS4 = (team, badge, val, lbl, desc, pillType='s4') => { if(!canS4(team)) return; s4cards.push(msCard(team, badge, val, lbl, desc, true, pillType)); bumpS4(team); };
 
 
+
+    // ───────────────────────────────────────────────────────────────────────
+
+    //  SECTION 1: Classic S4 game records (existing logic, minus closest game)
+
+    // ───────────────────────────────────────────────────────────────────────
 
     let highInns={runs:-1,wkts:0,team:'',vs:'',balls:0};
 
@@ -1593,8 +1935,6 @@ function renderMilestones(cs, d, played, h2h){
     let biggestRunWin={margin:-1,winner:'',loser:'',wr:0,lr:0};
 
     let biggestWktWin={wkts:-1,winner:'',loser:''};
-
-    let closestGame={diff:9999,winner:'',loser:'',wr:0,lr:0,t1:'',t2:''};
 
     const s4W={},s4L={},s4Runs={},s4Wkts={},s4Form={};
 
@@ -1618,11 +1958,23 @@ function renderMilestones(cs, d, played, h2h){
 
         if(m.r2<lowInns.runs)  lowInns={runs:m.r2,wkts:m.w2,team:m.t2,vs:m.t1,balls:m.b2};
 
-        if(m.r1>m.r2){ s4W[m.t1]++;s4L[m.t2]++;s4Form[m.t1].push('W');s4Form[m.t2].push('L'); const margin=m.r1-m.r2; if(margin>biggestRunWin.margin) biggestRunWin={margin,winner:m.t1,loser:m.t2,wr:m.r1,lr:m.r2}; if(margin<closestGame.diff) closestGame={diff:margin,winner:m.t1,loser:m.t2,wr:m.r1,lr:m.r2,t1:'',t2:''}; }
+        if(m.r1>m.r2){
 
-        else if(m.r2>m.r1){ s4W[m.t2]++;s4L[m.t1]++;s4Form[m.t2].push('W');s4Form[m.t1].push('L'); const wktsLeft=10-(m.w2||0); if(wktsLeft>biggestWktWin.wkts) biggestWktWin={wkts:wktsLeft,winner:m.t2,loser:m.t1}; const diff=m.r2-m.r1; if(diff<closestGame.diff) closestGame={diff,winner:m.t2,loser:m.t1,wr:m.r2,lr:m.r1,t1:'',t2:''}; }
+            s4W[m.t1]++;s4L[m.t2]++;s4Form[m.t1].push('W');s4Form[m.t2].push('L');
 
-        else { s4Form[m.t1].push('T');s4Form[m.t2].push('T'); if(0<closestGame.diff) closestGame={diff:0,winner:'',loser:'',wr:m.r1,lr:m.r2,t1:m.t1,t2:m.t2}; }
+            const margin=m.r1-m.r2;
+
+            if(margin>biggestRunWin.margin) biggestRunWin={margin,winner:m.t1,loser:m.t2,wr:m.r1,lr:m.r2};
+
+        } else if(m.r2>m.r1){
+
+            s4W[m.t2]++;s4L[m.t1]++;s4Form[m.t2].push('W');s4Form[m.t1].push('L');
+
+            const wktsLeft=10-(m.w2||0);
+
+            if(wktsLeft>biggestWktWin.wkts) biggestWktWin={wkts:wktsLeft,winner:m.t2,loser:m.t1};
+
+        } else { s4Form[m.t1].push('T');s4Form[m.t2].push('T'); }
 
     });
 
@@ -1646,8 +1998,6 @@ function renderMilestones(cs, d, played, h2h){
 
     if(biggestWktWin.wkts >= 0){ let wktDesc; if(biggestWktWin.wkts>=8) wktDesc=`${biggestWktWin.wkts} wickets in hand in a 5-over chase means ${biggestWktWin.winner.toUpperCase()} barely had to get out of first gear. ${biggestWktWin.loser.toUpperCase()} set a total, and the response made it look like a training exercise.`; else if(biggestWktWin.wkts>=6) wktDesc=`A ${biggestWktWin.wkts}-wicket win is a comfortable chase in any format — but in 5 overs, it means the target was effectively never in doubt. ${biggestWktWin.winner.toUpperCase()} handled it without drama.`; else wktDesc=`${biggestWktWin.winner.toUpperCase()} crossed the line with ${biggestWktWin.wkts} wickets to spare — the biggest winning margin by wickets in Season 4. Enough in hand to call it controlled, if not entirely serene.`; pushS4(biggestWktWin.winner,'Most Dominant Chase — S4', `${biggestWktWin.wkts} wickets in hand`, `${biggestWktWin.winner.toUpperCase()} def. ${biggestWktWin.loser.toUpperCase()}`, wktDesc); }
 
-    if(closestGame.diff<9999){ if(closestGame.diff===0&&closestGame.t1){ pushS4('multi','Tied Match — S4', `${closestGame.wr} all`, `${closestGame.t1.toUpperCase()} vs ${closestGame.t2.toUpperCase()}`, '5 overs each and still inseparable. A tie in cricket is rare enough in any format — in a 30-ball game where someone\'s always swinging, it\'s genuinely remarkable.'); } else if(closestGame.winner){ let closeDesc, closeBadge; if(closestGame.diff===1){ closeBadge='Last-Ball Drama — S4'; closeDesc=`One run. In a 5-over game, that\'s the margin between triumph and heartbreak. ${closestGame.winner.toUpperCase()} ${closestGame.wr} vs ${closestGame.loser.toUpperCase()} ${closestGame.lr} — the kind of finish that makes people stay until the very last ball.`; } else if(closestGame.diff<=3){ closeBadge='Closest Finish — S4'; closeDesc=`${closestGame.diff} runs in 5-over cricket is a genuine nail-biter. ${closestGame.winner.toUpperCase()} held on with ${closestGame.wr} against ${closestGame.loser.toUpperCase()}\'s ${closestGame.lr} — likely decided in the last over.`; } else if(closestGame.diff<=6){ closeBadge='Closest Finish — S4'; closeDesc=`${closestGame.diff} runs is a close game in this format — tight enough that the chasing side was still in it going into the final over. ${closestGame.winner.toUpperCase()} ${closestGame.wr} def. ${closestGame.loser.toUpperCase()} ${closestGame.lr}.`; } else { closeBadge='Smallest Margin — S4'; closeDesc=`The narrowest winning margin of Season 4 so far: ${closestGame.diff} runs. In a longer format that would be close — in 5 overs, it\'s still the season\'s tightest result by this measure.`; } pushS4(closestGame.winner, closeBadge, `Won by ${closestGame.diff} run${closestGame.diff===1?'':'s'}`, `${closestGame.winner.toUpperCase()} ${closestGame.wr} — ${closestGame.loser.toUpperCase()} ${closestGame.lr}`, closeDesc); } }
-
     const bestStreakTeam = teamsWithMatches.slice().sort((a,b)=>streaks[b]-streaks[a])[0]; if(bestStreakTeam && streaks[bestStreakTeam]>=3){ pushS4(bestStreakTeam,'Current Winning Streak — S4', `${streaks[bestStreakTeam]} in a row`, `${bestStreakTeam.toUpperCase()} — Season 4`, `${bestStreakTeam.toUpperCase()} are on a ${streaks[bestStreakTeam]}-match winning run. In a 5-over format where momentum swings fast and every game is short, stringing wins together like this is a genuine statement of consistency.`); }
 
     const topRunsTeam = teamsWithMatches.slice().sort((a,b)=>s4Runs[b]-s4Runs[a])[0]; if(topRunsTeam && s4Runs[topRunsTeam]>0){ pushS4(topRunsTeam,'Most Runs — Season 4', `${s4Runs[topRunsTeam]}`, `${topRunsTeam.toUpperCase()} — Season 4`, `${topRunsTeam.toUpperCase()} lead all teams in runs scored this season. With only 30 balls per innings, piling up the most runs in the competition means consistently batting at a level no one else has matched.`); }
@@ -1662,21 +2012,283 @@ function renderMilestones(cs, d, played, h2h){
 
     let firecracker=null; played.forEach(s=>{ const m=s.result; if(m.r1>=55&&m.r2>=55){ const total=m.r1+m.r2; if(!firecracker||total>firecracker.total) firecracker={total,t1:m.t1,t2:m.t2,r1:m.r1,r2:m.r2}; } }); if(firecracker){ const winner=firecracker.r1>firecracker.r2?firecracker.t1:firecracker.t2; pushS4(winner,'Highest-Scoring Match — S4', `${firecracker.r1}+${firecracker.r2}=${firecracker.total} total`, `${firecracker.t1.toUpperCase()} vs ${firecracker.t2.toUpperCase()}`, `Both sides cracked 55 in the same 5-over game — the highest combined total of Season 4. Every over produced runs, every ball was a boundary threat. Bowlers' nightmares are made of afternoons like this.`); }
 
+
+
+    // ───────────────────────────────────────────────────────────────────────
+
+    //  SECTION 2: OUTLIER milestones — team greatly differs from field average
+
+    //  Only applies when ≥3 teams have ≥2 matches of data
+
+    // ───────────────────────────────────────────────────────────────────────
+
+    if(teamsWithData.length >= 3){
+
+
+
+        // Run Rate outlier (runs per over scored)
+
+        const rrOutliers = findOutliers(d4, t => t.of > 0 ? t.rf / t.of : 0, teamsWithData, true);
+
+        rrOutliers.slice(0,1).forEach(o => {
+
+            const isHigh = o.z > 0;
+
+            const rr = (d4[o.t].rf / d4[o.t].of).toFixed(2);
+
+            const fieldAvg = (teamsWithData.filter(t=>t!==o.t).reduce((s,t)=>{ const r=d4[t]; return s+(r.of>0?r.rf/r.of:0); },0) / (teamsWithData.length-1)).toFixed(2);
+
+            if(isHigh){
+
+                pushS4(o.t, 'Batting Run Rate Outlier — S4', `${rr} RPO`, `${o.t.toUpperCase()} — Scoring Machine`, `${o.t.toUpperCase()} are scoring at ${rr} runs per over this season — significantly ahead of the field average of ${fieldAvg} RPO. In 5-over cricket where 1 run per over is the margin between par and dominant, this gap is enormous.`, 'outlier');
+
+            } else {
+
+                pushS4(o.t, 'Batting Run Rate Concern — S4', `${rr} RPO`, `${o.t.toUpperCase()} — Struggling to Score`, `${o.t.toUpperCase()} are averaging just ${rr} runs per over with the bat — well below the field average of ${fieldAvg} RPO. That kind of run-rate deficit in a 5-over game is very difficult to paper over with bowling.`, 'outlier');
+
+            }
+
+        });
+
+
+
+        // Strike Rate outlier
+
+        const srOutliers = findOutliers(d4, t => t.b > 0 ? (t.r/t.b)*100 : 0, teamsWithData, true);
+
+        srOutliers.slice(0,1).forEach(o => {
+
+            const isHigh = o.z > 0;
+
+            const sr = ((d4[o.t].r / d4[o.t].b)*100).toFixed(1);
+
+            const fieldAvg = (teamsWithData.filter(t=>t!==o.t && d4[t].b>0).reduce((s,t)=> s + (d4[t].r/d4[t].b)*100, 0) / (teamsWithData.filter(t=>t!==o.t && d4[t].b>0).length)).toFixed(1);
+
+            if(isHigh){
+
+                pushS4(o.t, 'Strike Rate Outlier — S4', `SR ${sr}`, `${o.t.toUpperCase()} — Batting at a Different Speed`, `${o.t.toUpperCase()} are striking at ${sr} this season — meaningfully above the field average of ${fieldAvg}. When every ball counts in a 30-ball innings, that kind of tempo gap can be the difference between competitive and commanding.`, 'outlier');
+
+            } else {
+
+                pushS4(o.t, 'Strike Rate Warning — S4', `SR ${sr}`, `${o.t.toUpperCase()} — Batting Too Slow`, `${o.t.toUpperCase()} are striking at only ${sr} this season against a field average of ${fieldAvg}. In a format where a single below-par over can cost the match, a strike rate this far below the pack is a serious structural problem.`, 'outlier');
+
+            }
+
+        });
+
+
+
+        // Economy outlier
+
+        const ecoOutliers = findOutliers(d4, t => t.bb > 0 ? t.rc/(t.bb/6) : 0, teamsWithData, false);
+
+        ecoOutliers.slice(0,1).forEach(o => {
+
+            const isHigh = o.z > 0; // high eco = bad
+
+            const eco = (d4[o.t].rc / (d4[o.t].bb/6)).toFixed(2);
+
+            const fieldAvg = (teamsWithData.filter(t=>t!==o.t && d4[t].bb>0).reduce((s,t)=> s + d4[t].rc/(d4[t].bb/6), 0) / (teamsWithData.filter(t=>t!==o.t && d4[t].bb>0).length)).toFixed(2);
+
+            if(isHigh){
+
+                pushS4(o.t, 'Economy Rate Crisis — S4', `${eco} RPO`, `${o.t.toUpperCase()} — Bleeding Runs`, `${o.t.toUpperCase()} are conceding at ${eco} runs per over with the ball — significantly worse than the field average of ${fieldAvg} RPO. In a 30-ball game, a leaky bowling attack is an open invitation to every opposition batter.`, 'outlier');
+
+            } else {
+
+                pushS4(o.t, 'Bowling Economy Outlier — S4', `${eco} RPO`, `${o.t.toUpperCase()} — Bowling Clinic`, `${o.t.toUpperCase()} are the most economical bowling unit this season at ${eco} RPO, well below the field average of ${fieldAvg}. Strangling batting attacks in a 5-over format at this level is a genuine competitive weapon.`, 'outlier');
+
+            }
+
+        });
+
+
+
+        // Wickets per match outlier
+
+        const wpmOutliers = findOutliers(d4, t => t.m_played > 0 ? t.wkts_taken / t.m_played : 0, teamsWithData, true);
+
+        wpmOutliers.slice(0,1).forEach(o => {
+
+            const isHigh = o.z > 0;
+
+            const wpm = (d4[o.t].wkts_taken / d4[o.t].m_played).toFixed(2);
+
+            const fieldAvg = (teamsWithData.filter(t=>t!==o.t && d4[t].m_played>0).reduce((s,t)=> s + d4[t].wkts_taken/d4[t].m_played, 0) / (teamsWithData.filter(t=>t!==o.t && d4[t].m_played>0).length)).toFixed(2);
+
+            if(isHigh){
+
+                pushS4(o.t, 'Wicket-Taking Machine — S4', `${wpm} wkts/game`, `${o.t.toUpperCase()} — Hunting Every Match`, `${o.t.toUpperCase()} are averaging ${wpm} wickets per match this season — far ahead of the field average of ${fieldAvg}. Taking wickets in clusters in a 30-ball innings collapses the opposition's platform and momentum simultaneously.`, 'outlier');
+
+            } else {
+
+                pushS4(o.t, 'Wicket Drought — S4', `${wpm} wkts/game`, `${o.t.toUpperCase()} — Wicketless Overs`, `${o.t.toUpperCase()} are averaging only ${wpm} wickets per game — noticeably below the field average of ${fieldAvg}. Without the ability to break partnerships in a short format, every opposition batter can bat deep and accelerate freely.`, 'outlier');
+
+            }
+
+        });
+
+    }
+
+
+
+    // ───────────────────────────────────────────────────────────────────────
+
+    //  SECTION 3: SELF-COMPARISON milestones — season vs career baseline
+
+    //  Only meaningful for teams with career history (not LSG/GT debut)
+
+    // ───────────────────────────────────────────────────────────────────────
+
+    const eligibleForSelfComp = teamsWithData.filter(t => CAREER_BASE[t].m_played > 0);
+
+
+
+    eligibleForSelfComp.forEach(t => {
+
+        const s4 = d4[t];
+
+        const careerBase = CAREER_BASE[t];
+
+        const careerSR  = careerBase.b  > 0 ? (careerBase.r  / careerBase.b)  * 100 : 0;
+
+        const careerEco = careerBase.bb > 0 ? (careerBase.rc / (careerBase.bb / 6)) : 0;
+
+        const careerWPM = careerBase.m_played > 0 ? careerBase.wkts_taken / careerBase.m_played : 0;
+
+        const careerRR  = careerBase.b  > 0 ? (careerBase.r  / (careerBase.b / 6)) : 0;
+
+
+
+        const s4SR  = s4.b  > 0 ? (s4.r  / s4.b)  * 100 : 0;
+
+        const s4Eco = s4.bb > 0 ? (s4.rc / (s4.bb / 6)) : 0;
+
+        const s4WPM = s4.m_played > 0 ? s4.wkts_taken / s4.m_played : 0;
+
+        const s4RR  = s4.of > 0 ? (s4.rf / s4.of) : 0;
+
+
+
+        // Strike rate vs career — threshold: differ by >20 SR points (large in T5 context)
+
+        if(careerSR > 0 && s4SR > 0 && Math.abs(s4SR - careerSR) >= 20){
+
+            const diff = (s4SR - careerSR).toFixed(1);
+
+            const isUp = s4SR > careerSR;
+
+            pushS4(t,
+
+                isUp ? 'Career-Best Strike Rate Trajectory — S4' : 'Major Batting Slump vs Career — S4',
+
+                `SR ${s4SR.toFixed(1)}`,
+
+                `${t.toUpperCase()} — Career avg: ${careerSR.toFixed(1)}`,
+
+                isUp
+
+                    ? `${t.toUpperCase()} are striking at ${s4SR.toFixed(1)} this season — a massive ${diff} points above their career average of ${careerSR.toFixed(1)}. Something has clicked in the batting unit that hasn't been there before.`
+
+                    : `${t.toUpperCase()} are striking at only ${s4SR.toFixed(1)} this season — a concerning ${Math.abs(diff)} points below their career norm of ${careerSR.toFixed(1)}. A franchise that used to bat this way now looks unrecognisable at the crease.`,
+
+                'selfcomp');
+
+        }
+
+
+
+        // Economy vs career — threshold: differ by >1.5 RPO
+
+        if(careerEco > 0 && s4Eco > 0 && Math.abs(s4Eco - careerEco) >= 1.5){
+
+            const diff = (s4Eco - careerEco).toFixed(2);
+
+            const isWorse = s4Eco > careerEco;
+
+            pushS4(t,
+
+                isWorse ? 'Bowling Economy Regression — S4' : 'Bowling Transformation — S4',
+
+                `${s4Eco.toFixed(2)} RPO`,
+
+                `${t.toUpperCase()} — Career avg: ${careerEco.toFixed(2)}`,
+
+                isWorse
+
+                    ? `${t.toUpperCase()} are conceding ${s4Eco.toFixed(2)} RPO this season — ${diff} above their career average of ${careerEco.toFixed(2)}. A bowling unit that used to be more contained is now a liability. Corrections are overdue.`
+
+                    : `${t.toUpperCase()} are bowling at ${s4Eco.toFixed(2)} RPO this season — ${Math.abs(diff)} below their career average of ${careerEco.toFixed(2)}. A genuinely transformed bowling attack: tighter lines, better execution, and results to match.`,
+
+                'selfcomp');
+
+        }
+
+
+
+        // Wickets per match vs career — threshold: differ by >1.0 WPM
+
+        if(careerWPM > 0 && s4WPM > 0 && Math.abs(s4WPM - careerWPM) >= 1.0){
+
+            const diff = (s4WPM - careerWPM).toFixed(2);
+
+            const isUp = s4WPM > careerWPM;
+
+            pushS4(t,
+
+                isUp ? 'Wicket-Taking Surge vs Career — S4' : 'Wicket Drought vs Career Norm — S4',
+
+                `${s4WPM.toFixed(2)} wkts/game`,
+
+                `${t.toUpperCase()} — Career avg: ${careerWPM.toFixed(2)}`,
+
+                isUp
+
+                    ? `${t.toUpperCase()} are averaging ${s4WPM.toFixed(2)} wickets per game this season versus a career norm of ${careerWPM.toFixed(2)} — an increase of ${diff}. Bowling with more penetration than ever before in their RCPL history.`
+
+                    : `${t.toUpperCase()} are averaging only ${s4WPM.toFixed(2)} wickets per game — ${Math.abs(diff)} below their career average of ${careerWPM.toFixed(2)}. A bowling unit that used to take wickets is currently going through the motions.`,
+
+                'selfcomp');
+
+        }
+
+
+
+        // Run rate vs career — threshold: differ by >1.0 RPO
+
+        if(careerRR > 0 && s4RR > 0 && Math.abs(s4RR - careerRR) >= 1.0){
+
+            const diff = (s4RR - careerRR).toFixed(2);
+
+            const isUp = s4RR > careerRR;
+
+            pushS4(t,
+
+                isUp ? 'Scoring Rate Elevation — S4' : 'Batting Run Rate Collapse — S4',
+
+                `${s4RR.toFixed(2)} RPO`,
+
+                `${t.toUpperCase()} — Career avg: ${careerRR.toFixed(2)}`,
+
+                isUp
+
+                    ? `${t.toUpperCase()} are scoring at ${s4RR.toFixed(2)} runs per over this season — ${diff} above their career rate of ${careerRR.toFixed(2)}. The batting unit is operating at a level historically unseen from this franchise.`
+
+                    : `${t.toUpperCase()} are scoring at just ${s4RR.toFixed(2)} RPO this season — ${Math.abs(diff)} below their career norm of ${careerRR.toFixed(2)}. A franchise that used to post competitive totals is currently struggling to find its tempo.`,
+
+                'selfcomp');
+
+        }
+
+    });
+
+
+
     s4Grid.innerHTML = s4cards.length ? s4cards.join('') : `<div style="color:#555;font-size:0.85rem;grid-column:1/-1;padding:0.5rem 0;">Season 4 is underway, but no standout patterns have emerged yet. Check back after more results.</div>`;
 
 }
 
 
-
-// ─────────────────────────────────────────────────────────────────────────────
-
-// AI ONE-LINER: generates a witty preview for the next unplayed match only.
-
-// Caches the result per match ID so it doesn't re-call the API on every
-
-// Firebase update — only re-generates when the next match ID changes.
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 async function generateMatchOneLiner(t1, t2, elementId, standings, h2h, cs, d) {
 
@@ -1894,11 +2506,21 @@ function updateUI(){
 
 
 
-    // ── Compute career stats & derived metrics (needed by one-liner + career table) ──
+    // ── Compute career stats & derived metrics ──
 
     const cs = buildCareerStats(played);
 
     const d  = computeDerived(cs);
+
+
+
+    // ── Season 4 stats table ──
+
+    const s4cs = buildS4Stats(played);
+
+    const d4   = computeDerivedS4(s4cs);
+
+    renderS4StatsTable(d4);
 
 
 
@@ -1936,8 +2558,6 @@ function updateUI(){
 
         } else if (s.id === nextMatchId) {
 
-            // ── Next match: show AI one-liner placeholder ──
-
             const rowId = `oneliner_${s.id}`;
 
             row = `<td id="${rowId}" style="color:#666;font-style:italic;text-align:left;" class="oneliner-loading">⚡ Generating match preview...</td>`;
@@ -1958,13 +2578,9 @@ function updateUI(){
 
 
 
-    // ── Trigger one-liner generation only if the next match has changed ──
-
     if (nextMatch) {
 
         if (nextMatchId !== _lastNextMatchId) {
-
-            // New match is up — clear cache and generate fresh
 
             _lastNextMatchId = nextMatchId;
 
@@ -1974,8 +2590,6 @@ function updateUI(){
 
                 .then(() => {
 
-                    // Cache the rendered text so Firebase re-syncs don't re-call the API
-
                     const el = document.getElementById(`oneliner_${nextMatchId}`);
 
                     if (el) _cachedOneLiner = el.innerHTML;
@@ -1983,8 +2597,6 @@ function updateUI(){
                 });
 
         } else if (_cachedOneLiner) {
-
-            // Same match, use the cached one-liner — no API call needed
 
             const el = document.getElementById(`oneliner_${nextMatchId}`);
 
@@ -1997,8 +2609,6 @@ function updateUI(){
             }
 
         }
-
-        // If same match but no cache yet, the async call from the first render is still in-flight — do nothing
 
     }
 
