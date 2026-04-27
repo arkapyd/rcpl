@@ -108,10 +108,13 @@
         .tag { padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
         .tag.q { background: #d4af37; color: #050505; box-shadow: 0 0 8px rgba(212,175,55,0.6); }
         .tag.e { background: transparent; color: #555; border: 1px dashed #444; }
-        .form-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin: 0 3px; }
-        .dot-w { background-color: #00e676; box-shadow: 0 0 6px rgba(0,230,118,0.6); }
-        .dot-l { background-color: #ff5252; box-shadow: 0 0 6px rgba(255,82,82,0.6); }
-        .dot-t { background-color: #aaa; }
+        
+        .form-letters { display: flex; justify-content: flex-start; gap: 6px; align-items: center; min-width: 70px; }
+        .form-letter { font-weight: bold; font-size: 0.9rem; }
+        .letter-w { color: #00e676; text-shadow: 0 0 6px rgba(0,230,118,0.4); }
+        .letter-l { color: #ff5252; text-shadow: 0 0 6px rgba(255,82,82,0.4); }
+        .letter-t { color: #aaa; }
+        .latest-form { text-decoration: underline; text-underline-offset: 3px; }
 
         .groups-container { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
         .group-box {
@@ -250,10 +253,6 @@
         #legacy_csk:hover{background-color:rgba(255,223,0,0.12);border-color:rgba(255,223,0,0.3);border-left-color:#ffdf00;transform:scale(1.02);box-shadow:0 4px 20px rgba(255,223,0,0.2);}#legacy_csk:hover::before{opacity:0.2;transform:scale(1.05);}#legacy_csk:hover h4{text-shadow:0 0 10px rgba(255,223,0,0.5);}
         #legacy_lsg:hover{background-color:rgba(98,239,255,0.12);border-color:rgba(98,239,255,0.3);border-left-color:#62efff;transform:scale(1.02);box-shadow:0 4px 20px rgba(98,239,255,0.2);}#legacy_lsg:hover::before{opacity:0.2;transform:scale(1.05);}#legacy_lsg:hover h4{text-shadow:0 0 10px rgba(98,239,255,0.5);}
         #legacy_gt:hover{background-color:rgba(83,75,174,0.12);border-color:rgba(83,75,174,0.3);border-left-color:#534bae;transform:scale(1.02);box-shadow:0 4px 20px rgba(83,75,174,0.2);}#legacy_gt:hover::before{opacity:0.2;transform:scale(1.05);}#legacy_gt:hover h4{text-shadow:0 0 10px rgba(83,75,174,0.5);}
-
-        .subscribe-wrap { display:flex;align-items:center;gap:15px;flex-wrap:wrap; }
-        .subscribe-wrap input { flex:1;min-width:200px;margin:0; }
-        .subscribe-wrap button { width:auto;margin:0;padding:8px 20px; }
         
         .tab-btn { border-bottom: 2px solid transparent; color: #555; cursor: pointer; padding-bottom: 5px; transition: color 0.3s ease; }
         .tab-btn:hover { color: #d4af37; }
@@ -270,11 +269,6 @@
 
 <div class="container" id="main_app" style="opacity:0;transition:opacity 0.5s;">
     <div class="left-col" id="admin_panel">
-        <div class="card" style="border-color:#2962ff;box-shadow:0 0 15px rgba(41,98,255,0.15);">
-            <h2 style="color:#2962ff;text-align:left;">Push Match Alert</h2>
-            <div class="row"><div><label style="color:#aaa;">Upcoming Match</label><select id="alert_match"></select></div></div>
-            <button onclick="window.sendMatchAlert()" style="background:#2962ff;color:white;border-color:#0039cb;">Trigger Email Alert</button>
-        </div>
         <div class="card">
             <h2 style="text-align:left;">Add Match Result</h2>
             <div class="row">
@@ -332,7 +326,7 @@
         <div class="card">
             <h2 style="text-align:left;">Points Table</h2>
             <div class="scrollable-table">
-                <table><thead><tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>T</th><th>Pts</th><th>NRR</th><th>Form</th><th>Status</th></tr></thead>
+                <table><thead><tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>T</th><th>Pts</th><th>NRR</th><th style="text-align:left;">Form</th><th>Status</th></tr></thead>
                 <tbody id="ptable_body"></tbody></table>
             </div>
         </div>
@@ -435,25 +429,6 @@
                 </tr></thead>
                 <tbody id="career_body"></tbody>
             </table>
-        </div>
-    </div>
-
-    <div class="card full-width" style="border-color:#333;">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;">
-            <div style="flex:1;min-width:250px;">
-                <h2 style="border:none;padding:0;margin:0;text-align:left;">Get Match Alerts</h2>
-                <p style="color:#aaa;font-size:0.85rem;margin:5px 0 0 0;">Subscribe with your email to receive live match results and alerts when your team plays.</p>
-            </div>
-            <div class="subscribe-wrap">
-                <select id="sub_team" style="width:auto;min-width:150px;background:#1a1a1a;color:#fff;">
-                    <option value="all">All Teams / Playoffs</option>
-                    <option value="mi">MI</option><option value="csk">CSK</option><option value="rcb">RCB</option>
-                    <option value="kkr">KKR</option><option value="pbks">PBKS</option><option value="dc">DC</option>
-                    <option value="rr">RR</option><option value="srh">SRH</option><option value="lsg">LSG</option><option value="gt">GT</option>
-                </select>
-                <input type="email" id="sub_email" placeholder="Enter your email address...">
-                <button onclick="window.subscribeEmail()">Subscribe</button>
-            </div>
         </div>
     </div>
 
@@ -572,30 +547,6 @@ window.showToast = function(msg, type='default') {
 window.scrollToLegacy = function(team) {
     const el = document.getElementById(`legacy_${team}`);
     if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); }
-};
-
-window.subscribeEmail = function() {
-    const input=document.getElementById('sub_email'), team=document.getElementById('sub_team').value, email=input.value.trim();
-    if(!email||!email.includes('@')){ window.showToast('Please enter a valid email address.','error'); return; }
-    push(ref(db,'rcpl_subscribers'),{email,team,timestamp:new Date().toISOString()})
-        .then(()=>{ window.showToast(`Subscribed for ${team.toUpperCase()} alerts!`,'success'); input.value=''; })
-        .catch(()=>window.showToast('Something went wrong.','error'));
-};
-
-window.sendMatchAlert = function() {
-    const matchStr=document.getElementById('alert_match').value;
-    if(!matchStr){ window.showToast("No unplayed matches.","error"); return; }
-    const [t1,t2,id]=matchStr.split(',');
-    const webhookUrl="YOUR_MAKE_WEBHOOK_URL_HERE";
-    if(webhookUrl==="YOUR_MAKE_WEBHOOK_URL_HERE"){ window.showToast("Webhook URL missing.","error"); return; }
-    get(child(ref(db),'rcpl_subscribers')).then(snapshot=>{
-        let emails=[];
-        if(snapshot.exists()){ const s=snapshot.val(); for(let k in s){ if(s[k].team===t1||s[k].team===t2||s[k].team==='all') emails.push(s[k].email); } }
-        if(!emails.length){ window.showToast(`No subscribers found.`,"error"); return; }
-        fetch(webhookUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({team1:t1.toUpperCase(),team2:t2.toUpperCase(),matchId:id,emails})})
-            .then(()=>window.showToast(`Alert sent to ${emails.length} fans.`,"success"))
-            .catch(()=>window.showToast("Failed to send alert.","error"));
-    });
 };
 
 window.swapMatches = function() {
@@ -1115,17 +1066,16 @@ function updateUI(){
         });
     }
     standings.forEach(s=>{
-        const fh=s.form.slice(-5).map(f=>`<span class="form-dot dot-${f.toLowerCase()}" title="${f}"></span>`).join('');
-        ptable.innerHTML+=`<tr><td style="color:#fff;text-align:left;"><b>${s.team.toUpperCase()}</b></td><td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td><td style="color:#d4af37;"><b>${s.pts}</b></td><td>${s.nrr}</td><td>${fh||'-'}</td><td>${s.status||'-'}</td></tr>`;
+        const recentForm = s.form.slice(-5).reverse();
+        const fh = recentForm.map((f, index) => `<span class="form-letter letter-${f.toLowerCase()} ${index === 0 ? 'latest-form' : ''}" title="${f}">${f}</span>`).join('');
+        ptable.innerHTML+=`<tr><td style="color:#fff;text-align:left;"><b>${s.team.toUpperCase()}</b></td><td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td><td style="color:#d4af37;"><b>${s.pts}</b></td><td>${s.nrr}</td><td style="text-align:left;"><div class="form-letters">${fh||'-'}</div></td><td>${s.status||'-'}</td></tr>`;
     });
 
     document.getElementById('orange_body').innerHTML=[...standings].sort((a,b)=>b.rf-a.rf).slice(0,5).map(s=>`<tr><td style="text-transform:uppercase;text-align:left;">${s.team}</td><td style="color:#d4af37;font-weight:bold;">${s.rf}</td></tr>`).join('');
     document.getElementById('purple_body').innerHTML=[...standings].sort((a,b)=>b.wkts_taken-a.wkts_taken).slice(0,5).map(s=>`<tr><td style="text-transform:uppercase;text-align:left;">${s.team}</td><td style="color:#d4af37;font-weight:bold;">${s.wkts_taken}</td></tr>`).join('');
 
     const played=schedule.filter(s=>s.played&&s.result);
-    const alertSel=document.getElementById('alert_match');
-    if(alertSel) alertSel.innerHTML=schedule.filter(s=>!s.played).map(m=>`<option value="${m.t1},${m.t2},${m.id}">Match ${m.id}: ${m.t1.toUpperCase()} vs ${m.t2.toUpperCase()}</option>`).join('');
-
+    
     const editSel=document.getElementById('edit_summary_match'), resetSel=document.getElementById('reset_match_select');
     if(editSel&&resetSel){
         const opts=played.map(s=>`<option value="${s.id}">Match ${s.id}: ${s.result.t1.toUpperCase()} vs ${s.result.t2.toUpperCase()}</option>`).join('');
