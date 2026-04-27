@@ -541,7 +541,6 @@ window.currentH2H = {};
 let h2hSelected = null;
 let careerSort = { prop:'value', dir:-1 };
 let seasonSort = { prop:'value', dir:-1 };
-// Track the last next-match ID so we only re-generate the one-liner when it changes
 let _lastNextMatchId = null;
 let _cachedOneLiner = null;
 
@@ -874,7 +873,7 @@ function renderMilestones(cs, d, played, h2h, s4d){
     const canS4 = t => (s4tc[t]||0) < 3;
     const bumpS4 = t => { s4tc[t] = (s4tc[t]||0) + 1; };
     const s4cards = [];
-    const pushS4 = (team, badge, val, lbl, desc) => { if(!canS4(team)) return; s4cards.push(msCard(team, badge, val, lbl, desc, true)); bumpS4(team); };
+    const pushS4 = (team, badge, val, lbl, desc) => { if(!canS4(team) && team !== 'multi') return; s4cards.push(msCard(team, badge, val, lbl, desc, true)); if(team !== 'multi') bumpS4(team); };
 
     let highInns={runs:-1,wkts:0,team:'',vs:'',balls:0};
     let lowInns={runs:9999,wkts:0,team:'',vs:'',balls:0};
@@ -917,8 +916,31 @@ function renderMilestones(cs, d, played, h2h, s4d){
     const topRunsTeam = teamsWithMatches.slice().sort((a,b)=>s4Runs[b]-s4Runs[a])[0]; if(topRunsTeam && s4Runs[topRunsTeam]>0){ pushS4(topRunsTeam,'Most Runs — Season 4', `${s4Runs[topRunsTeam]}`, `${topRunsTeam.toUpperCase()} — Season 4`, `${topRunsTeam.toUpperCase()} lead all teams in runs scored this season. With only 30 balls per innings, piling up the most runs in the competition means consistently batting at a level no one else has matched.`); }
     const topWktsTeam = teamsWithMatches.slice().sort((a,b)=>s4Wkts[b]-s4Wkts[a])[0]; if(topWktsTeam && s4Wkts[topWktsTeam]>0){ pushS4(topWktsTeam,'Most Wickets — Season 4', `${s4Wkts[topWktsTeam]} wkts`, `${topWktsTeam.toUpperCase()} — Season 4`, `${topWktsTeam.toUpperCase()} have taken more wickets than any side this season. In 5-over cricket, wickets in hand directly dictates tempo — taking them early changes the whole shape of a 30-ball innings.`); }
     const worstLoseTeam = teamsWithMatches.slice().sort((a,b)=>loseStreaks[b]-loseStreaks[a])[0]; if(worstLoseTeam && loseStreaks[worstLoseTeam]>=3){ pushS4(worstLoseTeam,'Losing Streak — S4', `${loseStreaks[worstLoseTeam]} on the trot`, `${worstLoseTeam.toUpperCase()} — Season 4`, `${loseStreaks[worstLoseTeam]} consecutive defeats. In a 5-over format there's no grinding your way back into form — each game is over in 60 balls and the next one comes fast. Something has to change, and quickly.`); }
-    ['lsg','gt'].forEach(t=>{ if(s4W[t]>0 && s4W[t]>s4L[t]){ pushS4(t,'Debut Season Statement', `${s4W[t]}W ${s4L[t]}L`, `${t.toUpperCase()} — First RCPL Season`, `${t.toUpperCase()} are winning in their RCPL debut. No history, no precedent — and yet here they are, already beating established sides. The league has been put on notice.`); } });
-    teamsWithMatches.forEach(t=>{ if(s4W[t]>2 && s4L[t]===0){ pushS4(t,'Unbeaten in Season 4', `${s4W[t]}W 0L`, `${t.toUpperCase()} — Perfect Record`, `${t.toUpperCase()} are yet to lose in Season 4. Every opponent has had their shot across 30 balls — none has found a way through yet.`); } });
+    
+    // Grouped Debutants
+    let debuts = [];
+    ['lsg','gt'].forEach(t=>{ if(s4W[t]>0 && s4W[t]>s4L[t]){ debuts.push({t, w:s4W[t], l:s4L[t]}); } });
+    if(debuts.length === 1) {
+        let x = debuts[0];
+        pushS4(x.t,'Debut Season Statement', `${x.w}W ${x.l}L`, `${x.t.toUpperCase()} — First RCPL Season`, `${x.t.toUpperCase()} are winning in their RCPL debut. No history, no precedent — and yet here they are, already beating established sides. The league has been put on notice.`);
+    } else if (debuts.length > 1) {
+        let vals = debuts.map(x => `<div style="font-size:1.2rem; margin-top:3px;">${x.t.toUpperCase()}: ${x.w}W ${x.l}L</div>`).join('');
+        let teams = debuts.map(x => x.t.toUpperCase()).join(' & ');
+        pushS4('multi', 'Debut Season Statement', vals, `${teams} — First RCPL Season`, `Both debutants are winning in their RCPL debut. No history, no precedent — and yet here they are, already beating established sides. The league has been put on notice.`);
+    }
+
+    // Grouped Unbeaten
+    let unbeaten = [];
+    teamsWithMatches.forEach(t=>{ if(s4W[t]>2 && s4L[t]===0){ unbeaten.push({t, w:s4W[t]}); } });
+    if(unbeaten.length === 1){
+        let x = unbeaten[0];
+        pushS4(x.t,'Unbeaten in Season 4', `${x.w}W 0L`, `${x.t.toUpperCase()} — Perfect Record`, `${x.t.toUpperCase()} are yet to lose in Season 4. Every opponent has had their shot across 30 balls — none has found a way through yet.`);
+    } else if (unbeaten.length > 1){
+        let vals = unbeaten.map(x => `<div style="font-size:1.2rem; margin-top:3px;">${x.t.toUpperCase()}: ${x.w}W 0L</div>`).join('');
+        let teams = unbeaten.map(x => x.t.toUpperCase()).join(', ');
+        pushS4('multi', 'Unbeaten in Season 4', vals, `${teams} — Perfect Records`, `Multiple teams are yet to lose in Season 4. Every opponent has had their shot — none has found a way through yet.`);
+    }
+
     let firecracker=null; played.forEach(s=>{ const m=s.result; if(m.r1>=55&&m.r2>=55){ const total=m.r1+m.r2; if(!firecracker||total>firecracker.total) firecracker={total,t1:m.t1,t2:m.t2,r1:m.r1,r2:m.r2}; } }); if(firecracker){ const winner=firecracker.r1>firecracker.r2?firecracker.t1:firecracker.t2; pushS4(winner,'Highest-Scoring Match — S4', `${firecracker.r1}+${firecracker.r2}=${firecracker.total} total`, `${firecracker.t1.toUpperCase()} vs ${firecracker.t2.toUpperCase()}`, `Both sides cracked 55 in the same 5-over game — the highest combined total of Season 4. Every over produced runs, every ball was a boundary threat. Bowlers' nightmares are made of afternoons like this.`); }
 
     // OUTLIERS & SEASON VERSUS CAREER MILESTONES
@@ -954,7 +976,8 @@ function renderMilestones(cs, d, played, h2h, s4d){
     if(out_wpm){ if(out_wpm.high) pushS4(out_wpm.t, 'League Outlier: Wickets', `${out_wpm.val.toFixed(1)} WPM`, `${out_wpm.t.toUpperCase()} — Season 4`, `${out_wpm.t.toUpperCase()} is taking wickets at a hugely accelerated rate compared to the league average (${l_wpm.toFixed(1)} WPM).`); }
     if(out_avg){ if(out_avg.high) pushS4(out_avg.t, 'League Outlier: Average', `${out_avg.val.toFixed(1)} Avg`, `${out_avg.t.toUpperCase()} — Season 4`, `${out_avg.t.toUpperCase()}'s batters are surviving much longer than the league average (${l_avg_val.toFixed(1)}). Rock solid.`); else pushS4(out_avg.t, 'League Outlier: Average', `${out_avg.val.toFixed(1)} Avg`, `${out_avg.t.toUpperCase()} — Season 4`, `${out_avg.t.toUpperCase()}'s wickets are tumbling faster than the rest of the league (Avg: ${l_avg_val.toFixed(1)}).`); }
 
-    // Career Comparisons
+    // Grouped Career Comparisons
+    let leap_sr = [], dip_sr = [], leap_eco = [], dip_eco = [];
     teamsWithMatches.forEach(t => {
         const s = s4d[t];
         const base = CAREER_BASE[t];
@@ -962,13 +985,45 @@ function renderMilestones(cs, d, played, h2h, s4d){
             const c_sr = (base.r / base.b) * 100;
             const c_eco = (base.rc / (base.bb / 6));
 
-            if (s.sr > c_sr + 30) pushS4(t, 'Career Leap: Strike Rate', `${s.sr.toFixed(1)} SR`, `${t.toUpperCase()} — Season 4 vs History`, `${t.toUpperCase()} has completely transformed their batting intent. Striking at ${s.sr.toFixed(1)} this season compared to their historical ${c_sr.toFixed(1)}.`);
-            else if (s.sr < c_sr - 30) pushS4(t, 'Career Dip: Strike Rate', `${s.sr.toFixed(1)} SR`, `${t.toUpperCase()} — Season 4 vs History`, `${t.toUpperCase()} has lost their historical explosive power. Striking at just ${s.sr.toFixed(1)} compared to their historical ${c_sr.toFixed(1)}.`);
+            if (s.sr > c_sr + 30) leap_sr.push({t, s_sr: s.sr, c_sr});
+            else if (s.sr < c_sr - 30) dip_sr.push({t, s_sr: s.sr, c_sr});
 
-            if (s.eco < c_eco - 2.5) pushS4(t, 'Career Leap: Economy', `${s.eco.toFixed(2)} RPO`, `${t.toUpperCase()} — Season 4 vs History`, `${t.toUpperCase()} has drastically tightened their bowling. Conceding ${s.eco.toFixed(2)} RPO compared to their historical ${c_eco.toFixed(2)}.`);
-            else if (s.eco > c_eco + 2.5) pushS4(t, 'Career Dip: Economy', `${s.eco.toFixed(2)} RPO`, `${t.toUpperCase()} — Season 4 vs History`, `${t.toUpperCase()}'s bowling attack has fallen apart compared to their past. Conceding ${s.eco.toFixed(2)} RPO compared to their historical ${c_eco.toFixed(2)}.`);
+            if (s.eco < c_eco - 2.5) leap_eco.push({t, s_eco: s.eco, c_eco});
+            else if (s.eco > c_eco + 2.5) dip_eco.push({t, s_eco: s.eco, c_eco});
         }
     });
+
+    if(leap_sr.length === 1) { let x=leap_sr[0]; pushS4(x.t, 'Career Leap: Strike Rate', `${x.s_sr.toFixed(1)} SR`, `${x.t.toUpperCase()} — Season 4 vs History`, `${x.t.toUpperCase()} has completely transformed their batting intent. Striking at ${x.s_sr.toFixed(1)} this season compared to their historical ${x.c_sr.toFixed(1)}.`); }
+    else if(leap_sr.length > 1) {
+        let vals = leap_sr.map(x=>`<div style="font-size:1.2rem; margin-top:3px;">${x.t.toUpperCase()}: ${x.s_sr.toFixed(1)} SR</div>`).join('');
+        let teams = leap_sr.map(x=>x.t.toUpperCase()).join(', ');
+        let desc = `These franchises have completely transformed their batting intent this season. ` + leap_sr.map(x=>`${x.t.toUpperCase()} up to ${x.s_sr.toFixed(1)} (from ${x.c_sr.toFixed(1)})`).join('; ') + `.`;
+        pushS4('multi', 'Career Leap: Strike Rate', vals, `${teams} — S4 vs History`, desc);
+    }
+
+    if(dip_sr.length === 1) { let x=dip_sr[0]; pushS4(x.t, 'Career Dip: Strike Rate', `${x.s_sr.toFixed(1)} SR`, `${x.t.toUpperCase()} — Season 4 vs History`, `${x.t.toUpperCase()} has lost their historical explosive power. Striking at just ${x.s_sr.toFixed(1)} compared to their historical ${x.c_sr.toFixed(1)}.`); }
+    else if(dip_sr.length > 1) {
+        let vals = dip_sr.map(x=>`<div style="font-size:1.2rem; margin-top:3px;">${x.t.toUpperCase()}: ${x.s_sr.toFixed(1)} SR</div>`).join('');
+        let teams = dip_sr.map(x=>x.t.toUpperCase()).join(', ');
+        let desc = `Multiple franchises have lost their historical explosive power. ` + dip_sr.map(x=>`${x.t.toUpperCase()} down to ${x.s_sr.toFixed(1)} (from ${x.c_sr.toFixed(1)})`).join('; ') + `.`;
+        pushS4('multi', 'Career Dip: Strike Rate', vals, `${teams} — S4 vs History`, desc);
+    }
+
+    if(leap_eco.length === 1) { let x=leap_eco[0]; pushS4(x.t, 'Career Leap: Economy', `${x.s_eco.toFixed(2)} RPO`, `${x.t.toUpperCase()} — Season 4 vs History`, `${x.t.toUpperCase()} has drastically tightened their bowling. Conceding ${x.s_eco.toFixed(2)} RPO compared to their historical ${x.c_eco.toFixed(2)}.`); }
+    else if(leap_eco.length > 1) {
+        let vals = leap_eco.map(x=>`<div style="font-size:1.2rem; margin-top:3px;">${x.t.toUpperCase()}: ${x.s_eco.toFixed(2)} RPO</div>`).join('');
+        let teams = leap_eco.map(x=>x.t.toUpperCase()).join(', ');
+        let desc = `These franchises have drastically tightened their bowling. ` + leap_eco.map(x=>`${x.t.toUpperCase()} conceding ${x.s_eco.toFixed(2)} RPO (down from ${x.c_eco.toFixed(2)})`).join('; ') + `.`;
+        pushS4('multi', 'Career Leap: Economy', vals, `${teams} — S4 vs History`, desc);
+    }
+
+    if(dip_eco.length === 1) { let x=dip_eco[0]; pushS4(x.t, 'Career Dip: Economy', `${x.s_eco.toFixed(2)} RPO`, `${x.t.toUpperCase()} — Season 4 vs History`, `${x.t.toUpperCase()}'s bowling attack has fallen apart compared to their past. Conceding ${x.s_eco.toFixed(2)} RPO compared to their historical ${x.c_eco.toFixed(2)}.`); }
+    else if(dip_eco.length > 1) {
+        let vals = dip_eco.map(x=>`<div style="font-size:1.2rem; margin-top:3px;">${x.t.toUpperCase()}: ${x.s_eco.toFixed(2)} RPO</div>`).join('');
+        let teams = dip_eco.map(x=>x.t.toUpperCase()).join(', ');
+        let desc = `These bowling attacks have fallen apart compared to their past. ` + dip_eco.map(x=>`${x.t.toUpperCase()} bleeding ${x.s_eco.toFixed(2)} RPO (up from ${x.c_eco.toFixed(2)})`).join('; ') + `.`;
+        pushS4('multi', 'Career Dip: Economy', vals, `${teams} — S4 vs History`, desc);
+    }
 
     s4Grid.innerHTML = s4cards.length ? s4cards.join('') : `<div style="color:#555;font-size:0.85rem;grid-column:1/-1;padding:0.5rem 0;">Season 4 is underway, but no standout patterns have emerged yet. Check back after more results.</div>`;
 }
