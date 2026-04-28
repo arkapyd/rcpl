@@ -20,6 +20,11 @@
         ::-webkit-scrollbar-thumb { background: #222; border-radius: 5px; border: 2px solid #050505; }
         ::-webkit-scrollbar-thumb:hover { background: #d4af37; }
 
+        .scrollable-table::-webkit-scrollbar, .scrollable-log::-webkit-scrollbar { width: 8px; height: 8px; }
+        .scrollable-table::-webkit-scrollbar-track, .scrollable-log::-webkit-scrollbar-track { background: #0a0a0a; }
+        .scrollable-table::-webkit-scrollbar-thumb, .scrollable-log::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; border: 1px solid #0a0a0a; }
+        .scrollable-table::-webkit-scrollbar-thumb:hover, .scrollable-log::-webkit-scrollbar-thumb:hover { background: #d4af37; }
+
         .top-ribbon {
             position: fixed; top: 0; left: 0; width: 100%; height: 80px;
             background: rgba(15,15,15,0.95); border-bottom: 2px solid #d4af37;
@@ -27,6 +32,12 @@
             z-index: 1000; backdrop-filter: blur(10px);
             box-shadow: 0 4px 15px rgba(0,0,0,0.8); overflow: hidden;
         }
+        #tourney_progress_wrap { position:fixed; top:80px; left:0; width:100%; height:2px; background:#111; z-index:999; }
+        #tourney_progress_bar { height:100%; width:0%; background:#d4af37; transition:width 0.5s ease; box-shadow:0 0 5px #d4af37; }
+        
+        #live_clock { position:absolute; right:20px; color:#aaa; font-family:monospace; font-size:1rem; letter-spacing:1px; }
+        @media(max-width:900px){ #live_clock { display:none; } }
+
         .ribbon-text {
             font-family: 'Bebas Neue', sans-serif;
             font-size: clamp(2rem,4vw,3.5rem); color: #d4af37;
@@ -109,7 +120,7 @@
         .tag.q { background: #d4af37; color: #050505; box-shadow: 0 0 8px rgba(212,175,55,0.6); }
         .tag.e { background: transparent; color: #555; border: 1px dashed #444; }
         
-        .form-letters { display: flex; justify-content: flex-start; gap: 6px; align-items: center; min-width: 70px; }
+        .form-letters { display: flex; justify-content: flex-start; gap: 6px; align-items: center; min-width: 70px; cursor: help; }
         .form-letter { font-weight: bold; font-size: 0.9rem; }
         .letter-w { color: #00e676; text-shadow: 0 0 6px rgba(0,230,118,0.4); }
         .letter-l { color: #ff5252; text-shadow: 0 0 6px rgba(255,82,82,0.4); }
@@ -142,7 +153,7 @@
         .team-dc:hover   { background-color:#283593;border-color:#5f5fc4;color:#fff;box-shadow:0 4px 12px rgba(40,53,147,0.4);transform:scale(1.1) translateY(-2px); }
 
         .scrollable-table { overflow-x: auto; border: 1px solid #333; border-radius: 4px; background: #0a0a0a; position: relative; }
-        .scrollable-log { max-height: 400px; overflow-y: auto; background: #0a0a0a; border: 1px solid #333; border-radius: 4px; position: relative; }
+        .scrollable-log { max-height: 400px; overflow-y: auto; background: #0a0a0a; border: 1px solid #333; border-radius: 4px; position: relative; scroll-behavior: smooth; }
         .match-row:hover { background: #1a1a1a; }
         .match-fixture { width: 120px; font-weight: bold; color: #888; transition: color 0.2s ease; text-align: left; }
         .match-row:hover .match-fixture { color: #d4af37; }
@@ -258,6 +269,22 @@
         
         .tab-btn { border-bottom: 2px solid transparent; color: #555; cursor: pointer; padding-bottom: 5px; transition: color 0.3s ease; }
         .tab-btn:hover { color: #d4af37; }
+
+        /* User Additions */
+        .top4-row { border-left: 3px solid rgba(0,230,118,0.5); background-color: rgba(0,230,118,0.05) !important; }
+        .latest-badge { display:inline-block; margin-left:8px; font-size:0.65rem; background:rgba(212,175,55,0.2); color:#d4af37; padding:2px 6px; border-radius:4px; border:1px solid #d4af37; animation:pulse 1.5s infinite; vertical-align:middle; }
+        .milestone-ping { display:inline-block; width:8px; height:8px; background:#00e676; border-radius:50%; margin-left:10px; box-shadow:0 0 8px #00e676; animation:pulse 1.5s infinite; vertical-align:middle; }
+        .tow-bar { display:flex; height:12px; width:100%; background:#222; border-radius:6px; overflow:hidden; margin:10px 0; border:1px solid #444; }
+        .tow-t1 { background:#d4af37; transition:width 0.5s ease; }
+        .tow-t2 { background:#555; transition:width 0.5s ease; }
+        .log-filter-btn { padding:4px 10px; margin:2px; background:#1a1a1a; border:1px solid #333; color:#ccc; border-radius:4px; font-size:0.75rem; cursor:pointer; transition:all 0.2s; }
+        .log-filter-btn:hover { background:#333; }
+        .log-filter-btn.active { background:#d4af37; color:#000; border-color:#ffdf00; }
+        #team_modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:3000; justify-content:center; align-items:center; backdrop-filter:blur(5px); }
+        .modal-content { background:#121212; border:1px solid #d4af37; padding:20px; border-radius:8px; width:90%; max-width:500px; color:#eee; box-shadow:0 0 20px rgba(212,175,55,0.2); position:relative; }
+        .modal-close { position:absolute; top:15px; right:20px; cursor:pointer; color:#d4af37; font-size:1.5rem; line-height:1; }
+        .team-link { cursor:pointer; text-decoration:underline; text-underline-offset:3px; transition:color 0.2s; }
+        .team-link:hover { color:#d4af37; }
     </style>
 </head>
 <body>
@@ -267,7 +294,9 @@
     <span class="ribbon-text">REAL CRICKET PREMIER</span>
     <img src="logorcpl.jpg" alt="RCPL Logo" class="ribbon-logo">
     <span class="ribbon-text">LEAGUE SEASON 4</span>
+    <div id="live_clock"></div>
 </div>
+<div id="tourney_progress_wrap"><div id="tourney_progress_bar"></div></div>
 
 <div class="container" id="main_app" style="opacity:0;transition:opacity 0.5s;">
     <div class="left-col" id="admin_panel">
@@ -341,9 +370,10 @@
 
     <div class="card full-width">
         <div style="display:flex;justify-content:space-between;align-items:center;">
-            <h2 style="text-align:left;border:none;padding:0;">Tournament Match Log</h2>
+            <h2 style="text-align:left;border:none;padding:0;margin:0;">Tournament Match Log</h2>
             <span id="match_progress" style="color:#aaa;font-size:0.9rem;"></span>
         </div>
+        <div id="log_filters" style="margin-top:10px; display:flex; flex-wrap:wrap;"></div>
         <div class="scrollable-log" style="margin-top:10px;">
             <table><thead><tr><th style="width:60px;">M#</th><th class="match-fixture">Fixture</th><th style="text-align:left;">Result</th></tr></thead>
             <tbody id="match_log_body"></tbody></table>
@@ -364,7 +394,7 @@
     </div>
 
     <div class="card full-width no-hover-card">
-        <h2 style="text-align:left;">Records &amp; Milestones</h2>
+        <h2 style="text-align:left;">Records &amp; Milestones <span id="ms_ping" class="milestone-ping" style="display:none;"></span></h2>
 
         <div style="margin-top:4px;">
             <div class="ms-section-label">&#9679; Season 4 — Live Milestones</div>
@@ -449,6 +479,14 @@
     </div>
 </div>
 
+<div id="team_modal">
+    <div class="modal-content">
+        <span class="modal-close" onclick="window.closeTeamModal()">&times;</span>
+        <h2 id="modal_team_name" style="border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px; margin-top:0;"></h2>
+        <div id="modal_body"></div>
+    </div>
+</div>
+
 <div class="admin-trigger" onclick="window.unlockAdmin()">Admin</div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
@@ -523,11 +561,21 @@ function shuffleArray(array) {
 
 let schedule = [], isDataLoaded = false;
 window.currentH2H = {};
+window.currentS4D = {};
 let h2hSelected = null;
 let careerSort = { prop:'value', dir:-1 };
 let seasonSort = { prop:'value', dir:-1 };
 let _lastNextMatchId = null;
 let _cachedOneLiner = null;
+let _initialPlayedCount = -1;
+let _hasScrolledLog = false;
+
+// live clock
+setInterval(() => { 
+    const d = new Date(); 
+    const el = document.getElementById('live_clock');
+    if(el) el.innerText = d.toLocaleString('en-GB',{weekday:'short', day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', second:'2-digit'}); 
+}, 1000);
 
 window.switchTab = function(tab) {
     if (tab === 's4') {
@@ -605,12 +653,45 @@ window.sortSeason = function(prop) {
     updateUI();
 };
 
+window.filterLog = function(team) {
+    document.querySelectorAll('.log-filter-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('filter_btn_' + (team||'all')).classList.add('active');
+    document.querySelectorAll('.match-row').forEach(row => {
+        if(!team || row.dataset.t1 === team || row.dataset.t2 === team) row.style.display = '';
+        else row.style.display = 'none';
+    });
+};
+
+window.openTeamModal = function(team) {
+    const s4 = window.currentS4D[team];
+    const rem = schedule.filter(m => !m.played && (m.t1 === team || m.t2 === team));
+    let remHtml = rem.map(m => `M${m.id}: vs ${m.t1===team?m.t2.toUpperCase():m.t1.toUpperCase()}`).join('<br>');
+    if(!remHtml) remHtml = "None";
+    document.getElementById('modal_team_name').innerText = team.toUpperCase() + " - Season 4 Stats";
+    document.getElementById('modal_body').innerHTML = `
+        <p>Runs: ${s4.r} | Wickets Taken: ${s4.wkts_taken}</p>
+        <p>SR: ${s4.sr.toFixed(1)} | Eco: ${s4.eco.toFixed(2)} | W/L: ${s4.wl.toFixed(2)}</p>
+        <hr style="border:1px solid #333; margin:10px 0;">
+        <p style="color:#d4af37; margin-bottom:5px;"><b>Remaining Fixtures:</b></p>
+        <p style="font-size:0.85rem; color:#aaa; margin-top:0;">${remHtml}</p>
+    `;
+    document.getElementById('team_modal').style.display = 'flex';
+};
+window.closeTeamModal = function() { document.getElementById('team_modal').style.display = 'none'; };
+
 function pushToCloud(){ set(dbRef,{schedule}); }
 
 onValue(dbRef, snapshot=>{
     const data=snapshot.val();
     if(data&&data.schedule) schedule=data.schedule;
     else { schedule=generateSchedule(); pushToCloud(); }
+    
+    const played = schedule.filter(s=>s.played);
+    if(_initialPlayedCount === -1) _initialPlayedCount = played.length;
+    else if(played.length > _initialPlayedCount) {
+        document.getElementById('ms_ping').style.display = 'inline-block';
+    }
+
     if(!isDataLoaded){
         initUI(); isDataLoaded=true;
         document.getElementById('loading_overlay').style.opacity='0';
@@ -652,6 +733,11 @@ function initUI(){
     document.getElementById('group_b_teams').innerHTML=GROUP_B.map(t=>`<span class="team-pill team-${t}" onclick="window.scrollToLegacy('${t}')">${t.toUpperCase()}</span>`).join('');
     const btnWrap=document.getElementById('h2h_team_btns');
     TEAMS.forEach(t=>{ const b=document.createElement('button'); b.className='h2h-team-btn'; b.id='h2hbtn_'+t; b.textContent=t.toUpperCase(); b.onclick=()=>{ h2hSelected=t; renderH2HPanel(); }; btnWrap.appendChild(b); });
+    
+    document.getElementById('log_filters').innerHTML = `
+        <button class="log-filter-btn active" id="filter_btn_all" onclick="window.filterLog('')">All</button>
+        ${TEAMS.map(t=>`<button class="log-filter-btn" id="filter_btn_${t}" onclick="window.filterLog('${t}')">${t.toUpperCase()}</button>`).join('')}
+    `;
 }
 
 function renderH2HPanel(){
@@ -726,9 +812,18 @@ function generateTableData(){
             tbl[m.t1].p++;tbl[m.t2].p++;
             tbl[m.t1].rf+=m.r1;tbl[m.t1].of+=o1;tbl[m.t1].ra+=m.r2;tbl[m.t1].oa+=o2;tbl[m.t1].wkts_taken+=(m.w2||0);
             tbl[m.t2].rf+=m.r2;tbl[m.t2].of+=o2;tbl[m.t2].ra+=m.r1;tbl[m.t2].oa+=o1;tbl[m.t2].wkts_taken+=(m.w1||0);
-            if(m.r1>m.r2){tbl[m.t1].w++;tbl[m.t1].pts+=2;tbl[m.t1].form.push('W');tbl[m.t2].l++;tbl[m.t2].form.push('L');}
-            else if(m.r2>m.r1){tbl[m.t2].w++;tbl[m.t2].pts+=2;tbl[m.t2].form.push('W');tbl[m.t1].l++;tbl[m.t1].form.push('L');}
-            else{tbl[m.t1].t++;tbl[m.t1].pts++;tbl[m.t1].form.push('T');tbl[m.t2].t++;tbl[m.t2].pts++;tbl[m.t2].form.push('T');}
+            if(m.r1>m.r2){
+                tbl[m.t1].w++;tbl[m.t1].pts+=2;tbl[m.t1].form.push({res:'W',tip:`M${s.id}: Won vs ${m.t2.toUpperCase()} by ${m.r1-m.r2} runs`});
+                tbl[m.t2].l++;tbl[m.t2].form.push({res:'L',tip:`M${s.id}: Lost to ${m.t1.toUpperCase()} by ${m.r1-m.r2} runs`});
+            }
+            else if(m.r2>m.r1){
+                tbl[m.t2].w++;tbl[m.t2].pts+=2;tbl[m.t2].form.push({res:'W',tip:`M${s.id}: Won vs ${m.t1.toUpperCase()} by ${10-(m.w2||0)} wkts`});
+                tbl[m.t1].l++;tbl[m.t1].form.push({res:'L',tip:`M${s.id}: Lost to ${m.t2.toUpperCase()} by ${10-(m.w2||0)} wkts`});
+            }
+            else{
+                tbl[m.t1].t++;tbl[m.t1].pts++;tbl[m.t1].form.push({res:'T',tip:`M${s.id}: Tied vs ${m.t2.toUpperCase()}`});
+                tbl[m.t2].t++;tbl[m.t2].pts++;tbl[m.t2].form.push({res:'T',tip:`M${s.id}: Tied vs ${m.t1.toUpperCase()}`});
+            }
         }
     });
     return Object.keys(tbl).map(t=>{
@@ -1037,7 +1132,7 @@ async function generateMatchOneLiner(t1, t2, elementId, standings, h2h, cs, d) {
 
     const formStr = team => {
         const row = standings.find(s => s.team === team);
-        return row?.form?.slice(-5).join('') || 'No matches yet';
+        return row?.form?.slice(-5).map(f=>f.res).join('') || 'No matches yet';
     };
 
     const h2hW1 = h2hGet(h2h, t1, t2);
@@ -1109,14 +1204,26 @@ function updateUI(){
             else s.status='-';
         });
     }
-    standings.forEach(s=>{
+    standings.forEach((s, idx)=>{
+        const trClass = idx < 4 ? 'class="top4-row"' : '';
+        const nrrVal = parseFloat(s.nrr);
+        const nrrCol = nrrVal > 0 ? '#00e676' : (nrrVal < 0 ? '#ff5252' : '#aaa');
         const recentForm = s.form.slice(-5).reverse();
-        const fh = recentForm.map((f, index) => `<span class="form-letter letter-${f.toLowerCase()} ${index === 0 ? 'latest-form' : ''}" title="${f}">${f}</span>`).join('');
-        ptable.innerHTML+=`<tr><td style="color:#fff;text-align:left;"><b>${s.team.toUpperCase()}</b></td><td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td><td style="color:#d4af37;"><b>${s.pts}</b></td><td>${s.nrr}</td><td style="text-align:left;"><div class="form-letters">${fh||'-'}</div></td><td>${s.status||'-'}</td></tr>`;
+        const fh = recentForm.map((f, index) => `<span class="form-letter letter-${f.res.toLowerCase()} ${index === 0 ? 'latest-form' : ''}" title="${f.tip}">${f.res}</span>`).join('');
+        ptable.innerHTML+=`<tr ${trClass}><td style="color:#fff;text-align:left;"><b class="team-link" onclick="window.openTeamModal('${s.team}')">${s.team.toUpperCase()}</b></td><td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td><td style="color:#d4af37;"><b>${s.pts}</b></td><td style="color:${nrrCol};">${s.nrr}</td><td style="text-align:left;"><div class="form-letters">${fh||'-'}</div></td><td>${s.status||'-'}</td></tr>`;
     });
 
-    document.getElementById('orange_body').innerHTML=[...standings].sort((a,b)=>b.rf-a.rf).slice(0,5).map(s=>`<tr><td style="text-transform:uppercase;text-align:left;">${s.team}</td><td style="color:#d4af37;font-weight:bold;">${s.rf}</td></tr>`).join('');
-    document.getElementById('purple_body').innerHTML=[...standings].sort((a,b)=>b.wkts_taken-a.wkts_taken).slice(0,5).map(s=>`<tr><td style="text-transform:uppercase;text-align:left;">${s.team}</td><td style="color:#d4af37;font-weight:bold;">${s.wkts_taken}</td></tr>`).join('');
+    const maxRuns = standings.length ? Math.max(...standings.map(s=>s.rf), 1) : 1;
+    document.getElementById('orange_body').innerHTML=[...standings].sort((a,b)=>b.rf-a.rf).slice(0,5).map(s=>`
+        <tr style="background: linear-gradient(90deg, rgba(212,175,55,0.15) ${(s.rf/maxRuns)*100}%, transparent ${(s.rf/maxRuns)*100}%);">
+            <td style="text-transform:uppercase;text-align:left;">${s.team}</td><td style="color:#d4af37;font-weight:bold;">${s.rf}</td>
+        </tr>`).join('');
+        
+    const maxWkts = standings.length ? Math.max(...standings.map(s=>s.wkts_taken), 1) : 1;
+    document.getElementById('purple_body').innerHTML=[...standings].sort((a,b)=>b.wkts_taken-a.wkts_taken).slice(0,5).map(s=>`
+        <tr style="background: linear-gradient(90deg, rgba(212,175,55,0.15) ${(s.wkts_taken/maxWkts)*100}%, transparent ${(s.wkts_taken/maxWkts)*100}%);">
+            <td style="text-transform:uppercase;text-align:left;">${s.team}</td><td style="color:#d4af37;font-weight:bold;">${s.wkts_taken}</td>
+        </tr>`).join('');
 
     const played=schedule.filter(s=>s.played&&s.result);
     
@@ -1144,9 +1251,11 @@ function updateUI(){
     const d  = computeDerived(cs);
     const s4cs = buildSeasonStats(played);
     const s4d = computeDerivedSeason(s4cs);
+    window.currentS4D = s4d;
 
     const nextMatch = schedule.find(s => !s.played);
     const nextMatchId = nextMatch?.id ?? null;
+    const latestMatchId = Math.max(...played.map(m=>m.id), 0);
 
     const logTbody=document.getElementById('match_log_body');
     logTbody.innerHTML=''; let pc=0;
@@ -1158,16 +1267,18 @@ function updateUI(){
             if(m.r1>m.r2) win=`<span class="match-highlight">${m.t1.toUpperCase()} won by ${m.r1-m.r2} runs</span>`;
             else if(m.r2>m.r1) win=`<span class="match-highlight">${m.t2.toUpperCase()} won by ${10-(m.w2||0)} wickets</span>`;
             const desc=m.desc?` <span style="color:#aaa;font-style:italic;">— ${m.desc}</span>`:'';
-            row=`<td class="match-result-text" style="text-align:left;">${m.t1.toUpperCase()}: ${m.r1}/${m.w1} (${fmtOvers(m.b1)}) &nbsp;|&nbsp; ${m.t2.toUpperCase()}: ${m.r2}/${m.w2} (${fmtOvers(m.b2)}) &nbsp;—&nbsp; ${win}${desc}</td>`;
+            const badge = (s.id === latestMatchId) ? '<span class="latest-badge">LATEST</span>' : '';
+            row=`<td class="match-result-text" style="text-align:left;">${m.t1.toUpperCase()}: ${m.r1}/${m.w1} (${fmtOvers(m.b1)}) &nbsp;|&nbsp; ${m.t2.toUpperCase()}: ${m.r2}/${m.w2} (${fmtOvers(m.b2)}) &nbsp;—&nbsp; ${win}${desc}${badge}</td>`;
         } else if (s.id === nextMatchId) {
             const rowId = `oneliner_${s.id}`;
             row = `<td id="${rowId}" style="color:#666;font-style:italic;text-align:left;" class="oneliner-loading">⚡ Generating match preview...</td>`;
         } else {
             row=`<td style="color:#444;font-style:italic;text-align:left;">Awaiting Result</td>`;
         }
-        logTbody.innerHTML+=`<tr class="match-row"><td style="color:#666;text-align:left;">${s.id}</td><td class="match-fixture">${s.t1.toUpperCase()} vs ${s.t2.toUpperCase()}</td>${row}</tr>`;
+        logTbody.innerHTML+=`<tr class="match-row" id="row_match_${s.id}" data-t1="${s.t1}" data-t2="${s.t2}"><td style="color:#666;text-align:left;">${s.id}</td><td class="match-fixture">${s.t1.toUpperCase()} vs ${s.t2.toUpperCase()}</td>${row}</tr>`;
     });
     document.getElementById('match_progress').innerText=`${pc} / 70 Completed`;
+    document.getElementById('tourney_progress_bar').style.width = ((pc/70)*100) + '%';
     window.currentStandings=standings;
 
     if (nextMatch) {
@@ -1234,6 +1345,14 @@ function updateUI(){
         <td>${c.wl.toFixed(2)}</td>
         <td style="color:#00e676;font-weight:bold;">$${c.value.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
     </tr>`).join('');
+    
+    setTimeout(() => {
+        if(!_hasScrolledLog && nextMatchId) {
+            const nextRow = document.getElementById('row_match_' + nextMatchId);
+            if(nextRow) { nextRow.scrollIntoView({block:'center', behavior:'smooth'}); }
+            _hasScrolledLog = true;
+        }
+    }, 100);
 }
 
 window.predictMatch = function(){
@@ -1249,7 +1368,7 @@ window.predictMatch = function(){
     });
     const oT1=h2hGet(window.currentH2H, t1, t2);
     const oT2=h2hGet(window.currentH2H, t2, t1);
-    const fs=f=>f.slice(-3).reduce((a,v)=>a+(v==='W'?2:v==='T'?1:0),0);
+    const fs=f=>f.slice(-3).reduce((a,v)=>a+(v.res==='W'?2:v.res==='T'?1:0),0);
     let s1c=(s1.pts*1.5)+(parseFloat(s1.nrr)*5)+(fs(s1.form)*3);
     let s2c=(s2.pts*1.5)+(parseFloat(s2.nrr)*5)+(fs(s2.form)*3);
     const tot=(s1c+s2c)||1;
@@ -1257,7 +1376,14 @@ window.predictMatch = function(){
     rd.innerHTML=`
         <div style="font-size:0.9rem;color:#aaa;margin-bottom:4px;">Overall H2H: <span style="color:#fff">${t1.toUpperCase()} ${oT1} - ${oT2} ${t2.toUpperCase()}</span></div>
         <div style="font-size:0.9rem;color:#aaa;margin-bottom:8px;">H2H This Season: <span style="color:#fff">${t1.toUpperCase()} ${t1W} - ${t2W} ${t2.toUpperCase()}</span> (Ties: ${ties})</div>
-        <div style="font-size:1.1rem;"><span style="color:#d4af37;">${t1.toUpperCase()}:</span> <span style="color:#fff;">${p1.toFixed(1)}%</span> &nbsp;|&nbsp; <span style="color:#d4af37;">${t2.toUpperCase()}:</span> <span style="color:#fff;">${p2.toFixed(1)}%</span></div>`;
+        <div class="tow-bar">
+            <div class="tow-t1" style="width:${p1}%;" title="${t1.toUpperCase()} ${p1.toFixed(1)}%"></div>
+            <div class="tow-t2" style="width:${p2}%;" title="${t2.toUpperCase()} ${p2.toFixed(1)}%"></div>
+        </div>
+        <div style="font-size:1.1rem; display:flex; justify-content:space-between;">
+            <span><span style="color:#d4af37;">${t1.toUpperCase()}:</span> <span style="color:#fff;">${p1.toFixed(1)}%</span></span>
+            <span><span style="color:#d4af37;">${t2.toUpperCase()}:</span> <span style="color:#fff;">${p2.toFixed(1)}%</span></span>
+        </div>`;
 };
 </script>
 </body>
