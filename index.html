@@ -354,7 +354,7 @@
                 <div id="live_clock"></div>
             </div>
             <div class="scrollable-table">
-                <table><thead><tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>T</th><th>Pts</th><th>NRR</th><th style="text-align:left;">Form</th><th>Status</th></tr></thead>
+                <table><thead><tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>T</th><th>Pts</th><th>NRR</th><th>Next 3</th><th style="text-align:left;">Form</th><th>Status</th></tr></thead>
                 <tbody id="ptable_body"></tbody></table>
             </div>
         </div>
@@ -580,7 +580,6 @@ let _cachedOneLiner = null;
 let _initialPlayedCount = -1;
 let _hasScrolledLog = false;
 
-// live clock
 setInterval(() => { 
     const d = new Date(); 
     const el = document.getElementById('live_clock');
@@ -815,10 +814,14 @@ window.unlockAdmin = function(){
 
 function generateTableData(){
     let tbl={};
-    TEAMS.forEach(t=>tbl[t]={p:0,w:0,l:0,t:0,pts:0,rf:0,of:0,ra:0,oa:0,form:[],wkts_taken:0});
+    TEAMS.forEach(t=>tbl[t]={p:0,w:0,l:0,t:0,pts:0,rf:0,of:0,ra:0,oa:0,form:[],wkts_taken:0,prevStats:{rf:0,of:0,ra:0,oa:0}});
+    
     schedule.filter(s=>s.played&&s.result).forEach(s=>{
         const m=s.result, o1=calcOvers(m.b1), o2=calcOvers(m.b2);
         if(tbl[m.t1]&&tbl[m.t2]){
+            tbl[m.t1].prevStats = {rf:tbl[m.t1].rf, of:tbl[m.t1].of, ra:tbl[m.t1].ra, oa:tbl[m.t1].oa};
+            tbl[m.t2].prevStats = {rf:tbl[m.t2].rf, of:tbl[m.t2].of, ra:tbl[m.t2].ra, oa:tbl[m.t2].oa};
+
             tbl[m.t1].p++;tbl[m.t2].p++;
             tbl[m.t1].rf+=m.r1;tbl[m.t1].of+=o1;tbl[m.t1].ra+=m.r2;tbl[m.t1].oa+=o2;tbl[m.t1].wkts_taken+=(m.w2||0);
             tbl[m.t2].rf+=m.r2;tbl[m.t2].of+=o2;tbl[m.t2].ra+=m.r1;tbl[m.t2].oa+=o1;tbl[m.t2].wkts_taken+=(m.w1||0);
@@ -836,10 +839,28 @@ function generateTableData(){
             }
         }
     });
+
+    const unplayed = schedule.filter(s => !s.played);
+
     return Object.keys(tbl).map(t=>{
         let nrr=(tbl[t].of>0?tbl[t].rf/tbl[t].of:0)-(tbl[t].oa>0?tbl[t].ra/tbl[t].oa:0);
         let ns=nrr>0?`+${nrr.toFixed(3)}`:nrr.toFixed(3); if(nrr===0) ns="0.000";
-        return{team:t,...tbl[t],nrr:ns};
+
+        let prevNrr=(tbl[t].prevStats.of>0?tbl[t].prevStats.rf/tbl[t].prevStats.of:0)-(tbl[t].prevStats.oa>0?tbl[t].prevStats.ra/tbl[t].prevStats.oa:0);
+        let nrrTrend = '';
+        if(tbl[t].p > 0) {
+            if (nrr > prevNrr + 0.0001) nrrTrend = '<span style="color:#00e676;font-size:0.8rem;margin-left:4px;" title="Improved since last match">&#8593;</span>';
+            else if (nrr < prevNrr - 0.0001) nrrTrend = '<span style="color:#ff5252;font-size:0.8rem;margin-left:4px;" title="Dropped since last match">&#8595;</span>';
+            else nrrTrend = '<span style="color:#aaa;font-size:0.8rem;margin-left:4px;">&#8596;</span>';
+        }
+
+        let next3 = unplayed.filter(m => m.t1 === t || m.t2 === t).slice(0,3).map(m => {
+            let opp = m.t1 === t ? m.t2 : m.t1;
+            return `<span style="font-size:0.7rem; background:#1a1a1a; padding:2px 4px; border-radius:3px; border:1px solid #333; margin-right:3px; color:#aaa;">vs ${opp.toUpperCase()}</span>`;
+        }).join('');
+        if(!next3) next3 = '<span style="font-size:0.75rem;color:#555;">-</span>';
+
+        return{team:t,...tbl[t],nrr:ns, nrrTrend, next3};
     }).sort((a,b)=>b.pts-a.pts||parseFloat(b.nrr)-parseFloat(a.nrr));
 }
 
@@ -1223,7 +1244,7 @@ function updateUI(){
         const nrrCol = nrrVal > 0 ? '#00e676' : (nrrVal < 0 ? '#ff5252' : '#aaa');
         const recentForm = s.form.slice(-5).reverse();
         const fh = recentForm.map((f, index) => `<span class="form-letter letter-${f.res.toLowerCase()} ${index === 0 ? 'latest-form' : ''}" title="${f.tip}">${f.res}</span>`).join('');
-        ptable.innerHTML+=`<tr ${trClass}><td style="color:#fff;text-align:left;"><b class="team-link" onclick="window.openTeamModal('${s.team}')">${s.team.toUpperCase()}</b></td><td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td><td style="color:#d4af37;"><b>${s.pts}</b></td><td style="color:${nrrCol};">${s.nrr}</td><td style="text-align:left;"><div class="form-letters">${fh||'-'}</div></td><td>${s.status||'-'}</td></tr>`;
+        ptable.innerHTML+=`<tr ${trClass}><td style="color:#fff;text-align:left;"><b class="team-link" onclick="window.openTeamModal('${s.team}')">${s.team.toUpperCase()}</b></td><td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td><td style="color:#d4af37;"><b>${s.pts}</b></td><td style="color:${nrrCol};">${s.nrr}${s.nrrTrend}</td><td style="text-align:center;">${s.next3}</td><td style="text-align:left;"><div class="form-letters">${fh||'-'}</div></td><td>${s.status||'-'}</td></tr>`;
     });
 
     const maxRuns = standings.length ? Math.max(...standings.map(s=>s.rf), 1) : 1;
@@ -1297,6 +1318,15 @@ function updateUI(){
     if (nextMatch) {
         if (nextMatchId !== _lastNextMatchId) {
             _lastNextMatchId = nextMatchId;
+            
+            let p1 = document.getElementById('pred_t1');
+            let p2 = document.getElementById('pred_t2');
+            if (p1 && p2) {
+                p1.value = nextMatch.t1;
+                p2.value = nextMatch.t2;
+                window.predictMatch();
+            }
+
             _cachedOneLiner = null;
             generateMatchOneLiner(nextMatch.t1, nextMatch.t2, `oneliner_${nextMatchId}`, standings, h2h, cs, d)
                 .then(() => {
