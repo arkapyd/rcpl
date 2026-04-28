@@ -354,7 +354,14 @@
                 <div id="live_clock"></div>
             </div>
             <div class="scrollable-table">
-                <table><thead><tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>T</th><th>Pts</th><th>NRR</th><th>Next 3</th><th style="text-align:left;">Form</th><th>Status</th></tr></thead>
+                <table><thead><tr>
+                    <th>Team</th>
+                    <th>P</th><th>W</th><th>L</th><th>T</th><th>Pts</th>
+                    <th style="padding-left:35px;">NRR</th>
+                    <th>Next 3</th>
+                    <th style="text-align:left;">Form</th>
+                    <th>Status</th>
+                </tr></thead>
                 <tbody id="ptable_body"></tbody></table>
             </div>
         </div>
@@ -816,7 +823,11 @@ function generateTableData(){
     let tbl={};
     TEAMS.forEach(t=>tbl[t]={p:0,w:0,l:0,t:0,pts:0,rf:0,of:0,ra:0,oa:0,form:[],wkts_taken:0,prevStats:{rf:0,of:0,ra:0,oa:0}});
     
-    schedule.filter(s=>s.played&&s.result).forEach(s=>{
+    const played = schedule.filter(s=>s.played&&s.result);
+    const latestMatch = played.length > 0 ? played[played.length - 1] : null;
+    const latestTeams = latestMatch ? [latestMatch.result.t1, latestMatch.result.t2] : [];
+
+    played.forEach(s=>{
         const m=s.result, o1=calcOvers(m.b1), o2=calcOvers(m.b2);
         if(tbl[m.t1]&&tbl[m.t2]){
             tbl[m.t1].prevStats = {rf:tbl[m.t1].rf, of:tbl[m.t1].of, ra:tbl[m.t1].ra, oa:tbl[m.t1].oa};
@@ -848,7 +859,7 @@ function generateTableData(){
 
         let prevNrr=(tbl[t].prevStats.of>0?tbl[t].prevStats.rf/tbl[t].prevStats.of:0)-(tbl[t].prevStats.oa>0?tbl[t].prevStats.ra/tbl[t].prevStats.oa:0);
         let nrrTrend = '';
-        if(tbl[t].p > 0) {
+        if(latestTeams.includes(t)) {
             if (nrr > prevNrr + 0.0001) nrrTrend = '<span style="color:#00e676;font-size:0.8rem;margin-left:4px;" title="Improved since last match">&#8593;</span>';
             else if (nrr < prevNrr - 0.0001) nrrTrend = '<span style="color:#ff5252;font-size:0.8rem;margin-left:4px;" title="Dropped since last match">&#8595;</span>';
             else nrrTrend = '<span style="color:#aaa;font-size:0.8rem;margin-left:4px;">&#8596;</span>';
@@ -1244,7 +1255,7 @@ function updateUI(){
         const nrrCol = nrrVal > 0 ? '#00e676' : (nrrVal < 0 ? '#ff5252' : '#aaa');
         const recentForm = s.form.slice(-5).reverse();
         const fh = recentForm.map((f, index) => `<span class="form-letter letter-${f.res.toLowerCase()} ${index === 0 ? 'latest-form' : ''}" title="${f.tip}">${f.res}</span>`).join('');
-        ptable.innerHTML+=`<tr ${trClass}><td style="color:#fff;text-align:left;"><b class="team-link" onclick="window.openTeamModal('${s.team}')">${s.team.toUpperCase()}</b></td><td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td><td style="color:#d4af37;"><b>${s.pts}</b></td><td style="color:${nrrCol};">${s.nrr}${s.nrrTrend}</td><td style="text-align:center;">${s.next3}</td><td style="text-align:left;"><div class="form-letters">${fh||'-'}</div></td><td>${s.status||'-'}</td></tr>`;
+        ptable.innerHTML+=`<tr ${trClass}><td style="color:#fff;text-align:left;"><b class="team-link" onclick="window.openTeamModal('${s.team}')">${s.team.toUpperCase()}</b></td><td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td><td style="color:#d4af37; font-size:1.1rem;"><b>${s.pts}</b></td><td style="color:${nrrCol}; padding-left:35px;">${s.nrr}${s.nrrTrend}</td><td style="text-align:center;">${s.next3}</td><td style="text-align:left;"><div class="form-letters">${fh||'-'}</div></td><td>${s.status||'-'}</td></tr>`;
     });
 
     const maxRuns = standings.length ? Math.max(...standings.map(s=>s.rf), 1) : 1;
