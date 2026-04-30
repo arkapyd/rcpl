@@ -319,6 +319,29 @@
                 <div><label>Balls</label><input type="number" id="b2" min="0" max="30" value="30"></div>
             </div>
             <div class="row" style="margin-top:10px;"><div style="flex:1;"><label>Match Summary (Optional)</label><input type="text" id="match_desc" placeholder="e.g. thrilling last over finish..."></div></div>
+            
+            <div class="row" style="margin-top:10px;">
+                <div style="flex:1;">
+                    <label style="color:#d4af37; cursor:pointer;">
+                        <input type="checkbox" id="has_super_over" onchange="document.getElementById('super_over_panel').style.display = this.checked ? 'block' : 'none'" style="width:auto; display:inline-block; vertical-align:middle; margin-right:5px;">
+                        Match Tied? Add Super Overz
+                    </label>
+                </div>
+            </div>
+            <div id="super_over_panel" style="display:none; background:#151515; padding:15px; border-radius:4px; margin-bottom:10px; border:1px dashed #d4af37;">
+                <h3 style="font-size:1rem; margin-bottom:10px; color:#d4af37; border-bottom:none; padding-bottom:0;">Super Overz Details</h3>
+                <div class="row">
+                    <div><label>T1 Runs</label><input type="number" id="so_r1" min="0"></div>
+                    <div><label>Wickets Lost</label><input type="number" id="so_w1" min="0" max="10"></div>
+                    <div><label>Balls</label><input type="number" id="so_b1" min="0" max="12" value="12"></div>
+                </div>
+                <div class="row">
+                    <div><label>T2 Runs</label><input type="number" id="so_r2" min="0"></div>
+                    <div><label>Wickets Lost</label><input type="number" id="so_w2" min="0" max="10"></div>
+                    <div><label>Balls</label><input type="number" id="so_b2" min="0" max="12" value="12"></div>
+                </div>
+            </div>
+
             <button onclick="window.addMatch()">Save Match</button>
             <button class="danger" onclick="window.clearData()">Reset Tournament (Danger)</button>
             <div style="margin-top:15px;padding-top:15px;border-top:1px solid #333;">
@@ -673,8 +696,14 @@ window.filterLog = function(team) {
     document.querySelectorAll('.log-filter-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('filter_btn_' + (team||'all')).classList.add('active');
     document.querySelectorAll('.match-row').forEach(row => {
-        if(!team || row.dataset.t1 === team || row.dataset.t2 === team) row.style.display = '';
-        else row.style.display = 'none';
+        const soRow = document.getElementById('so_log_' + row.id.replace('row_match_', ''));
+        if(!team || row.dataset.t1 === team || row.dataset.t2 === team) {
+            row.style.display = '';
+            if(soRow && soRow.style.display !== 'none') soRow.style.display = 'table-row'; 
+        } else {
+            row.style.display = 'none';
+            if(soRow) soRow.style.display = 'none';
+        }
     });
 };
 
@@ -800,12 +829,28 @@ window.addMatch = function(){
         w2:parseInt(document.getElementById('w2').value)||0, b2:parseInt(document.getElementById('b2').value)||0,
         desc:document.getElementById('match_desc').value.trim()
     };
+    if(document.getElementById('has_super_over').checked) {
+        data.super_over = {
+            r1:parseInt(document.getElementById('so_r1').value)||0,
+            w1:parseInt(document.getElementById('so_w1').value)||0,
+            b1:parseInt(document.getElementById('so_b1').value)||0,
+            r2:parseInt(document.getElementById('so_r2').value)||0,
+            w2:parseInt(document.getElementById('so_w2').value)||0,
+            b2:parseInt(document.getElementById('so_b2').value)||0
+        };
+    }
     if(data.t1===data.t2){ window.showToast("Teams must be different.","error"); return; }
     let slot=schedule.find(x=>!x.played&&((x.t1===data.t1&&x.t2===data.t2)||(x.t1===data.t2&&x.t2===data.t1)));
     if(!slot){ window.showToast("This matchup has reached its maximum!","error"); return; }
     slot.played=true; slot.result=data; pushToCloud();
-    ['r1','w1','r2','w2','match_desc'].forEach(id=>document.getElementById(id).value='');
+    ['r1','w1','r2','w2','match_desc','so_r1','so_w1','so_r2','so_w2'].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) el.value='';
+    });
     document.getElementById('b1').value=30; document.getElementById('b2').value=30;
+    document.getElementById('so_b1').value=12; document.getElementById('so_b2').value=12;
+    document.getElementById('has_super_over').checked=false;
+    document.getElementById('super_over_panel').style.display='none';
     window.showToast("Match saved.","success");
 };
 
@@ -845,8 +890,16 @@ function generateTableData(){
                 tbl[m.t1].l++;tbl[m.t1].form.push({res:'L',tip:`M${s.id}: Lost to ${m.t2.toUpperCase()} by ${10-(m.w2||0)} wkts`});
             }
             else{
-                tbl[m.t1].t++;tbl[m.t1].pts++;tbl[m.t1].form.push({res:'T',tip:`M${s.id}: Tied vs ${m.t2.toUpperCase()}`});
-                tbl[m.t2].t++;tbl[m.t2].pts++;tbl[m.t2].form.push({res:'T',tip:`M${s.id}: Tied vs ${m.t1.toUpperCase()}`});
+                if(m.super_over && m.super_over.r1 > m.super_over.r2) {
+                    tbl[m.t1].w++;tbl[m.t1].pts+=2;tbl[m.t1].form.push({res:'W',tip:`M${s.id}: Won vs ${m.t2.toUpperCase()} in Super Overz`});
+                    tbl[m.t2].l++;tbl[m.t2].form.push({res:'L',tip:`M${s.id}: Lost to ${m.t1.toUpperCase()} in Super Overz`});
+                } else if(m.super_over && m.super_over.r2 > m.super_over.r1) {
+                    tbl[m.t2].w++;tbl[m.t2].pts+=2;tbl[m.t2].form.push({res:'W',tip:`M${s.id}: Won vs ${m.t1.toUpperCase()} in Super Overz`});
+                    tbl[m.t1].l++;tbl[m.t1].form.push({res:'L',tip:`M${s.id}: Lost to ${m.t2.toUpperCase()} in Super Overz`});
+                } else {
+                    tbl[m.t1].t++;tbl[m.t1].pts++;tbl[m.t1].form.push({res:'T',tip:`M${s.id}: Tied vs ${m.t2.toUpperCase()}`});
+                    tbl[m.t2].t++;tbl[m.t2].pts++;tbl[m.t2].form.push({res:'T',tip:`M${s.id}: Tied vs ${m.t1.toUpperCase()}`});
+                }
             }
         }
     });
@@ -883,7 +936,12 @@ function buildCareerStats(played){
         if(cs[m.t1]&&cs[m.t2]){
             cs[m.t1].m_played++;cs[m.t1].r+=m.r1;cs[m.t1].b+=m.b1;cs[m.t1].rc+=m.r2;cs[m.t1].bb+=m.b2;cs[m.t1].wl_lost+=(m.w1||0);cs[m.t1].wkts_taken+=(m.w2||0);
             cs[m.t2].m_played++;cs[m.t2].r+=m.r2;cs[m.t2].b+=m.b2;cs[m.t2].rc+=m.r1;cs[m.t2].bb+=m.b1;cs[m.t2].wl_lost+=(m.w2||0);cs[m.t2].wkts_taken+=(m.w1||0);
-            if(m.r1>m.r2){cs[m.t1].w++;cs[m.t2].l++;}else if(m.r2>m.r1){cs[m.t2].w++;cs[m.t1].l++;}
+            if(m.r1>m.r2){cs[m.t1].w++;cs[m.t2].l++;}
+            else if(m.r2>m.r1){cs[m.t2].w++;cs[m.t1].l++;}
+            else if(m.super_over){
+                if(m.super_over.r1>m.super_over.r2){cs[m.t1].w++;cs[m.t2].l++;}
+                else if(m.super_over.r2>m.super_over.r1){cs[m.t2].w++;cs[m.t1].l++;}
+            }
         }
     });
     return cs;
@@ -913,7 +971,12 @@ function buildSeasonStats(played){
         if(cs[m.t1]&&cs[m.t2]){
             cs[m.t1].m_played++;cs[m.t1].r+=m.r1;cs[m.t1].b+=m.b1;cs[m.t1].rc+=m.r2;cs[m.t1].bb+=m.b2;cs[m.t1].wl_lost+=(m.w1||0);cs[m.t1].wkts_taken+=(m.w2||0);
             cs[m.t2].m_played++;cs[m.t2].r+=m.r2;cs[m.t2].b+=m.b2;cs[m.t2].rc+=m.r1;cs[m.t2].bb+=m.b1;cs[m.t2].wl_lost+=(m.w2||0);cs[m.t2].wkts_taken+=(m.w1||0);
-            if(m.r1>m.r2){cs[m.t1].w++;cs[m.t2].l++;}else if(m.r2>m.r1){cs[m.t2].w++;cs[m.t1].l++;}
+            if(m.r1>m.r2){cs[m.t1].w++;cs[m.t2].l++;}
+            else if(m.r2>m.r1){cs[m.t2].w++;cs[m.t1].l++;}
+            else if(m.super_over){
+                if(m.super_over.r1>m.super_over.r2){cs[m.t1].w++;cs[m.t2].l++;}
+                else if(m.super_over.r2>m.super_over.r1){cs[m.t2].w++;cs[m.t1].l++;}
+            }
         }
     });
     return cs;
@@ -994,7 +1057,16 @@ function renderMilestones(cs, d, played, h2h, s4d){
         
         if(m.r1>m.r2){ defendWins++; s4W[m.t1]++;s4L[m.t2]++;s4Form[m.t1].push('W');s4Form[m.t2].push('L'); const margin=m.r1-m.r2; if(margin>biggestRunWin.margin) biggestRunWin={margin,winner:m.t1,loser:m.t2,wr:m.r1,lr:m.r2}; }
         else if(m.r2>m.r1){ chaseWins++; s4W[m.t2]++;s4L[m.t1]++;s4Form[m.t2].push('W');s4Form[m.t1].push('L'); const wktsLeft=10-(m.w2||0); if(wktsLeft>biggestWktWin.wkts) biggestWktWin={wkts:wktsLeft,winner:m.t2,loser:m.t1}; }
-        else { s4Form[m.t1].push('T');s4Form[m.t2].push('T'); ties_found.push({t1:m.t1, t2:m.t2, r:m.r1}); }
+        else { 
+            ties_found.push({t1:m.t1, t2:m.t2, r:m.r1}); 
+            if(m.super_over) {
+                if(m.super_over.r1 > m.super_over.r2) { defendWins++; s4W[m.t1]++;s4L[m.t2]++;s4Form[m.t1].push('W');s4Form[m.t2].push('L'); }
+                else if(m.super_over.r2 > m.super_over.r1) { chaseWins++; s4W[m.t2]++;s4L[m.t1]++;s4Form[m.t2].push('W');s4Form[m.t1].push('L'); }
+                else { s4Form[m.t1].push('T');s4Form[m.t2].push('T'); }
+            } else {
+                s4Form[m.t1].push('T');s4Form[m.t2].push('T'); 
+            }
+        }
     });
 
     const streaks={},loseStreaks={};
@@ -1285,6 +1357,10 @@ function updateUI(){
         highestTotals.push({team:m.t1,runs:m.r1,wkts:m.w1,vs:m.t2},{team:m.t2,runs:m.r2,wkts:m.w2,vs:m.t1});
         if(m.r1 > m.r2)      h2hInc(h2h, m.t1, m.t2);
         else if(m.r2 > m.r1) h2hInc(h2h, m.t2, m.t1);
+        else if(m.super_over) {
+            if(m.super_over.r1 > m.super_over.r2) h2hInc(h2h, m.t1, m.t2);
+            else if(m.super_over.r2 > m.super_over.r1) h2hInc(h2h, m.t2, m.t1);
+        }
     });
     window.currentH2H = h2h;
     if(h2hSelected) renderH2HPanel();
@@ -1306,11 +1382,28 @@ function updateUI(){
     logTbody.innerHTML=''; let pc=0;
     schedule.forEach(s=>{
         let row='';
+        let soHtml='';
         if(s.played&&s.result){
             pc++; const m=s.result;
             let win="Match Tied";
             if(m.r1>m.r2) win=`<span class="match-highlight">${m.t1.toUpperCase()} won by ${m.r1-m.r2} runs</span>`;
             else if(m.r2>m.r1) win=`<span class="match-highlight">${m.t2.toUpperCase()} won by ${10-(m.w2||0)} wickets</span>`;
+            
+            if(m.super_over) {
+                const so = m.super_over;
+                let soWinText = "Super Overz Tied";
+                if(so.r1 > so.r2) soWinText = `${m.t1.toUpperCase()} won by ${so.r1-so.r2} runs`;
+                else if(so.r2 > so.r1) soWinText = `${m.t2.toUpperCase()} won by ${10-(so.w2||0)} wkts`;
+                
+                win = `<span class="match-highlight">Match Tied</span> <button class="action" style="padding: 2px 8px; font-size: 0.7rem; width: auto; margin: 0 0 0 10px;" onclick="document.getElementById('so_log_${s.id}').style.display = document.getElementById('so_log_${s.id}').style.display === 'table-row' ? 'none' : 'table-row'">Super Overz</button>`;
+                
+                soHtml = `<tr id="so_log_${s.id}" style="display:none; background:#111;"><td colspan="3" style="text-align:left; padding:10px 20px; border-left: 2px solid #d4af37;">
+                    <div style="color:#d4af37; font-weight:bold; margin-bottom:5px;">⚡ SUPER OVERZ</div>
+                    <div style="color:#ccc;">${m.t1.toUpperCase()}: ${so.r1}/${so.w1} (${fmtOvers(so.b1)}) &nbsp;|&nbsp; ${m.t2.toUpperCase()}: ${so.r2}/${so.w2} (${fmtOvers(so.b2)})</div>
+                    <div style="color:#aaa; font-style:italic; margin-top:3px;">Result: ${soWinText}</div>
+                </td></tr>`;
+            }
+
             const desc=m.desc?` <span style="color:#aaa;font-style:italic;">— ${m.desc}</span>`:'';
             const badge = (s.id === latestMatchId) ? '<span class="latest-badge">LATEST</span>' : '';
             row=`<td class="match-result-text" style="text-align:left;">${m.t1.toUpperCase()}: ${m.r1}/${m.w1} (${fmtOvers(m.b1)}) &nbsp;|&nbsp; ${m.t2.toUpperCase()}: ${m.r2}/${m.w2} (${fmtOvers(m.b2)}) &nbsp;—&nbsp; ${win}${desc}${badge}</td>`;
@@ -1320,7 +1413,7 @@ function updateUI(){
         } else {
             row=`<td style="color:#444;font-style:italic;text-align:left;">Awaiting Result</td>`;
         }
-        logTbody.innerHTML+=`<tr class="match-row" id="row_match_${s.id}" data-t1="${s.t1}" data-t2="${s.t2}"><td style="color:#666;text-align:left;">${s.id}</td><td class="match-fixture">${s.t1.toUpperCase()} vs ${s.t2.toUpperCase()}</td>${row}</tr>`;
+        logTbody.innerHTML+=`<tr class="match-row" id="row_match_${s.id}" data-t1="${s.t1}" data-t2="${s.t2}"><td style="color:#666;text-align:left;">${s.id}</td><td class="match-fixture">${s.t1.toUpperCase()} vs ${s.t2.toUpperCase()}</td>${row}</tr>${soHtml}`;
     });
     document.getElementById('match_progress').innerText=`${pc} / 70 Completed`;
     document.getElementById('tourney_progress_bar').style.width = ((pc/70)*100) + '%';
@@ -1418,7 +1511,14 @@ window.predictMatch = function(){
     let t1W=0,t2W=0,ties=0;
     schedule.filter(s=>s.played&&s.result&&((s.result.t1===t1&&s.result.t2===t2)||(s.result.t1===t2&&s.result.t2===t1))).forEach(s=>{
         const m=s.result;
-        if(m.r1>m.r2){m.t1===t1?t1W++:t2W++;}else if(m.r2>m.r1){m.t2===t1?t1W++:t2W++;}else ties++;
+        if(m.r1>m.r2){m.t1===t1?t1W++:t2W++;}
+        else if(m.r2>m.r1){m.t2===t1?t1W++:t2W++;}
+        else if(m.super_over){
+            if(m.super_over.r1>m.super_over.r2){m.t1===t1?t1W++:t2W++;}
+            else if(m.super_over.r2>m.super_over.r1){m.t2===t1?t1W++:t2W++;}
+            else ties++;
+        }
+        else ties++;
     });
     const oT1=h2hGet(window.currentH2H, t1, t2);
     const oT2=h2hGet(window.currentH2H, t2, t1);
