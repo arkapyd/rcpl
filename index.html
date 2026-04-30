@@ -890,27 +890,16 @@ function generateTableData(){
                 tbl[m.t1].l++;tbl[m.t1].form.push({res:'L',tip:`M${s.id}: Lost to ${m.t2.toUpperCase()} by ${10-(m.w2||0)} wkts`});
             }
             else{
-                if(m.super_over) {
-                const so = m.super_over;
-                let soWinText = "Super Overz Tied";
-                let logWinText = "Super Overz Tied";
-                
-                if(so.r1 > so.r2) {
-                    soWinText = `${m.t1.toUpperCase()} won by ${so.r1-so.r2} runs`;
-                    logWinText = `${m.t1.toUpperCase()} won the Super Overz by ${so.r1-so.r2} runs`;
-                } else if(so.r2 > so.r1) {
-                    soWinText = `${m.t2.toUpperCase()} won by ${10-(so.w2||0)} wkts`;
-                    logWinText = `${m.t2.toUpperCase()} won the Super Overz by ${10-(so.w2||0)} wkts`;
+                if(m.super_over && m.super_over.r1 > m.super_over.r2) {
+                    tbl[m.t1].w++;tbl[m.t1].pts+=2;tbl[m.t1].form.push({res:'W',tip:`M${s.id}: Won vs ${m.t2.toUpperCase()} in Super Overz`});
+                    tbl[m.t2].l++;tbl[m.t2].form.push({res:'L',tip:`M${s.id}: Lost to ${m.t1.toUpperCase()} in Super Overz`});
+                } else if(m.super_over && m.super_over.r2 > m.super_over.r1) {
+                    tbl[m.t2].w++;tbl[m.t2].pts+=2;tbl[m.t2].form.push({res:'W',tip:`M${s.id}: Won vs ${m.t1.toUpperCase()} in Super Overz`});
+                    tbl[m.t1].l++;tbl[m.t1].form.push({res:'L',tip:`M${s.id}: Lost to ${m.t2.toUpperCase()} in Super Overz`});
+                } else {
+                    tbl[m.t1].t++;tbl[m.t1].pts++;tbl[m.t1].form.push({res:'T',tip:`M${s.id}: Tied vs ${m.t2.toUpperCase()}`});
+                    tbl[m.t2].t++;tbl[m.t2].pts++;tbl[m.t2].form.push({res:'T',tip:`M${s.id}: Tied vs ${m.t1.toUpperCase()}`});
                 }
-                
-                win = `<span class="match-highlight">${logWinText}</span> <button class="action" style="padding: 2px 8px; font-size: 0.7rem; width: auto; margin: 0 0 0 10px;" onclick="document.getElementById('so_log_${s.id}').style.display = document.getElementById('so_log_${s.id}').style.display === 'table-row' ? 'none' : 'table-row'">Super Overz</button>`;
-                
-                soHtml = `<tr id="so_log_${s.id}" style="display:none; background:#111;"><td colspan="3" style="text-align:left; padding:10px 20px; border-left: 2px solid #d4af37;">
-                    <div style="color:#d4af37; font-weight:bold; margin-bottom:5px;">⚡ SUPER OVERZ</div>
-                    <div style="color:#ccc;">${m.t1.toUpperCase()}: ${so.r1}/${so.w1} (${fmtOvers(so.b1)}) &nbsp;|&nbsp; ${m.t2.toUpperCase()}: ${so.r2}/${so.w2} (${fmtOvers(so.b2)})</div>
-                    <div style="color:#aaa; font-style:italic; margin-top:3px;">Result: ${soWinText}</div>
-                </td></tr>`;
-            }
             }
         }
     });
@@ -1403,10 +1392,17 @@ function updateUI(){
             if(m.super_over) {
                 const so = m.super_over;
                 let soWinText = "Super Overz Tied";
-                if(so.r1 > so.r2) soWinText = `${m.t1.toUpperCase()} won by ${so.r1-so.r2} runs`;
-                else if(so.r2 > so.r1) soWinText = `${m.t2.toUpperCase()} won by ${10-(so.w2||0)} wkts`;
+                let logWinText = "Super Overz Tied";
                 
-                win = `<span class="match-highlight">Match Tied</span> <button class="action" style="padding: 2px 8px; font-size: 0.7rem; width: auto; margin: 0 0 0 10px;" onclick="document.getElementById('so_log_${s.id}').style.display = document.getElementById('so_log_${s.id}').style.display === 'table-row' ? 'none' : 'table-row'">Super Overz</button>`;
+                if(so.r1 > so.r2) {
+                    soWinText = `${m.t1.toUpperCase()} won by ${so.r1-so.r2} runs`;
+                    logWinText = `${m.t1.toUpperCase()} won the Super Overz by ${so.r1-so.r2} runs`;
+                } else if(so.r2 > so.r1) {
+                    soWinText = `${m.t2.toUpperCase()} won by ${10-(so.w2||0)} wkts`;
+                    logWinText = `${m.t2.toUpperCase()} won the Super Overz by ${10-(so.w2||0)} wkts`;
+                }
+                
+                win = `<span class="match-highlight">${logWinText}</span> <button class="action" style="padding: 2px 8px; font-size: 0.7rem; width: auto; margin: 0 0 0 10px;" onclick="document.getElementById('so_log_${s.id}').style.display = document.getElementById('so_log_${s.id}').style.display === 'table-row' ? 'none' : 'table-row'">Super Overz</button>`;
                 
                 soHtml = `<tr id="so_log_${s.id}" style="display:none; background:#111;"><td colspan="3" style="text-align:left; padding:10px 20px; border-left: 2px solid #d4af37;">
                     <div style="color:#d4af37; font-weight:bold; margin-bottom:5px;">⚡ SUPER OVERZ</div>
