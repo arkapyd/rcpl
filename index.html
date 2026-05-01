@@ -439,9 +439,7 @@
 
     <div class="card full-width no-hover-card">
         <h2 style="text-align:left;">Points Progression</h2>
-        <div style="position: relative; height: 300px; width: 100%;">
-            <canvas id="progressionChart"></canvas>
-        </div>
+        <canvas id="progressionChart" height="250"></canvas>
     </div>
 
     <div class="card full-width no-hover-card">
@@ -809,21 +807,10 @@ window.closeTeamModal = function() { document.getElementById('team_modal').style
 
 function pushToCloud(){ set(dbRef,{schedule}); }
 
-function normalizeSchedule(dataSchedule) {
-    if (!dataSchedule) return generateSchedule();
-    let arr = [];
-    if (Array.isArray(dataSchedule)) {
-        arr = dataSchedule.filter(Boolean);
-    } else {
-        arr = Object.values(dataSchedule).filter(Boolean);
-    }
-    if (arr.length === 0) return generateSchedule();
-    return arr.sort((a,b) => a.id - b.id);
-}
-
 onValue(dbRef, snapshot=>{
     const data=snapshot.val();
-    schedule = normalizeSchedule(data ? data.schedule : null);
+    if(data&&data.schedule) schedule=data.schedule;
+    else { schedule=generateSchedule(); pushToCloud(); }
     
     const played = schedule.filter(s=>s.played);
     if(_initialPlayedCount === -1) _initialPlayedCount = played.length;
@@ -1491,18 +1478,7 @@ function renderMilestones(cs, d, played, h2h, s4d){
 
     if (typeof Chart !== 'undefined') {
         Chart.defaults.color = '#888';
-        const commonOptions = { 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            plugins: { 
-                legend: { display: false }, 
-                tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(0,0,0,0.8)', titleColor: '#d4af37', bodyFont: {weight: 'bold'} } 
-            }, 
-            scales: { 
-                x: { grid: { color: '#222' } }, 
-                y: { grid: { color: '#222' } } 
-            } 
-        };
+        const commonOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(0,0,0,0.8)', titleColor: '#d4af37', bodyFont: {weight: 'bold'} } }, scales: { x: { grid: { color: '#222' } }, y: { grid: { color: '#222' } } } };
 
         const ctxProg = document.getElementById('progressionChart');
         if(ctxProg) window.progChartInstance = new Chart(ctxProg, { type: 'line', data: { labels: matchLabels, datasets: buildDatasets(ptsHist) }, options: commonOptions });
