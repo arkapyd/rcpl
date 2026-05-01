@@ -1417,6 +1417,7 @@ function renderMilestones(cs, d, played, h2h, s4d){
     let finalS4Cards = shuffleArray([...s4cards]).slice(0, 6);
     s4Grid.innerHTML = finalS4Cards.length ? finalS4Cards.join('') : `<div style="color:#555;font-size:0.85rem;grid-column:1/-1;padding:0.5rem 0;">Season 4 is underway, but no standout patterns have emerged yet. Check back after more results.</div>`;
     
+    // --- FEATURE A: FORM VS CLASS QUADRANT MATRIX RENDERING ---
     const qm = document.getElementById('quad_matrix_body');
     if(qm) {
         let html = '';
@@ -1550,6 +1551,7 @@ function updateUI(){
         </tr>`).join('');
 
     const played=schedule.filter(s=>s.played&&s.result);
+    const unplayed=schedule.filter(s=>!s.played);
     
     const editSel=document.getElementById('edit_summary_match'), resetSel=document.getElementById('reset_match_select');
     if(editSel&&resetSel){
@@ -1647,7 +1649,6 @@ function updateUI(){
     // --- FEATURE 1: MONTE CARLO PLAYOFF ENGINE ---
     const mcBody = document.getElementById('mc_body');
     if(mcBody && unplayed.length > 0) {
-        // Build live Elo array for Monte Carlo
         let mcElo = {}; TEAMS.forEach(t=>mcElo[t]=1500);
         played.forEach(s => {
             const m = s.result; let e1 = mcElo[m.t1], e2 = mcElo[m.t2];
@@ -1715,14 +1716,16 @@ function updateUI(){
         }));
     };
 
-    Chart.defaults.color = '#888';
-    const commonOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(0,0,0,0.8)', titleColor: '#d4af37', bodyFont: {weight: 'bold'} } }, scales: { x: { grid: { color: '#222' } }, y: { grid: { color: '#222' } } } };
+    if (typeof Chart !== 'undefined') {
+        Chart.defaults.color = '#888';
+        const commonOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(0,0,0,0.8)', titleColor: '#d4af37', bodyFont: {weight: 'bold'} } }, scales: { x: { grid: { color: '#222' } }, y: { grid: { color: '#222' } } } };
 
-    const ctxElo = document.getElementById('eloChart');
-    if(ctxElo) window.eloChartInstance = new Chart(ctxElo, { type: 'line', data: { labels: matchLabels, datasets: buildDatasets(eloHist) }, options: commonOptions });
-    
-    const ctxProg = document.getElementById('progressionChart');
-    if(ctxProg) window.progChartInstance = new Chart(ctxProg, { type: 'line', data: { labels: matchLabels, datasets: buildDatasets(ptsHist) }, options: commonOptions });
+        const ctxElo = document.getElementById('eloChart');
+        if(ctxElo) window.eloChartInstance = new Chart(ctxElo, { type: 'line', data: { labels: matchLabels, datasets: buildDatasets(eloHist) }, options: commonOptions });
+        
+        const ctxProg = document.getElementById('progressionChart');
+        if(ctxProg) window.progChartInstance = new Chart(ctxProg, { type: 'line', data: { labels: matchLabels, datasets: buildDatasets(ptsHist) }, options: commonOptions });
+    }
 
     // --- FEATURE 4: INTERACTIVE PLAYOFF BRACKET ---
     const bracketDiv = document.getElementById('bracket_container');
