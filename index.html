@@ -6,6 +6,7 @@
     <title>RCPL Season 4</title>
     <link rel="icon" type="image/jpeg" href="logorcpl.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --accent-color: #d4af37;
@@ -434,6 +435,11 @@
                 <tbody id="mc_body"></tbody>
             </table>
         </div>
+    </div>
+
+    <div class="card full-width no-hover-card">
+        <h2 style="text-align:left;">Power Rankings (Live Elo)</h2>
+        <canvas id="eloChart" height="250"></canvas>
     </div>
 
     <div class="card full-width no-hover-card">
@@ -1436,6 +1442,51 @@ function renderMilestones(cs, d, played, h2h, s4d){
             html = '<div style="color:#555; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-style:italic;">Awaiting Season 4 Match Data</div>';
         }
         qm.innerHTML = html;
+    }
+
+    // --- FEATURE 2 & 3: DYNAMIC ELO VISUALIZATIONS ---
+    if(window.eloChartInstance) window.eloChartInstance.destroy();
+
+    let chartElo = {}, eloHist = {};
+    TEAMS.forEach(t => { chartElo[t]=1500; eloHist[t]=[1500]; });
+    
+    let matchLabels = [0];
+    let mCount = 0;
+    played.forEach(s => {
+        mCount++; matchLabels.push(mCount);
+        const m = s.result;
+        let e1 = chartElo[m.t1], e2 = chartElo[m.t2];
+        let exp1 = 1/(1+Math.pow(10, (e2-e1)/400)), exp2 = 1/(1+Math.pow(10, (e1-e2)/400));
+        let s1=0.5, s2=0.5;
+        
+        if(m.r1 > m.r2 || (m.super_over && m.super_over.r1 > m.super_over.r2)) { s1=1; s2=0; }
+        else if(m.r2 > m.r1 || (m.super_over && m.super_over.r2 > m.super_over.r1)) { s1=0; s2=1; }
+        
+        chartElo[m.t1] = e1 + 32*(s1 - exp1);
+        chartElo[m.t2] = e2 + 32*(s2 - exp2);
+        
+        TEAMS.forEach(t => { eloHist[t].push(chartElo[t]); });
+    });
+
+    const buildDatasets = (histDict) => {
+        return TEAMS.map(t => ({
+            label: t.toUpperCase(),
+            data: histDict[t],
+            borderColor: TEAM_COLORS[t],
+            backgroundColor: TEAM_COLORS[t],
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            tension: 0.2
+        }));
+    };
+
+    if (typeof Chart !== 'undefined') {
+        Chart.defaults.color = '#888';
+        const commonOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(0,0,0,0.8)', titleColor: '#d4af37', bodyFont: {weight: 'bold'} } }, scales: { x: { grid: { color: '#222' } }, y: { grid: { color: '#222' } } } };
+
+        const ctxElo = document.getElementById('eloChart');
+        if(ctxElo) window.eloChartInstance = new Chart(ctxElo, { type: 'line', data: { labels: matchLabels, datasets: buildDatasets(eloHist) }, options: commonOptions });
     }
 
     // --- FEATURE 4: INTERACTIVE PLAYOFF BRACKET ---
