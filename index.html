@@ -6,6 +6,7 @@
     <title>RCPL Season 4</title>
     <link rel="icon" type="image/jpeg" href="logorcpl.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --accent-color: #d4af37;
@@ -434,6 +435,11 @@
                 <tbody id="mc_body"></tbody>
             </table>
         </div>
+    </div>
+
+    <div class="flex-split">
+        <div class="card no-hover-card" style="flex:1; min-width:300px;"><h2 style="text-align:left;">Power Rankings (Live Elo)</h2><canvas id="eloChart" height="250"></canvas></div>
+        <div class="card no-hover-card" style="flex:1; min-width:300px;"><h2 style="text-align:left;">Points Progression</h2><canvas id="progressionChart" height="250"></canvas></div>
     </div>
 
     <div class="card full-width no-hover-card">
@@ -1504,6 +1510,393 @@ Rules:
         if (freshEl) freshEl.innerHTML = `<span style="color:#555;font-style:italic;">Awaiting Result</span>`;
     }
 }
+
+function updateUI(){
+    const ptable=document.getElementById('ptable_body');
+    ptable.classList.add('flash-table'); setTimeout(()=>ptable.classList.remove('flash-table'),1000);
+
+    const standings=generateTableData();
+    ptable.innerHTML='';
+    if(standings.length>4){
+        const fp=standings[3].pts;
+        standings.forEach(s=>{
+            const mx=s.pts+((TOTAL_MATCHES_PER_TEAM-s.p)*2);
+            if(s.p===TOTAL_MATCHES_PER_TEAM&&s.pts>=fp) s.status='<span class="tag q">Q</span>';
+            else if(mx<fp&&fp>0) s.status='<span class="tag e">E</span>';
+            else s.status='-';
+        });
+    }
+
+    const playedMatchesCount = schedule.filter(s=>s.played&&s.result).length;
+
+    standings.forEach((s, idx)=>{
+        const trClass = (idx < 4 && playedMatchesCount >= 35) ? 'class="top4-row"' : '';
+        const nrrVal = parseFloat(s.nrr);
+        const nrrCol = nrrVal > 0 ? '#00e676' : (nrrVal < 0 ? '#ff5252' : '#aaa');
+        const recentForm = s.form.slice(-5).reverse();
+        const fh = recentForm.map((f, index) => `<span class="form-letter letter-${f.res.toLowerCase()} ${index === 0 ? 'latest-form' : ''}" title="${f.tip}">${f.res}</span>`).join('');
+        ptable.innerHTML+=`<tr ${trClass}><td style="color:#fff;text-align:left;"><b class="team-link" onclick="window.takeoverTeam('${s.team}')">${s.team.toUpperCase()}</b></td><td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td><td style="color:var(--accent-color); font-size:1.1rem;"><b>${s.pts}</b></td><td style="color:${nrrCol}; padding-left:35px;">${s.nrr}${s.nrrTrend}</td><td style="text-align:center;">${s.next3}</td><td style="text-align:left;"><div class="form-letters">${fh||'-'}</div></td><td>${s.status||'-'}</td></tr>`;
+    });
+
+    const maxRuns = standings.length ? Math.max(...standings.map(s=>s.rf), 1) : 1;
+    document.getElementById('orange_body').innerHTML=[...standings].sort((a,b)=>b.rf-a.rf).slice(0,5).map(s=>`
+        <tr style="background: linear-gradient(90deg, rgba(var(--accent-rgb),0.15) ${(s.rf/maxRuns)*100}%, transparent ${(s.rf/maxRuns)*100}%);">
+            <td style="text-transform:uppercase;text-align:left;">${s.team}</td><td style="color:var(--accent-color);font-weight:bold;">${s.rf}</td>
+        </tr>`).join('');
+        
+    const maxWkts = standings.length ? Math.max(...standings.map(s=>s.wkts_taken), 1) : 1;
+    document.getElementById('purple_body').innerHTML=[...standings].sort((a,b)=>b.wkts_taken-a.wkts_taken).slice(0,5).map(s=>`
+        <tr style="background: linear-gradient(90deg, rgba(var(--accent-rgb),0.15) ${(s.wkts_taken/maxWkts)*100}%, transparent ${(s.wkts_taken/maxWkts)*100}%);">
+            <td style="text-transform:uppercase;text-align:left;">${s.team}</td><td style="color:var(--accent-color);font-weight:bold;">${s.wkts_taken}</td>
+        </tr>`).join('');
+
+    const played=schedule.filter(s=>s.played&&s.result);
+    const unplayed=schedule.filter(s=>!s.played);
+    
+    const editSel=document.getElementById('edit_summary_match'), resetSel=document.getElementById('reset_match_select');
+    if(editSel&&resetSel){
+        const opts=played.map(s=>`<option value="${s.id}">Match ${s.id}: ${s.result.t1.toUpperCase()} vs ${s.result.t2.toUpperCase()}</option>`).join('');
+        editSel.innerHTML=opts; resetSel.innerHTML=opts;
+    }
+
+    const h2h = JSON.parse(JSON.stringify(H2H_BASE));
+    let highestTotals=[];
+    played.forEach(s=>{
+        const m=s.result;
+        highestTotals.push({team:m.t1,runs:m.r1,wkts:m.w1,vs:m.t2},{team:m.t2,runs:m.r2,wkts:m.w2,vs:m.t1});
+        if(m.r1 > m.r2)      h2hInc(h2h, m.t1, m.t2);
+        else if(m.r2 > m.r1) h2hInc(h2h, m.t2, m.t1);
+        else if(m.super_over) {
+            if(m.super_over.r1 > m.super_over.r2) h2hInc(h2h, m.t1, m.t2);
+            else if(m.super_over.r2 > m.super_over.r1) h2hInc(h2h, m.t2, m.t1);
+        }
+    });
+    window.currentH2H = h2h;
+    if(h2hSelected) renderH2HPanel();
+
+    highestTotals.sort((a,b)=>b.runs-a.runs);
+    document.getElementById('highest_totals_body').innerHTML=highestTotals.slice(0,5).map(t=>`<tr><td style="text-transform:uppercase;text-align:left;">${t.team}</td><td style="color:var(--accent-color);font-weight:bold;">${t.runs}/${t.wkts}</td><td style="font-size:0.75rem;color:#888;">vs ${t.vs.toUpperCase()}</td></tr>`).join('');
+
+    const cs = buildCareerStats(played);
+    const d  = computeDerived(cs);
+    const s4cs = buildSeasonStats(played);
+    const s4d = computeDerivedSeason(s4cs);
+    window.currentS4D = s4d;
+
+    const nextMatch = schedule.find(s => !s.played);
+    const nextMatchId = nextMatch?.id ?? null;
+    const latestMatchId = Math.max(...played.map(m=>m.id), 0);
+
+    const logTbody=document.getElementById('match_log_body');
+    logTbody.innerHTML=''; let pc=0;
+    schedule.forEach(s=>{
+        let row='';
+        let soHtml='';
+        let satireHtml='';
+        
+        if(s.played&&s.result){
+            pc++; const m=s.result;
+            let win="Match Tied";
+            if(m.r1>m.r2) win=`<span class="match-highlight">${m.t1.toUpperCase()} won by ${m.r1-m.r2} runs</span>`;
+            else if(m.r2>m.r1) win=`<span class="match-highlight">${m.t2.toUpperCase()} won by ${10-(m.w2||0)} wickets</span>`;
+            
+            if(m.super_over) {
+                const so = m.super_over;
+                let soWinText = "Super Overz Tied";
+                let logWinText = "Super Overz Tied";
+                
+                if(so.r1 > so.r2) {
+                    soWinText = `${m.t1.toUpperCase()} won by ${so.r1-so.r2} runs`;
+                    logWinText = `${m.t1.toUpperCase()} won the Super Overz by ${so.r1-so.r2} runs`;
+                } else if(so.r2 > so.r1) {
+                    soWinText = `${m.t2.toUpperCase()} won by ${10-(so.w2||0)} wkts`;
+                    logWinText = `${m.t2.toUpperCase()} won the Super Overz by ${10-(so.w2||0)} wkts`;
+                }
+                
+                win = `<span class="match-highlight">${logWinText}</span> <button class="action" style="padding: 2px 8px; font-size: 0.7rem; width: auto; margin: 0 0 0 10px;" onclick="const el=document.getElementById('so_log_${s.id}'); el.style.display=el.style.display==='table-row'?'none':'table-row'; el.dataset.active=el.style.display==='table-row'?'true':'false';">Super Overz</button>`;
+                
+                soHtml = `<tr id="so_log_${s.id}" data-active="false" style="display:none; background:#111;"><td colspan="3" style="text-align:left; padding:10px 20px; border-left: 2px solid var(--accent-color);">
+                    <div style="color:var(--accent-color); font-weight:bold; margin-bottom:5px;">⚡ SUPER OVERZ</div>
+                    <div style="color:#ccc;">${m.t1.toUpperCase()}: ${so.r1}/${so.w1} (${fmtOvers(so.b1)}) &nbsp;|&nbsp; ${m.t2.toUpperCase()}: ${so.r2}/${so.w2} (${fmtOvers(so.b2)})</div>
+                    <div style="color:#aaa; font-style:italic; margin-top:3px;">Result: ${soWinText}</div>
+                </td></tr>`;
+            }
+            
+            if(m.satire) {
+                win += ` <button class="action" style="padding: 2px 8px; font-size: 0.7rem; width: auto; margin: 0 0 0 10px; border-color:#888; color:#ddd;" onclick="const el=document.getElementById('satire_log_${s.id}'); el.style.display=el.style.display==='table-row'?'none':'table-row'; el.dataset.active=el.style.display==='table-row'?'true':'false';">🎙️ Press Conf</button>`;
+                
+                satireHtml = `<tr id="satire_log_${s.id}" data-active="false" style="display:none; background:#0d0d0d;"><td colspan="3" style="text-align:left; padding:15px 20px; border-left: 2px solid #555; color:#ccc; font-size:0.85rem; line-height:1.5;">
+                    <div style="color:#fff; font-weight:bold; margin-bottom:8px; font-size:0.95rem;">🎙️ Post-Match Press Conference</div>
+                    ${m.satire.replace(/\n/g, '<br><br>')}
+                </td></tr>`;
+            }
+
+            const desc=m.desc?` <span style="color:#aaa;font-style:italic;">— ${m.desc}</span>`:'';
+            const badge = (s.id === latestMatchId) ? '<span class="latest-badge">LATEST</span>' : '';
+            row=`<td class="match-result-text" style="text-align:left;">${m.t1.toUpperCase()}: ${m.r1}/${m.w1} (${fmtOvers(m.b1)}) &nbsp;|&nbsp; ${m.t2.toUpperCase()}: ${m.r2}/${m.w2} (${fmtOvers(m.b2)}) &nbsp;—&nbsp; ${win}${desc}${badge}</td>`;
+        } else if (s.id === nextMatchId) {
+            const rowId = `oneliner_${s.id}`;
+            row = `<td id="${rowId}" style="color:#666;font-style:italic;text-align:left;" class="oneliner-loading">⚡ Generating match preview...</td>`;
+        } else {
+            row=`<td style="color:#444;font-style:italic;text-align:left;">Awaiting Result</td>`;
+        }
+        logTbody.innerHTML+=`<tr class="match-row" id="row_match_${s.id}" data-t1="${s.t1}" data-t2="${s.t2}"><td style="color:#666;text-align:left;">${s.id}</td><td class="match-fixture" onclick="window.takeoverTeam('${s.t1}')" style="cursor:pointer;">${s.t1.toUpperCase()} vs ${s.t2.toUpperCase()}</td>${row}</tr>${soHtml}${satireHtml}`;
+    });
+    document.getElementById('match_progress').innerText=`${pc} / 70 Completed`;
+    document.getElementById('tourney_progress_bar').style.width = ((pc/70)*100) + '%';
+    window.currentStandings=standings;
+
+    // --- FEATURE 1: MONTE CARLO PLAYOFF ENGINE ---
+    const mcBody = document.getElementById('mc_body');
+    if(mcBody && unplayed.length > 0) {
+        let mcElo = {}; TEAMS.forEach(t=>mcElo[t]=1500);
+        played.forEach(s => {
+            const m = s.result; let e1 = mcElo[m.t1], e2 = mcElo[m.t2];
+            let exp1 = 1/(1+Math.pow(10, (e2-e1)/400)), exp2 = 1/(1+Math.pow(10, (e1-e2)/400));
+            let s1=0.5, s2=0.5;
+            if(m.r1 > m.r2 || (m.super_over && m.super_over.r1 > m.super_over.r2)) { s1=1; s2=0; }
+            else if(m.r2 > m.r1 || (m.super_over && m.super_over.r2 > m.super_over.r1)) { s1=0; s2=1; }
+            mcElo[m.t1] = e1 + 32*(s1 - exp1); mcElo[m.t2] = e2 + 32*(s2 - exp2);
+        });
+        
+        const probs = runMonteCarlo(unplayed, standings, mcElo);
+        let mcHtml = '';
+        const sortedProbs = Object.keys(probs).map(t => ({team: t, prob: (probs[t]/10) })).sort((a,b) => b.prob - a.prob);
+        sortedProbs.forEach(p => {
+            let status = '-';
+            if(p.prob >= 99.9) status = '<span class="tag q">QUALIFIED</span>';
+            else if(p.prob <= 0.1) status = '<span class="tag e">ELIMINATED</span>';
+            else if(p.prob > 60) status = '<span style="color:#00e676">LIKELY</span>';
+            else if(p.prob < 15) status = '<span style="color:#ff5252">AT RISK</span>';
+            else status = '<span style="color:#aaa">IN THE HUNT</span>';
+            
+            mcHtml += `<tr><td style="text-transform:uppercase; font-weight:bold; color:var(--accent-color); text-align:left; cursor:pointer;" onclick="window.takeoverTeam('${p.team}')">${p.team}</td><td>${p.prob.toFixed(1)}%</td><td>${status}</td></tr>`;
+        });
+        mcBody.innerHTML = mcHtml;
+    } else if (mcBody) {
+        mcBody.innerHTML = `<tr><td colspan="3" style="color:#555; font-style:italic;">Group stage complete. Probabilities locked.</td></tr>`;
+    }
+
+    // --- FEATURE 2 & 3: DYNAMIC ELO & PROGRESSION VISUALIZATIONS ---
+    if(window.eloChartInstance) window.eloChartInstance.destroy();
+    if(window.progChartInstance) window.progChartInstance.destroy();
+
+    let chartElo = {}, chartPts = {}, eloHist = {}, ptsHist = {};
+    TEAMS.forEach(t => { chartElo[t]=1500; chartPts[t]=0; eloHist[t]=[1500]; ptsHist[t]=[0]; });
+    
+    let matchLabels = [0];
+    let mCount = 0;
+    played.forEach(s => {
+        mCount++; matchLabels.push(mCount);
+        const m = s.result;
+        let e1 = chartElo[m.t1], e2 = chartElo[m.t2];
+        let exp1 = 1/(1+Math.pow(10, (e2-e1)/400)), exp2 = 1/(1+Math.pow(10, (e1-e2)/400));
+        let s1=0.5, s2=0.5;
+        
+        if(m.r1 > m.r2 || (m.super_over && m.super_over.r1 > m.super_over.r2)) { s1=1; s2=0; chartPts[m.t1]+=2; }
+        else if(m.r2 > m.r1 || (m.super_over && m.super_over.r2 > m.super_over.r1)) { s1=0; s2=1; chartPts[m.t2]+=2; }
+        else { chartPts[m.t1]+=1; chartPts[m.t2]+=1; }
+        
+        chartElo[m.t1] = e1 + 32*(s1 - exp1);
+        chartElo[m.t2] = e2 + 32*(s2 - exp2);
+        
+        TEAMS.forEach(t => { eloHist[t].push(chartElo[t]); ptsHist[t].push(chartPts[t]); });
+    });
+
+    const buildDatasets = (histDict) => {
+        return TEAMS.map(t => ({
+            label: t.toUpperCase(),
+            data: histDict[t],
+            borderColor: TEAM_COLORS[t],
+            backgroundColor: TEAM_COLORS[t],
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            tension: 0.2
+        }));
+    };
+
+    if (typeof Chart !== 'undefined') {
+        Chart.defaults.color = '#888';
+        const commonOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(0,0,0,0.8)', titleColor: '#d4af37', bodyFont: {weight: 'bold'} } }, scales: { x: { grid: { color: '#222' } }, y: { grid: { color: '#222' } } } };
+
+        const ctxElo = document.getElementById('eloChart');
+        if(ctxElo) window.eloChartInstance = new Chart(ctxElo, { type: 'line', data: { labels: matchLabels, datasets: buildDatasets(eloHist) }, options: commonOptions });
+        
+        const ctxProg = document.getElementById('progressionChart');
+        if(ctxProg) window.progChartInstance = new Chart(ctxProg, { type: 'line', data: { labels: matchLabels, datasets: buildDatasets(ptsHist) }, options: commonOptions });
+    }
+
+    // --- FEATURE 4: INTERACTIVE PLAYOFF BRACKET ---
+    const bracketDiv = document.getElementById('bracket_container');
+    if(bracketDiv) {
+        if(played.length >= 70 && standings.length >= 4) {
+            const t1 = standings[0].team.toUpperCase(), t2 = standings[1].team.toUpperCase(), t3 = standings[2].team.toUpperCase(), t4 = standings[3].team.toUpperCase();
+            bracketDiv.innerHTML = `
+                <div class="bracket">
+                    <div class="bracket-col">
+                        <div class="matchup">
+                            <span style="color:var(--accent-color); font-size:0.75rem; font-weight:bold; letter-spacing:1px; text-transform:uppercase;">Qualifier 1</span><br>
+                            <span style="font-size:1.3rem; font-weight:bold; color:#fff; display:block; margin-top:8px;">${t1} <span style="color:#555; font-size:1rem; margin:0 5px;">vs</span> ${t2}</span>
+                        </div>
+                        <div class="matchup">
+                            <span style="color:#aaa; font-size:0.75rem; font-weight:bold; letter-spacing:1px; text-transform:uppercase;">Eliminator</span><br>
+                            <span style="font-size:1.3rem; font-weight:bold; color:#fff; display:block; margin-top:8px;">${t3} <span style="color:#555; font-size:1rem; margin:0 5px;">vs</span> ${t4}</span>
+                        </div>
+                    </div>
+                    <div class="bracket-col">
+                        <div class="matchup">
+                            <span style="color:#aaa; font-size:0.75rem; font-weight:bold; letter-spacing:1px; text-transform:uppercase;">Qualifier 2</span><br>
+                            <span style="font-size:1rem; color:#ccc; display:block; margin-top:8px;">Loser Q1 vs Winner Elim</span>
+                        </div>
+                    </div>
+                    <div class="bracket-col">
+                        <div class="matchup" style="border: 2px solid var(--accent-color); box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.3); transform:scale(1.05);">
+                            <span style="color:var(--accent-color); font-size:0.9rem; font-weight:bold; letter-spacing:2px; text-transform:uppercase;">RCPL FINAL</span><br>
+                            <span style="font-size:1rem; color:#fff; display:block; margin-top:8px;">Winner Q1 vs Winner Q2</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            bracketDiv.innerHTML = `<div style="color:#888; padding:20px;">Tournament ongoing. Bracket will automatically populate once all 70 group stage matches are complete. (${played.length}/70 complete)</div>`;
+        }
+    }
+
+    if (nextMatch) {
+        if (nextMatchId !== _lastNextMatchId) {
+            _lastNextMatchId = nextMatchId;
+            
+            let p1 = document.getElementById('pred_t1');
+            let p2 = document.getElementById('pred_t2');
+            if (p1 && p2) {
+                p1.value = nextMatch.t1;
+                p2.value = nextMatch.t2;
+                window.predictMatch();
+            }
+
+            _cachedOneLiner = null;
+            generateMatchOneLiner(nextMatch.t1, nextMatch.t2, `oneliner_${nextMatchId}`, standings, h2h, cs, d)
+                .then(() => {
+                    const el = document.getElementById(`oneliner_${nextMatchId}`);
+                    if (el) _cachedOneLiner = el.innerHTML;
+                });
+        } else if (_cachedOneLiner) {
+            const el = document.getElementById(`oneliner_${nextMatchId}`);
+            if (el) {
+                el.innerHTML = _cachedOneLiner;
+                el.classList.remove('oneliner-loading');
+            }
+        }
+    }
+
+    renderMilestones(cs, d, played, h2h, s4d);
+
+    const cArr=TEAMS.map(t=>{
+        const c=cs[t];
+        const avg=c.m_played>0?c.r/c.m_played:0;
+        const sr=c.b>0?(c.r/c.b)*100:0;
+        const eco=c.bb>0?(c.rc/(c.bb/6)):0;
+        const wl=c.l>0?c.w/c.l:(c.w>0?c.w:CAREER_BASE[t].w);
+        const wpm=c.m_played>0?c.wkts_taken/c.m_played:0;
+        const basra=avg+sr;
+        const bewm=(eco===0&&wpm===0)?0:eco===0?wpm*0.3:10+(wpm*0.3)-(eco*0.7);
+        const clutch_index = c.clutch_w + c.clutch_l > 0 ? (c.clutch_w / (c.clutch_w + c.clutch_l)) * 100 : 0;
+        const titles=['mi','rcb','kkr'].includes(t)?1:0, ru=t==='pbks'?3:0;
+        let val=(titles*50000)+(ru*10000)+(wl*2000)+(basra*50)+(bewm*500)-(eco*100);
+        if(c.m_played===0) val=0; else if(val<0) val=0;
+        return{team:t,wkts_taken:c.wkts_taken,bewm,basra,r:c.r,b:c.b,rc:c.rc,bb:c.bb,avg,sr,eco,wl,clutch_w:c.clutch_w,clutch_l:c.clutch_l,clutch_index,value:val};
+    });
+    cArr.sort((a,b)=>(a[careerSort.prop]>b[careerSort.prop]?1:-1)*careerSort.dir);
+    document.getElementById('career_body').innerHTML=cArr.map(c=>`<tr>
+        <td style="text-transform:uppercase;font-weight:bold;color:#fff;text-align:left; cursor:pointer;" onclick="window.takeoverTeam('${c.team}')">${c.team}</td>
+        <td>${c.r}</td><td>${c.b}</td><td>${c.rc}</td><td>${c.bb}</td><td>${c.wkts_taken}</td>
+        <td>${c.avg.toFixed(2)}</td><td>${c.sr.toFixed(2)}</td>
+        <td style="color:var(--accent-color);font-weight:bold;">${c.basra.toFixed(2)}</td>
+        <td>${c.eco.toFixed(2)}</td>
+        <td style="color:var(--accent-color);font-weight:bold;">${c.bewm.toFixed(2)}</td>
+        <td>${c.wl.toFixed(2)}</td>
+        <td>${c.clutch_w}-${c.clutch_l}</td>
+        <td style="color:#00e676;">${c.clutch_index.toFixed(1)}%</td>
+        <td style="color:#00e676;font-weight:bold;">$${c.value.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+    </tr>`).join('');
+
+    const sArr=TEAMS.map(t=>{
+        const c=s4cs[t];
+        const d_t=s4d[t];
+        let val=(d_t.wl*2000)+(d_t.basra*50)+(d_t.bewm*500)-(d_t.eco*100);
+        if(c.m_played===0) val=0; else if(val<0) val=0;
+        return{team:t,wkts_taken:d_t.wkts_taken,bewm:d_t.bewm,basra:d_t.basra,r:d_t.r,b:d_t.b,rc:d_t.rc,bb:d_t.bb,avg:d_t.avg,sr:d_t.sr,eco:d_t.eco,wl:d_t.wl,clutch_w:c.clutch_w,clutch_l:c.clutch_l,clutch_index:d_t.clutch_index,value:val};
+    });
+    sArr.sort((a,b)=>(a[seasonSort.prop]>b[seasonSort.prop]?1:-1)*seasonSort.dir);
+    document.getElementById('season_body').innerHTML=sArr.map(c=>`<tr>
+        <td style="text-transform:uppercase;font-weight:bold;color:#fff;text-align:left; cursor:pointer;" onclick="window.takeoverTeam('${c.team}')">${c.team}</td>
+        <td>${c.r}</td><td>${c.b}</td><td>${c.rc}</td><td>${c.bb}</td><td>${c.wkts_taken}</td>
+        <td>${c.avg.toFixed(2)}</td><td>${c.sr.toFixed(2)}</td>
+        <td style="color:var(--accent-color);font-weight:bold;">${c.basra.toFixed(2)}</td>
+        <td>${c.eco.toFixed(2)}</td>
+        <td style="color:var(--accent-color);font-weight:bold;">${c.bewm.toFixed(2)}</td>
+        <td>${c.wl.toFixed(2)}</td>
+        <td>${c.clutch_w}-${c.clutch_l}</td>
+        <td style="color:#00e676;">${c.clutch_index.toFixed(1)}%</td>
+        <td style="color:#00e676;font-weight:bold;">$${c.value.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+    </tr>`).join('');
+    
+    setTimeout(() => {
+        if(!_hasScrolledLog && nextMatchId) {
+            const nextRow = document.getElementById('row_match_' + nextMatchId);
+            if(nextRow) { nextRow.scrollIntoView({block:'center', behavior:'smooth'}); }
+            _hasScrolledLog = true;
+        }
+    }, 100);
+}
+
+window.predictMatch = function(){
+    const t1=document.getElementById('pred_t1').value, t2=document.getElementById('pred_t2').value;
+    const rd=document.getElementById('prediction_result');
+    if(t1===t2){ rd.innerHTML=`<span style="color:#d50000;">Select different teams.</span>`; return; }
+    const s1=window.currentStandings?.find(s=>s.team===t1), s2=window.currentStandings?.find(s=>s.team===t2);
+    if(!s1||!s2||(s1.p===0&&s2.p===0)){ rd.innerHTML=`<span style="color:#aaa;">Not enough data yet.</span>`; return; }
+    let t1W=0,t2W=0,ties=0;
+    schedule.filter(s=>s.played&&s.result&&((s.result.t1===t1&&s.result.t2===t2)||(s.result.t1===t2&&s.result.t2===t1))).forEach(s=>{
+        const m=s.result;
+        if(m.r1>m.r2){m.t1===t1?t1W++:t2W++;}
+        else if(m.r2>m.r1){m.t2===t1?t1W++:t2W++;}
+        else if(m.super_over){
+            if(m.super_over.r1>m.super_over.r2){m.t1===t1?t1W++:t2W++;}
+            else if(m.super_over.r2>m.super_over.r1){m.t2===t1?t1W++:t2W++;}
+            else ties++;
+        }
+        else ties++;
+    });
+    const oT1=h2hGet(window.currentH2H, t1, t2);
+    const oT2=h2hGet(window.currentH2H, t2, t1);
+    const fs=f=>f.slice(-3).reduce((a,v)=>a+(v.res==='W'?2:v.res==='T'?1:0),0);
+    let s1c=(s1.pts*1.5)+(parseFloat(s1.nrr)*5)+(fs(s1.form)*3);
+    let s2c=(s2.pts*1.5)+(parseFloat(s2.nrr)*5)+(fs(s2.form)*3);
+    const tot=(s1c+s2c)||1;
+    const p1=Math.max(10,Math.min(90,(s1c/tot)*100)), p2=100-p1;
+
+    const c1 = TEAM_COLORS[t1];
+    let c2 = TEAM_COLORS[t2];
+    const rgb1 = [parseInt(c1.slice(1,3),16), parseInt(c1.slice(3,5),16), parseInt(c1.slice(5,7),16)];
+    const rgb2 = [parseInt(c2.slice(1,3),16), parseInt(c2.slice(3,5),16), parseInt(c2.slice(5,7),16)];
+    const dist = Math.sqrt((rgb1[0]-rgb2[0])**2 + (rgb1[1]-rgb2[1])**2 + (rgb1[2]-rgb2[2])**2);
+    let barC2 = c2;
+    if(dist < 90) barC2 = `rgba(${rgb2[0]}, ${rgb2[1]}, ${rgb2[2]}, 0.35)`;
+
+    rd.innerHTML=`
+        <div style="font-size:0.9rem;color:#aaa;margin-bottom:4px;">Overall H2H: <span style="color:#fff">${t1.toUpperCase()} ${oT1} - ${oT2} ${t2.toUpperCase()}</span></div>
+        <div style="font-size:0.9rem;color:#aaa;margin-bottom:8px;">H2H This Season: <span style="color:#fff">${t1.toUpperCase()} ${t1W} - ${t2W} ${t2.toUpperCase()}</span> (Ties: ${ties})</div>
+        <div class="tow-bar">
+            <div class="tow-t1" style="width:${p1}%; background:${c1};" title="${t1.toUpperCase()} ${p1.toFixed(1)}%"></div>
+            <div class="tow-t2" style="width:${p2}%; background:${barC2};" title="${t2.toUpperCase()} ${p2.toFixed(1)}%"></div>
+        </div>
+        <div style="font-size:1.1rem; display:flex; justify-content:space-between;">
+            <span><span style="color:${c1}; font-weight:bold;">${t1.toUpperCase()}:</span> <span style="color:#fff;">${p1.toFixed(1)}%</span></span>
+            <span><span style="color:${c2}; font-weight:bold;">${t2.toUpperCase()}:</span> <span style="color:#fff;">${p2.toFixed(1)}%</span></span>
+        </div>`;
+};
 </script>
 </body>
 </html>
