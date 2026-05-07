@@ -437,12 +437,6 @@
     </div>
 
     <div class="card full-width no-hover-card">
-        <h2 style="text-align:left;">Points Progression</h2>
-        <p style="color:#aaa; font-size:0.85rem; margin-top:-5px;">Visualizing the race to the top of the table.</p>
-        <div id="progression_bars" style="margin-top:15px;"></div>
-    </div>
-
-    <div class="card full-width no-hover-card">
         <h2 style="text-align:left;">Playoff Bracket (Road to the Final)</h2>
         <div id="bracket_container" style="color:#aaa; font-style:italic; padding:20px; text-align:center;">
             Tournament ongoing. Bracket will generate once all 70 group stage matches are complete.
@@ -473,20 +467,6 @@
             <div id="h2h_rivals"></div>
         </div>
         <div id="h2h_empty" style="color:#555;font-size:0.9rem;padding:0.5rem 0;">Select a team above to view their rivalries.</div>
-    </div>
-
-    <div class="card full-width no-hover-card">
-        <h2 style="text-align:left;">Advanced Analytics: Form vs. Class (Quadrant Matrix)</h2>
-        <p style="color:#aaa; font-size:0.85rem; margin-top:-5px;">X-Axis: Career Class (All-Time W/L) | Y-Axis: Current Form (S4 W/L). <br>Top-Right: The Elite | Bottom-Right: Sleeping Giants | Top-Left: Overachievers | Bottom-Left: Rebuilders</p>
-        <div style="position:relative; width:100%; height:350px; background:#0a0a0a; border:1px solid #333; margin-top:15px; border-radius:4px; overflow:hidden;">
-            <div style="position:absolute; top:50%; left:0; width:100%; height:1px; background:rgba(255,255,255,0.1);"></div>
-            <div style="position:absolute; top:0; left:50%; width:1px; height:100%; background:rgba(255,255,255,0.1);"></div>
-            <span style="position:absolute; top:10px; right:10px; color:rgba(255,255,255,0.3); font-size:0.9rem; font-weight:bold; letter-spacing:2px;">ELITE</span>
-            <span style="position:absolute; top:10px; left:10px; color:rgba(255,255,255,0.3); font-size:0.9rem; font-weight:bold; letter-spacing:2px;">OVERACHIEVERS</span>
-            <span style="position:absolute; bottom:10px; right:10px; color:rgba(255,255,255,0.3); font-size:0.9rem; font-weight:bold; letter-spacing:2px;">SLEEPING GIANTS</span>
-            <span style="position:absolute; bottom:10px; left:10px; color:rgba(255,255,255,0.3); font-size:0.9rem; font-weight:bold; letter-spacing:2px;">REBUILDERS</span>
-            <div id="quad_matrix_body" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div>
-        </div>
     </div>
 
     <div class="card full-width no-hover-card">
@@ -1206,6 +1186,42 @@ function msCard(teamCls, badge, value, teamLabel, desc, isS4=false){
     </div>`;
 }
 
+function renderMilestones(cs, d, played, h2h, s4d) {
+    const s4Grid = document.getElementById('s4_milestones_grid');
+    const allTimeGrid = document.getElementById('alltime_milestones_grid');
+    if(!s4Grid || !allTimeGrid) return;
+
+    if(played.length === 0) {
+        s4Grid.innerHTML = `<div style="color:#555;font-size:0.85rem;grid-column:1/-1;padding:0.5rem 0;">No matches played yet. Season 4 milestones will appear here as results come in.</div>`;
+    } else {
+        const s4Teams = Object.keys(s4d).filter(t => s4d[t].m_played > 0);
+        if(s4Teams.length > 0) {
+            const mostRunsS4 = s4Teams.reduce((a,b) => s4d[a].r > s4d[b].r ? a : b);
+            const mostWktsS4 = s4Teams.reduce((a,b) => s4d[a].wkts_taken > s4d[b].wkts_taken ? a : b);
+            const bestSrS4 = s4Teams.reduce((a,b) => s4d[a].sr > s4d[b].sr ? a : b);
+
+            s4Grid.innerHTML = 
+                msCard(mostRunsS4, 'Orange Cap', s4d[mostRunsS4].r, mostRunsS4.toUpperCase(), 'most runs in season 4', true) +
+                msCard(mostWktsS4, 'Purple Cap', s4d[mostWktsS4].wkts_taken, mostWktsS4.toUpperCase(), 'most wickets in season 4', true) +
+                msCard(bestSrS4, 'Highest SR', s4d[bestSrS4].sr.toFixed(1), bestSrS4.toUpperCase(), 'best strike rate in season 4', true);
+        }
+    }
+
+    const atTeams = Object.keys(d).filter(t => d[t].m_played > 0);
+    if(atTeams.length > 0) {
+        const mostRuns = atTeams.reduce((a,b) => d[a].r > d[b].r ? a : b);
+        const mostWkts = atTeams.reduce((a,b) => d[a].wkts_taken > d[b].wkts_taken ? a : b);
+        const bestWl = atTeams.reduce((a,b) => d[a].wl > d[b].wl ? a : b);
+        const bestBasra = atTeams.reduce((a,b) => d[a].basra > d[b].basra ? a : b);
+
+        allTimeGrid.innerHTML = 
+            msCard(mostRuns, 'Run Machine', d[mostRuns].r, mostRuns.toUpperCase(), 'most runs scored all-time') +
+            msCard(mostWkts, 'Wicket Taker', d[mostWkts].wkts_taken, mostWkts.toUpperCase(), 'most wickets taken all-time') +
+            msCard(bestWl, 'Dominator', d[bestWl].wl.toFixed(2), bestWl.toUpperCase(), 'highest win/loss ratio all-time') +
+            msCard(bestBasra, 'BASRA King', d[bestBasra].basra.toFixed(1), bestBasra.toUpperCase(), 'highest basra (avg + sr) all-time');
+    }
+}
+
 function updateUI() {
     try { safeRenderBaseData(); } catch(e) { console.error("Error rendering base tables:", e); }
     try { safeRenderProgressUI(); } catch(e) { console.error("Error rendering progress UI:", e); }
@@ -1361,11 +1377,13 @@ function safeRenderBaseData() {
             }
 
             _cachedOneLiner = null;
-            generateMatchOneLiner(nextMatch.t1, nextMatch.t2, `oneliner_${nextMatchId}`, standings, h2h, cs, d)
-                .then(() => {
-                    const el = document.getElementById(`oneliner_${nextMatchId}`);
-                    if (el) _cachedOneLiner = el.innerHTML;
-                });
+            if(window.generateMatchOneLiner) {
+                window.generateMatchOneLiner(nextMatch.t1, nextMatch.t2, `oneliner_${nextMatchId}`, standings, h2h, cs, d)
+                    .then(() => {
+                        const el = document.getElementById(`oneliner_${nextMatchId}`);
+                        if (el) _cachedOneLiner = el.innerHTML;
+                    });
+            }
         } else if (_cachedOneLiner) {
             const el = document.getElementById(`oneliner_${nextMatchId}`);
             if (el) {
@@ -1466,24 +1484,6 @@ function safeRenderProgressUI() {
         mcBody.innerHTML = mcHtml;
     } else if (mcBody) {
         mcBody.innerHTML = `<tr><td colspan="3" style="color:#555; font-style:italic;">Group stage complete. Probabilities locked.</td></tr>`;
-    }
-
-    // --- POINTS PROGRESSION BAR (HTML/CSS INSTEAD OF CRASHY CANVAS) ---
-    const progBars = document.getElementById('progression_bars');
-    if (progBars && standings.length > 0) {
-        let maxPts = Math.max(...standings.map(s=>s.pts), 1);
-        let html = '';
-        standings.forEach(s => {
-            let pct = (s.pts / maxPts) * 100;
-            html += `<div style="margin-bottom:12px; display:flex; align-items:center; gap:10px;">
-                <span style="width:40px; font-weight:bold; color:var(--accent-color); font-size:0.85rem; cursor:pointer;" onclick="window.takeoverTeam('${s.team}')">${s.team.toUpperCase()}</span>
-                <div style="flex:1; background:#111; height:12px; border-radius:6px; overflow:hidden; border:1px solid #333;">
-                    <div style="width:${pct}%; background:${TEAM_COLORS[s.team] || 'var(--accent-color)'}; height:100%; transition:width 1s ease;"></div>
-                </div>
-                <span style="width:30px; text-align:right; font-weight:bold; color:#fff;">${s.pts}</span>
-            </div>`;
-        });
-        progBars.innerHTML = html;
     }
 
     // --- PLAYOFF BRACKET ---
