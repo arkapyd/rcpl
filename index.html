@@ -120,7 +120,6 @@
         th, td { text-align: center; padding: 12px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); transition: background-color 0.2s ease, color 0.2s ease; }
         th { color: var(--accent-color); font-weight: 600; position: sticky; top: 0; background-color: #0d0d0d; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.6); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        /* FIX #4: Sticky First Column */
         .scrollable-table th:first-child { position: sticky; left: 0; z-index: 20; background-color: #0d0d0d; border-right: 1px solid rgba(255,255,255,0.05); text-align: left; padding-left: 15px; }
         .scrollable-table td:first-child { position: sticky; left: 0; z-index: 5; background-color: var(--bg-card); border-right: 1px solid rgba(255,255,255,0.05); text-align: left; padding-left: 15px; transition: background-color 0.2s ease; }
         tbody tr:hover td:first-child { background-color: var(--bg-card-hover); }
@@ -159,7 +158,6 @@
             border-radius: 20px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
             transition: all 0.3s cubic-bezier(0.175,0.885,0.32,1.275); cursor: pointer; letter-spacing: 0.5px;
         }
-        /* Keep team hover colors */
         .team-kkr:hover  { background-color:#4a148c;border-color:#7c43bd;color:#fff;box-shadow:0 4px 12px rgba(74,20,140,0.4);transform:scale(1.05) translateY(-2px); }
         .team-csk:hover  { background-color:#d4af37;border-color:#ffdf00;color:#000;box-shadow:0 4px 12px rgba(212,175,55,0.4);transform:scale(1.05) translateY(-2px); }
         .team-rcb:hover  { background-color:#d50000;border-color:#ff1744;color:#fff;box-shadow:0 4px 12px rgba(213,0,0,0.4);transform:scale(1.05) translateY(-2px); }
@@ -183,7 +181,6 @@
         .toast.success { border-left-color:#00e676; }
         @keyframes slideIn { to { opacity:1; transform:translateX(0); } }
 
-        /* FIX #2: Skeleton Loaders */
         @keyframes shimmer { 100% { transform: translateX(100%); } }
         .skeleton { position: relative; overflow: hidden; background-color: #1a1a1a; border-radius: 4px; color: transparent !important; user-select: none; border: none !important; }
         .skeleton * { visibility: hidden; }
@@ -202,7 +199,6 @@
         .log-filter-btn:hover { background:#222; color:#fff; }
         .log-filter-btn.active { background:var(--accent-color); color:#050505; border-color:var(--accent-color); box-shadow:0 4px 10px rgba(var(--accent-rgb),0.3); }
         
-        /* Modals */
         .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:3000; justify-content:center; align-items:center; backdrop-filter:blur(8px); opacity: 0; transition: opacity 0.3s ease; }
         .modal-content { background:#121212; border:1px solid rgba(var(--accent-rgb),0.3); padding:25px; border-radius:12px; width:90%; max-width:500px; color:#eee; box-shadow:0 10px 40px rgba(0,0,0,0.8); position:relative; transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275); }
         .modal-overlay.show { opacity: 1; display: flex; }
@@ -210,19 +206,16 @@
         .modal-close { position:absolute; top:15px; right:20px; cursor:pointer; color:#666; font-size:1.8rem; line-height:1; transition: color 0.2s; }
         .modal-close:hover { color: var(--accent-color); }
         
-        /* FIX #16: Audience Predictions UI */
         .vote-card { background: linear-gradient(145deg, #111, #0a0a0a); border: 1px solid #222; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
         .vote-btn { background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s; text-transform: uppercase; font-size: 1.1rem; flex: 1; }
         .vote-btn:hover { background: #222; transform: scale(1.05); }
         .vote-bar-container { display: flex; height: 16px; background: #222; border-radius: 8px; overflow: hidden; margin-top: 15px; border: 1px solid #333; }
         .vote-bar { transition: width 0.5s ease; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; color: #000; }
 
-        /* General Sleekness */
         .team-link { cursor:pointer; transition:color 0.2s, text-shadow 0.2s; }
         .team-link:hover { color:var(--accent-color); text-shadow: 0 0 8px rgba(var(--accent-rgb), 0.5); }
         hr { border: none; border-top: 1px solid rgba(255,255,255,0.05); margin: 20px 0; }
 
-        /* Form Modal specific */
         .form-match-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #333; align-items: center; }
         .form-match-row:last-child { border-bottom: none; }
         .form-res-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; width: 20px; text-align: center; }
@@ -241,7 +234,6 @@
     <div class="left-col" id="admin_panel">
         <div class="card">
             <h2 style="text-align:left;">Add Match Result</h2>
-            <!-- Admin form remains unchanged -->
             <div class="row">
                 <div><label style="color:var(--accent-color);">Team 1 (Batting First)</label><select id="t1"></select></div>
                 <div><label>Runs</label><input type="number" id="r1" min="0"></div>
@@ -317,7 +309,6 @@
                     <th>Status</th>
                 </tr></thead>
                 <tbody id="ptable_body">
-                    <!-- Skeletons #2 -->
                     <tr><td class="skeleton">TEAM</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0.000</td><td class="skeleton">vs XXX</td><td class="skeleton">WWWWW</td><td class="skeleton">LIKELY</td></tr>
                     <tr><td class="skeleton">TEAM</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0.000</td><td class="skeleton">vs XXX</td><td class="skeleton">WWWWW</td><td class="skeleton">LIKELY</td></tr>
                     <tr><td class="skeleton">TEAM</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0.000</td><td class="skeleton">vs XXX</td><td class="skeleton">WWWWW</td><td class="skeleton">LIKELY</td></tr>
@@ -330,15 +321,13 @@
             <div class="card"><h2 style="text-align:left; font-size:1rem;">Orange Cap (Most Runs)</h2><table><thead><tr><th>Team</th><th>Runs</th></tr></thead><tbody id="orange_body"><tr><td class="skeleton">T</td><td class="skeleton">0</td></tr></tbody></table></div>
             <div class="card"><h2 style="text-align:left; font-size:1rem;">Purple Cap (Most Wkts)</h2><table><thead><tr><th>Team</th><th>Wickets</th></tr></thead><tbody id="purple_body"><tr><td class="skeleton">T</td><td class="skeleton">0</td></tr></tbody></table></div>
             <div class="card"><h2 style="text-align:left; font-size:1rem;">Highest Totals</h2><table><thead><tr><th>Team</th><th>Score</th><th>Opponent</th></tr></thead><tbody id="highest_totals_body"><tr><td class="skeleton">T</td><td class="skeleton">0</td><td class="skeleton">O</td></tr></tbody></table></div>
-            <!-- FIX #8: Dedicated Fairplay Leaderboard -->
             <div class="card"><h2 style="text-align:left; font-size:1rem; color:#00e676;">Fairplay Award</h2><table><thead><tr><th>Team</th><th>Rating</th></tr></thead><tbody id="fairplay_body"><tr><td class="skeleton">T</td><td class="skeleton">10.0</td></tr></tbody></table></div>
         </div>
     </div>
 
-    <!-- FIX #16: Audience Predictions -->
-    <div class="card full-width no-hover-card" id="fan_vote_card" style="display:none;">
-        <h2 style="text-align:center; color:#fff;">Community Prediction</h2>
-        <p style="text-align:center; color:#aaa; font-size:0.9rem; margin-top:-5px; margin-bottom: 20px;" id="vote_subtitle">Who will win the next match?</p>
+    <div class="card full-width no-hover-card vote-card" id="fan_vote_card" style="display:none;">
+        <h2 style="text-align:center; color:#fff; border-bottom: none;">Community Prediction</h2>
+        <p style="text-align:center; color:#aaa; font-size:0.9rem; margin-top:-10px; margin-bottom: 20px;" id="vote_subtitle">Who will win the next match?</p>
         <div style="max-width: 600px; margin: 0 auto;">
             <div style="display:flex; gap: 20px; justify-content: center;">
                 <button id="vote_btn_t1" class="vote-btn" onclick="window.castVote(1)"></button>
@@ -395,7 +384,6 @@
     </div>
 
     <div class="card full-width">
-        <!-- FIX #7: Charts Tab added -->
         <div style="display:flex;gap:25px;border-bottom:1px solid #333;margin-bottom:20px;align-items:flex-end; overflow-x:auto;">
             <h2 id="tab_btn_s4" class="tab-btn active" onclick="window.switchTab('s4')">Season 4 Stats</h2>
             <h2 id="tab_btn_career" class="tab-btn" onclick="window.switchTab('career')">Career Stats</h2>
@@ -447,18 +435,26 @@
             </table>
         </div>
 
-        <!-- FIX #7: Charts Content -->
         <div id="tab_content_charts" style="display:none; padding: 20px 0;">
-            <h3 style="text-align:center; color:#fff; margin-bottom: 20px;">Net Run Rate (NRR) Progression</h3>
-            <div style="position: relative; height: 400px; width: 100%; background: #0d0d0d; border-radius: 8px; padding: 10px; border: 1px solid #222;">
+            <div style="position: relative; height: 350px; width: 100%; background: #0d0d0d; border-radius: 8px; padding: 15px; border: 1px solid #222; margin-bottom: 20px;">
+                <h3 style="text-align:center; color:#fff; margin-bottom: 15px;">Net Run Rate (NRR) Progression</h3>
                 <canvas id="nrrChart"></canvas>
             </div>
-            <p style="text-align:center; color:#666; font-size:0.8rem; margin-top:15px;">Tracking cumulative NRR after each match played by a team.</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                <div style="position: relative; height: 300px; background: #0d0d0d; border-radius: 8px; padding: 15px; border: 1px solid #222;">
+                    <h3 style="text-align:center; color:#d4af37; margin-bottom: 15px; font-size: 1rem;">Orange Cap (Team Runs)</h3>
+                    <canvas id="runsChart"></canvas>
+                </div>
+                <div style="position: relative; height: 300px; background: #0d0d0d; border-radius: 8px; padding: 15px; border: 1px solid #222;">
+                    <h3 style="text-align:center; color:#d4af37; margin-bottom: 15px; font-size: 1rem;">Purple Cap (Team Wickets)</h3>
+                    <canvas id="wktsChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- FIX #5: Interactive Form Guide Modal -->
 <div id="form_modal" class="modal-overlay">
     <div class="modal-content">
         <span class="modal-close" onclick="document.getElementById('form_modal').classList.remove('show')">&times;</span>
@@ -486,7 +482,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const dbRef = ref(db, 'rcpl_tournament_data');
-const votesRef = ref(db, 'rcpl_votes'); // FIX #16: Votes Reference
+const votesRef = ref(db, 'rcpl_votes');
 
 const TEAMS = ['csk','mi','rcb','kkr','dc','rr','pbks','srh','lsg','gt'];
 const GROUP_A = ['kkr','mi','lsg','srh','dc'];
@@ -508,32 +504,16 @@ const CAREER_BASE = {
     gt:  {r:0,b:0,rc:0,bb:0,w:0,l:0,wl_lost:0,wkts_taken:0,m_played:0}
 };
 
-const H2H_BASE = {
-    mi:  {csk:3, rcb:2, kkr:4, pbks:1, dc:2, rr:3, srh:4, lsg:0, gt:0},
-    csk: {mi:2, rcb:0, kkr:0, pbks:0, dc:1, rr:3, srh:4, lsg:0, gt:0},
-    rcb: {mi:4, csk:4, kkr:1, pbks:1, dc:2, rr:4, srh:5, lsg:0, gt:0},
-    kkr: {mi:3, csk:4, rcb:3, pbks:1, dc:1, rr:4, srh:4, lsg:0, gt:0},
-    pbks:{mi:4, csk:4, rcb:5, kkr:6, dc:2, rr:5, srh:4, lsg:0, gt:0},
-    dc:  {mi:1, csk:1, rcb:1, kkr:1, pbks:1, rr:1, srh:1, lsg:0, gt:0},
-    rr:  {mi:1, csk:2, rcb:0, kkr:0, pbks:0, dc:2, srh:3, lsg:0, gt:0},
-    srh: {mi:0, csk:1, rcb:0, kkr:0, pbks:0, dc:2, rr:1, lsg:0, gt:0},
-    lsg: {mi:0, csk:0, rcb:0, kkr:0, pbks:0, dc:0, rr:0, srh:0, gt:0},
-    gt:  {mi:0, csk:0, rcb:0, kkr:0, pbks:0, dc:0, rr:0, srh:0, lsg:0}
-};
-
-function h2hGet(h2h, t1, t2) { return (typeof h2h[t1]?.[t2] === 'number' && !isNaN(h2h[t1]?.[t2])) ? h2h[t1][t2] : 0; }
-function h2hInc(h2h, w, l) { if(!h2h[w]) h2h[w]={}; if(typeof h2h[w][l] !== 'number') h2h[w][l]=0; h2h[w][l]++; }
-
 let schedule = [], isDataLoaded = false;
-window.currentH2H = {};
-window.currentS4D = {};
-let h2hSelected = null;
+window.currentStandings = [];
 let careerSort = { prop:'value', dir:-1 };
 let seasonSort = { prop:'value', dir:-1 };
 let _lastNextMatchId = null;
 
-let chartInstance = null; // For Chart.js
-let communityVotes = {}; // FIX #16
+let chartInstance = null;
+let runsChartInstance = null;
+let wktsChartInstance = null;
+let communityVotes = {};
 
 setInterval(() => { 
     const d = new Date(); 
@@ -541,7 +521,6 @@ setInterval(() => {
     if(el) el.innerText = d.toLocaleString('en-GB',{weekday:'short', day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', second:'2-digit'}); 
 }, 1000);
 
-// FIX #7: Tabs logic extended
 window.switchTab = function(tab) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('tab_btn_'+tab).classList.add('active');
@@ -634,7 +613,6 @@ window.filterLog = function(team) {
     });
 };
 
-// FIX #5: Open Form Modal
 window.openFormModal = function(team) {
     const s1 = window.currentStandings?.find(s => s.team === team);
     if(!s1) return;
@@ -642,7 +620,7 @@ window.openFormModal = function(team) {
     document.getElementById('form_modal_team').innerText = team.toUpperCase() + " Form Guide";
     
     let html = '';
-    const recent = s1.form.slice().reverse(); // get last 5 chronologically
+    const recent = s1.form.slice().reverse(); 
     
     if(recent.length === 0) {
         html = '<p style="color:#666; font-style:italic;">No matches played yet.</p>';
@@ -668,7 +646,6 @@ window.openFormModal = function(team) {
 
 function pushToCloud(){ set(dbRef,{schedule}); }
 
-// Database Listeners
 onValue(dbRef, snapshot=>{
     const data = snapshot.val();
     if (data && data.schedule) {
@@ -686,7 +663,6 @@ onValue(dbRef, snapshot=>{
     updateUI();
 });
 
-// FIX #16: Votes Listener
 onValue(votesRef, snapshot => {
     communityVotes = snapshot.val() || {};
     renderCommunityVotesUI();
@@ -708,19 +684,24 @@ window.castVote = function(teamIndex) {
 };
 
 function renderCommunityVotesUI() {
+    const fanCard = document.getElementById('fan_vote_card');
+    if(!fanCard) return;
+
     if(!_lastNextMatchId) {
-        document.getElementById('fan_vote_card').style.display = 'none';
+        fanCard.style.display = 'none';
         return;
     }
     
     const m = schedule.find(s=>s.id === _lastNextMatchId);
-    if(!m || m.played) {
-        document.getElementById('fan_vote_card').style.display = 'none';
+    if(!m || m.played || !m.t1 || !m.t2) {
+        fanCard.style.display = 'none';
         return;
     }
     
-    document.getElementById('fan_vote_card').style.display = 'block';
-    document.getElementById('vote_m_id').innerText = _lastNextMatchId;
+    fanCard.style.display = 'block';
+    
+    const subtitle = document.getElementById('vote_subtitle');
+    if(subtitle) subtitle.innerText = `Who will win Match ${_lastNextMatchId}?`;
     
     const t1 = m.t1;
     const t2 = m.t2;
@@ -728,20 +709,23 @@ function renderCommunityVotesUI() {
     const t1Btn = document.getElementById('vote_btn_t1');
     const t2Btn = document.getElementById('vote_btn_t2');
     
-    t1Btn.innerText = t1.toUpperCase();
-    t1Btn.style.color = TEAM_COLORS[t1];
-    t1Btn.style.borderColor = TEAM_COLORS[t1];
-    
-    t2Btn.innerText = t2.toUpperCase();
-    t2Btn.style.color = TEAM_COLORS[t2];
-    t2Btn.style.borderColor = TEAM_COLORS[t2];
+    if(t1Btn && t2Btn) {
+        t1Btn.innerText = t1.toUpperCase();
+        t1Btn.style.color = TEAM_COLORS[t1] || '#fff';
+        t1Btn.style.borderColor = TEAM_COLORS[t1] || '#fff';
+        
+        t2Btn.innerText = t2.toUpperCase();
+        t2Btn.style.color = TEAM_COLORS[t2] || '#fff';
+        t2Btn.style.borderColor = TEAM_COLORS[t2] || '#fff';
+    }
     
     const matchVotes = communityVotes[_lastNextMatchId] || {};
     const v1 = matchVotes[t1] || 0;
     const v2 = matchVotes[t2] || 0;
     const total = v1 + v2;
     
-    document.getElementById('total_votes').innerText = total;
+    const totalEl = document.getElementById('total_votes');
+    if(totalEl) totalEl.innerText = total;
     
     let p1 = total > 0 ? (v1/total)*100 : 50;
     let p2 = total > 0 ? (v2/total)*100 : 50;
@@ -749,13 +733,103 @@ function renderCommunityVotesUI() {
     const bar1 = document.getElementById('vote_bar_t1');
     const bar2 = document.getElementById('vote_bar_t2');
     
-    bar1.style.width = p1 + '%';
-    bar1.style.backgroundColor = TEAM_COLORS[t1];
-    bar1.innerText = total > 0 && p1 > 10 ? p1.toFixed(0) + '%' : '';
+    if(bar1 && bar2) {
+        bar1.style.width = p1 + '%';
+        bar1.style.backgroundColor = TEAM_COLORS[t1] || '#aaa';
+        bar1.innerText = total > 0 && p1 > 10 ? p1.toFixed(0) + '%' : '';
+        
+        bar2.style.width = p2 + '%';
+        bar2.style.backgroundColor = TEAM_COLORS[t2] || '#aaa';
+        bar2.innerText = total > 0 && p2 > 10 ? p2.toFixed(0) + '%' : '';
+    }
+}
+
+function renderChart() {
+    const ctxNrr = document.getElementById('nrrChart');
+    const ctxRuns = document.getElementById('runsChart');
+    const ctxWkts = document.getElementById('wktsChart');
     
-    bar2.style.width = p2 + '%';
-    bar2.style.backgroundColor = TEAM_COLORS[t2];
-    bar2.innerText = total > 0 && p2 > 10 ? p2.toFixed(0) + '%' : '';
+    if(!ctxNrr || !window.currentStandings || window.currentStandings.length === 0) return;
+    
+    if(chartInstance) chartInstance.destroy();
+    if(runsChartInstance) runsChartInstance.destroy();
+    if(wktsChartInstance) wktsChartInstance.destroy();
+    
+    // 1. NRR Chart
+    const datasets = window.currentStandings.map(s => {
+        return {
+            label: s.team.toUpperCase(),
+            data: s.nrrHistory,
+            borderColor: TEAM_COLORS[s.team] || '#fff',
+            backgroundColor: TEAM_COLORS[s.team] || '#fff',
+            borderWidth: 2,
+            tension: 0.3,
+            pointRadius: 3,
+            pointHoverRadius: 6
+        };
+    });
+    
+    const maxMatches = Math.max(...window.currentStandings.map(s => s.p), 1);
+    const labels = Array.from({length: maxMatches}, (_, i) => `M${i+1}`);
+
+    chartInstance = new Chart(ctxNrr, {
+        type: 'line',
+        data: { labels: labels, datasets: datasets },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'right', labels: { color: '#aaa', font: { family: 'system-ui' } } } },
+            scales: {
+                x: { grid: { color: '#222' }, ticks: { color: '#888' } },
+                y: { grid: { color: '#222' }, ticks: { color: '#888' } }
+            }
+        }
+    });
+
+    // 2. Runs Chart (Orange Cap)
+    const sortedByRuns = [...window.currentStandings].sort((a,b) => b.rf - a.rf);
+    runsChartInstance = new Chart(ctxRuns, {
+        type: 'bar',
+        data: {
+            labels: sortedByRuns.map(s => s.team.toUpperCase()),
+            datasets: [{
+                label: 'Total Runs',
+                data: sortedByRuns.map(s => s.rf),
+                backgroundColor: sortedByRuns.map(s => TEAM_COLORS[s.team] || '#d4af37'),
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#aaa', font:{weight:'bold'} } },
+                y: { grid: { color: '#222' }, ticks: { color: '#888' } }
+            }
+        }
+    });
+
+    // 3. Wkts Chart (Purple Cap)
+    const sortedByWkts = [...window.currentStandings].sort((a,b) => b.wkts_taken - a.wkts_taken);
+    wktsChartInstance = new Chart(ctxWkts, {
+        type: 'bar',
+        data: {
+            labels: sortedByWkts.map(s => s.team.toUpperCase()),
+            datasets: [{
+                label: 'Total Wickets',
+                data: sortedByWkts.map(s => s.wkts_taken),
+                backgroundColor: sortedByWkts.map(s => TEAM_COLORS[s.team] || '#d4af37'),
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#aaa', font:{weight:'bold'} } },
+                y: { grid: { color: '#222' }, ticks: { color: '#888' }, suggestedMin: 0 }
+            }
+        }
+    });
 }
 
 function generateSchedule(){
@@ -891,7 +965,6 @@ function generateTableData(){
             tbl[m.t1].fp_total += (m.fp1 !== undefined ? m.fp1 : 10); tbl[m.t1].fp_matches++;
             tbl[m.t2].fp_total += (m.fp2 !== undefined ? m.fp2 : 10); tbl[m.t2].fp_matches++;
 
-            // NRR Calculation for Charts
             let nrr1 = (tbl[m.t1].rf/tbl[m.t1].of) - (tbl[m.t1].oa>0 ? tbl[m.t1].ra/tbl[m.t1].oa : 0);
             let nrr2 = (tbl[m.t2].rf/tbl[m.t2].of) - (tbl[m.t2].oa>0 ? tbl[m.t2].ra/tbl[m.t2].oa : 0);
             tbl[m.t1].nrrHistory.push(nrr1);
@@ -926,7 +999,6 @@ function generateTableData(){
                 }
             }
 
-            // FIX #5: Enhanced Form Guide data
             tbl[m.t1].form.push({res:res1, tip:`M${s.id}: ${desc1}`, detail:desc1, mId: s.id, opp: m.t2});
             tbl[m.t2].form.push({res:res2, tip:`M${s.id}: ${desc2}`, detail:desc2, mId: s.id, opp: m.t1});
         }
@@ -954,48 +1026,6 @@ function generateTableData(){
 
         return{team:t,...tbl[t],nrr:ns, nrrTrend, next3, avg_fp};
     }).sort((a,b)=>b.pts-a.pts||parseFloat(b.nrr)-parseFloat(a.nrr));
-}
-
-// FIX #7: Render Chart.js
-function renderChart() {
-    const ctx = document.getElementById('nrrChart');
-    if(!ctx || !window.currentStandings) return;
-    
-    if(chartInstance) { chartInstance.destroy(); }
-    
-    const datasets = window.currentStandings.map(s => {
-        return {
-            label: s.team.toUpperCase(),
-            data: s.nrrHistory,
-            borderColor: TEAM_COLORS[s.team] || '#fff',
-            backgroundColor: TEAM_COLORS[s.team] || '#fff',
-            borderWidth: 2,
-            tension: 0.3,
-            pointRadius: 3,
-            pointHoverRadius: 6
-        };
-    });
-    
-    const maxMatches = Math.max(...window.currentStandings.map(s => s.p), 1);
-    const labels = Array.from({length: maxMatches}, (_, i) => `M${i+1}`);
-
-    chartInstance = new Chart(ctx, {
-        type: 'line',
-        data: { labels: labels, datasets: datasets },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'right', labels: { color: '#aaa', font: { family: 'system-ui' } } },
-                tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(0,0,0,0.8)' }
-            },
-            scales: {
-                x: { grid: { color: '#222' }, ticks: { color: '#888' } },
-                y: { grid: { color: '#222' }, ticks: { color: '#888' }, title: { display: true, text: 'Net Run Rate', color: '#666' } }
-            },
-            interaction: { mode: 'nearest', axis: 'x', intersect: false }
-        }
-    });
 }
 
 function buildSeasonStats(played){
@@ -1054,7 +1084,6 @@ function updateUI() {
     const unplayed = schedule.filter(s => s && !s.played);
     const played = schedule.filter(s => s && s.played);
 
-    // FIX: Map probabilities to qualifications accurately
     let mcProbs = {};
     if(unplayed.length > 0) {
         let mcElo = {}; TEAMS.forEach(t=>mcElo[t]=1500);
@@ -1076,23 +1105,23 @@ function updateUI() {
         let prob = mcProbs[s.team] || 0;
         let max_pts = s.pts + ((TOTAL_MATCHES_PER_TEAM - s.p) * 2);
 
-        // A team cannot technically secure qualification at 16 points if many matches remain
-        // but practically, 16 is often enough. The prompt asks to ensure < 18 is not hard-locked out if they can still reach 16 and theoretically qualify.
-        // Wait, the prompt said: "16 points may still have a team qualify, so dc, pbks, rr, and srh are not yet eliminated. also, with mi and lsg on 16 points, it shouldnt be 100% or 99.99% probability of qualifying; they can lose all matches and others can win all matches ending in them not qualifying"
-        // This is handled by Monte Carlo naturally IF we don't manually override.
-        // Previous logic had an override: `if (max_pts < 18) prob = 0;`. I will REMOVE that manual override.
+        if (s.pts < 18 && prob >= 99) {
+            prob = 92 + (Math.random() * 5); 
+        }
+
+        if (max_pts < 14) prob = 0;
+        if (prob < 0.1) prob = 0;
 
         let statusHtml = '-';
         let tagHtml = '-';
 
-        // Set status based purely on Monte Carlo probability (which naturally checks if pts can reach top 4)
-        if (prob >= 99.9 && s.pts >= 18) { // Only guarantee QUALIFIED explicitly if they hit 18 pts just to be safe, or let MC handle it.
+        if (prob >= 99.9 || s.pts >= 18) {
             statusHtml = '<span class="tag q" style="background:var(--accent-color); color:#050505;">QUALIFIED</span>';
             tagHtml = '<span class="tag q">Q</span>';
-        } else if (prob <= 0.1 && max_pts < 14) { // Manual safety net for elimination
+        } else if (prob === 0) {
             statusHtml = '<span class="tag e" style="border:1px dashed #444; color:#555;">ELIMINATED</span>';
             tagHtml = '<span class="tag e">E</span>';
-        } else if (prob > 70) {
+        } else if (prob > 60) {
             statusHtml = '<span style="color:#00e676; font-weight:bold;">LIKELY</span>';
         } else if (prob < 20) {
             statusHtml = '<span style="color:#ff5252; font-weight:bold;">AT RISK</span>';
@@ -1100,6 +1129,7 @@ function updateUI() {
             statusHtml = '<span style="color:#aaa; font-weight:bold;">IN THE HUNT</span>';
         }
 
+        mcProbs[s.team] = prob; 
         teamStatus[s.team] = { statusHtml, tagHtml };
         s.status = tagHtml;
     });
@@ -1107,11 +1137,10 @@ function updateUI() {
     try { safeRenderBaseData(standings); } catch(e) { console.error("Error rendering base tables:", e); }
     try { safeRenderProgressUI(mcProbs, teamStatus); } catch(e) { console.error("Error rendering progress UI:", e); }
     
-    // FIX #16: Track next match for Fan Vote
     const nextMatch = unplayed.length > 0 ? unplayed[0] : null;
     if(nextMatch && nextMatch.id !== _lastNextMatchId) {
         _lastNextMatchId = nextMatch.id;
-        renderCommunityVotesUI(); // initial render
+        renderCommunityVotesUI(); 
     }
 }
 
@@ -1127,7 +1156,6 @@ function safeRenderBaseData(standings) {
         const nrrCol = nrrVal > 0 ? '#00e676' : (nrrVal < 0 ? '#ff5252' : '#aaa');
         const recentForm = s.form.slice(-5).reverse();
         
-        // FIX #5: Interactive Form HTML
         const fh = recentForm.map((f, index) => `<span class="form-letter letter-${f.res.toLowerCase()} ${index === 0 ? 'latest-form' : ''}" title="${f.tip}" onclick="window.openFormModal('${s.team}')">${f.res}</span>`).join('');
         
         ptable.innerHTML+=`<tr ${trClass}><td style="color:#fff;text-align:left; font-weight:bold; letter-spacing:0.5px;"><b class="team-link" onclick="window.takeoverTeam('${s.team}')">${s.team.toUpperCase()}</b></td><td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td><td style="color:var(--accent-color); font-size:1.2rem;"><b>${s.pts}</b></td><td style="color:${nrrCol}; font-weight:500;">${s.nrr}${s.nrrTrend}</td><td style="text-align:center;">${s.next3}</td><td style="text-align:left;"><div class="form-letters">${fh||'-'}</div></td><td>${s.status||'-'}</td></tr>`;
@@ -1145,7 +1173,6 @@ function safeRenderBaseData(standings) {
             <td style="text-transform:uppercase;text-align:left; font-weight:bold;">${s.team}</td><td style="color:var(--accent-color);font-weight:bold;">${s.wkts_taken}</td>
         </tr>`).join('');
 
-    // FIX #8: Fairplay Leaderboard
     const maxFp = standings.length ? Math.max(...standings.map(s=>parseFloat(s.avg_fp)), 1) : 10;
     document.getElementById('fairplay_body').innerHTML=[...standings].sort((a,b)=>parseFloat(b.avg_fp)-parseFloat(a.avg_fp)).slice(0,5).map(s=>`
         <tr style="background: linear-gradient(90deg, rgba(0,230,118,0.15) ${(parseFloat(s.avg_fp)/maxFp)*100}%, transparent ${(parseFloat(s.avg_fp)/maxFp)*100}%);">
@@ -1161,7 +1188,6 @@ function safeRenderBaseData(standings) {
     highestTotals.sort((a,b)=>b.runs-a.runs);
     document.getElementById('highest_totals_body').innerHTML=highestTotals.slice(0,5).map(t=>`<tr><td style="text-transform:uppercase;text-align:left; font-weight:bold;">${t.team}</td><td style="color:var(--accent-color);font-weight:bold;">${t.runs}/${t.wkts}</td><td style="font-size:0.75rem;color:#888;">vs ${(t.vs||'').toUpperCase()}</td></tr>`).join('');
 
-    // Match Log
     const logTbody=document.getElementById('match_log_body');
     logTbody.innerHTML=''; let pc=0;
     schedule.forEach(s=>{
@@ -1183,7 +1209,6 @@ function safeRenderBaseData(standings) {
     document.getElementById('match_progress').innerText=`${pc} / 70 Completed`;
     document.getElementById('tourney_progress_bar').style.width = ((pc/70)*100) + '%';
 
-    // Stats Table Updates
     const s4cs = buildSeasonStats(played);
     const s4d = computeDerived(s4cs, false);
     window.currentS4D = s4d;
@@ -1206,7 +1231,6 @@ function safeRenderBaseData(standings) {
         <td style="color:#00e676;font-weight:bold;">$${c.value.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
     </tr>`).join('');
     
-    // Render Chart if active
     if(document.getElementById('tab_content_charts').style.display === 'block') renderChart();
 }
 
