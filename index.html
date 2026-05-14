@@ -1237,25 +1237,71 @@ function renderMilestones(cs, d, played, h2h, s4d) {
 }
 
 function updateUI() {
-    try { safeRenderBaseData(); } catch(e) { console.error("Error rendering base tables:", e); }
-    try { safeRenderProgressUI(); } catch(e) { console.error("Error rendering progress UI:", e); }
+    let standings = generateTableData();
+    window.currentStandings = standings;
+
+    const unplayed = schedule.filter(s => s && !s.played);
+    const played = schedule.filter(s => s && s.played);
+
+    let mcProbs = {};
+    if(unplayed.length > 0) {
+        let mcElo = {}; TEAMS.forEach(t=>mcElo[t]=1500);
+        played.forEach(s => {
+            if(!s || !s.result) return;
+            const m = s.result; let e1 = mcElo[m.t1], e2 = mcElo[m.t2];
+            if(!e1 || !e2) return;
+            let exp1 = 1/(1+Math.pow(10, (e2-e1)/400)), exp2 = 1/(1+Math.pow(10, (e1-e2)/400));
+            let s1=0.5, s2=0.5;
+            if(m.r1 > m.r2 || (m.super_over && m.super_over.r1 > m.super_over.r2)) { s1=1; s2=0; }
+            else if(m.r2 > m.r1 || (m.super_over && m.super_over.r2 > m.super_over.r1)) { s1=0; s2=1; }
+            mcElo[m.t1] = e1 + 32*(s1 - exp1); mcElo[m.t2] = e2 + 32*(s2 - exp2);
+        });
+        const probsRaw = runMonteCarlo(unplayed, standings, mcElo);
+        TEAMS.forEach(t => mcProbs[t] = (probsRaw[t] / 10));
+    } else {
+        standings.forEach((s, i) => mcProbs[s.team] = (i < 4 ? 100 : 0));
+    }
+
+    let teamStatus = {};
+    standings.forEach(s => {
+        let prob = mcProbs[s.team] || 0;
+        let max_pts = s.pts + ((TOTAL_MATCHES_PER_TEAM - s.p) * 2);
+
+        if (max_pts < 18) {
+            prob = 0;
+            mcProbs[s.team] = 0;
+        }
+
+        let statusHtml = '-';
+        let tagHtml = '-';
+
+        if (prob >= 99.9 && s.pts >= 18) {
+            statusHtml = '<span class="tag q" style="background:var(--accent-color); color:#050505;">QUALIFIED</span>';
+            tagHtml = '<span class="tag q">Q</span>';
+        } else if (prob <= 0.1 || max_pts < 18) {
+            statusHtml = '<span class="tag e" style="border:1px dashed #444; color:#555;">ELIMINATED</span>';
+            tagHtml = '<span class="tag e">E</span>';
+        } else if (prob > 60) {
+            statusHtml = '<span style="color:#00e676">LIKELY</span>';
+        } else if (prob < 15) {
+            statusHtml = '<span style="color:#ff5252">AT RISK</span>';
+        } else {
+            statusHtml = '<span style="color:#aaa">IN THE HUNT</span>';
+        }
+
+        teamStatus[s.team] = { statusHtml, tagHtml };
+        s.status = tagHtml;
+    });
+
+    try { safeRenderBaseData(standings); } catch(e) { console.error("Error rendering base tables:", e); }
+    try { safeRenderProgressUI(mcProbs, teamStatus); } catch(e) { console.error("Error rendering progress UI:", e); }
 }
 
-function safeRenderBaseData() {
+function safeRenderBaseData(standings) {
     const ptable=document.getElementById('ptable_body');
     ptable.classList.add('flash-table'); setTimeout(()=>ptable.classList.remove('flash-table'),1000);
 
-    const standings=generateTableData();
     ptable.innerHTML='';
-    if(standings.length>4){
-        const fp=standings[3].pts;
-        standings.forEach(s=>{
-            const mx=s.pts+((TOTAL_MATCHES_PER_TEAM-s.p)*2);
-            if(s.p===TOTAL_MATCHES_PER_TEAM&&s.pts>=fp) s.status='<span class="tag q">Q</span>';
-            else if(mx<fp&&fp>0) s.status='<span class="tag e">E</span>';
-            else s.status='-';
-        });
-    }
 
     const playedMatchesCount = schedule.filter(s=>s && s.played&&s.result).length;
 
@@ -1376,8 +1422,7 @@ function safeRenderBaseData() {
     });
     document.getElementById('match_progress').innerText=`${pc} / 70 Completed`;
     document.getElementById('tourney_progress_bar').style.width = ((pc/70)*100) + '%';
-    window.currentStandings=standings;
-
+    
     if (nextMatch) {
         if (nextMatchId !== _lastNextMatchId) {
             _lastNextMatchId = nextMatchId;
@@ -1462,7 +1507,7 @@ function safeRenderBaseData() {
     </tr>`).join('');
 }
 
-function safeRenderProgressUI() {
+function safeRenderProgressUI(mcProbs, teamStatus) {
     const unplayed = schedule.filter(s => s && !s.played);
     const played = schedule.filter(s => s && s.played);
     const standings = window.currentStandings || [];
@@ -1470,29 +1515,10 @@ function safeRenderProgressUI() {
     // --- MONTE CARLO ---
     const mcBody = document.getElementById('mc_body');
     if(mcBody && unplayed.length > 0) {
-        let mcElo = {}; TEAMS.forEach(t=>mcElo[t]=1500);
-        played.forEach(s => {
-            if(!s || !s.result) return;
-            const m = s.result; let e1 = mcElo[m.t1], e2 = mcElo[m.t2];
-            if(!e1 || !e2) return;
-            let exp1 = 1/(1+Math.pow(10, (e2-e1)/400)), exp2 = 1/(1+Math.pow(10, (e1-e2)/400));
-            let s1=0.5, s2=0.5;
-            if(m.r1 > m.r2 || (m.super_over && m.super_over.r1 > m.super_over.r2)) { s1=1; s2=0; }
-            else if(m.r2 > m.r1 || (m.super_over && m.super_over.r2 > m.super_over.r1)) { s1=0; s2=1; }
-            mcElo[m.t1] = e1 + 32*(s1 - exp1); mcElo[m.t2] = e2 + 32*(s2 - exp2);
-        });
-        
-        const probs = runMonteCarlo(unplayed, standings, mcElo);
         let mcHtml = '';
-        const sortedProbs = Object.keys(probs).map(t => ({team: t, prob: (probs[t]/10) })).sort((a,b) => b.prob - a.prob);
+        const sortedProbs = Object.keys(mcProbs).map(t => ({team: t, prob: mcProbs[t] })).sort((a,b) => b.prob - a.prob);
         sortedProbs.forEach(p => {
-            let status = '-';
-            if(p.prob >= 99.9) status = '<span class="tag q">QUALIFIED</span>';
-            else if(p.prob <= 0.1) status = '<span class="tag e">ELIMINATED</span>';
-            else if(p.prob > 60) status = '<span style="color:#00e676">LIKELY</span>';
-            else if(p.prob < 15) status = '<span style="color:#ff5252">AT RISK</span>';
-            else status = '<span style="color:#aaa">IN THE HUNT</span>';
-            
+            let status = teamStatus[p.team].statusHtml;
             mcHtml += `<tr><td style="text-transform:uppercase; font-weight:bold; color:var(--accent-color); text-align:left; cursor:pointer;" onclick="window.takeoverTeam('${p.team}')">${p.team}</td><td>${p.prob.toFixed(1)}%</td><td>${status}</td></tr>`;
         });
         mcBody.innerHTML = mcHtml;
