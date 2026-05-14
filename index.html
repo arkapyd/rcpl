@@ -1265,20 +1265,14 @@ function updateUI() {
     let teamStatus = {};
     standings.forEach(s => {
         let prob = mcProbs[s.team] || 0;
-        let max_pts = s.pts + ((TOTAL_MATCHES_PER_TEAM - s.p) * 2);
-
-        if (max_pts < 18) {
-            prob = 0;
-            mcProbs[s.team] = 0;
-        }
 
         let statusHtml = '-';
         let tagHtml = '-';
 
-        if (prob >= 99.9 && s.pts >= 18) {
+        if (prob >= 99.9) {
             statusHtml = '<span class="tag q" style="background:var(--accent-color); color:#050505;">QUALIFIED</span>';
             tagHtml = '<span class="tag q">Q</span>';
-        } else if (prob <= 0.1 || max_pts < 18) {
+        } else if (prob <= 0.1) {
             statusHtml = '<span class="tag e" style="border:1px dashed #444; color:#555;">ELIMINATED</span>';
             tagHtml = '<span class="tag e">E</span>';
         } else if (prob > 60) {
