@@ -221,11 +221,11 @@ tbody tr:hover td:first-child{ background:var(--bg-card-hover); }
       <div class="scrollable-table">
         <table><thead><tr>
           <th>Team</th><th>P</th><th>W</th><th>L</th><th>T</th><th>Pts</th>
-          <th style="padding-left:25px;">NRR</th><th>Next 3</th>
+          <th style="padding-left:25px;">NRR</th><th>FP</th><th>Next 3</th>
           <th style="text-align:left;">Form</th><th>Status</th>
         </tr></thead>
         <tbody id="ptable_body">
-          <tr><td class="skeleton">TEAM</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0.000</td><td class="skeleton">vs XXX</td><td class="skeleton">WWWWW</td><td class="skeleton">LIKELY</td></tr>
+          <tr><td class="skeleton">TEAM</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0.000</td><td class="skeleton">10.0</td><td class="skeleton">vs XXX</td><td class="skeleton">WWWWW</td><td class="skeleton">LIKELY</td></tr>
         </tbody></table>
       </div>
       <div class="note">Standings seeded from the pre-run-in figures. Only the remaining matches are played here; each new result updates points, NRR and form on top of the base.</div>
@@ -528,6 +528,38 @@ function runMonteCarlo(standings){
   const out={}; TEAMS.forEach(t=>out[t]=(top4[t]/N)*100); return out;
 }
 
+/* ---------- mathematical qualification ----------
+   A team is QUALIFIED only when it is locked into the top 4 no matter how every
+   remaining game goes — i.e. in the team's WORST case (it loses all its remaining
+   games) at most 3 other teams can even reach its points (a tie counts as a threat
+   because NRR can't be guaranteed). It is ELIMINATED only when at least 4 teams are
+   certainly above its BEST possible finish. Points totals (14/16/18...) are irrelevant
+   on their own — only the standings math matters. Once every game is played, the top 4
+   of the already-NRR-aware sort are the qualifiers. */
+function computeClinch(standings){
+  const rem = t => Math.max(0, TOTAL_MATCHES_PER_TEAM - t.p);
+  const unplayed = fixtures.filter(f=>f && !f.played);
+  const res = {};
+  if(unplayed.length===0){                       // league finished: top 4 by pts then NRR
+    standings.forEach((s,i)=>{ res[s.team]={ qualified:i<4, eliminated:i>=4 }; });
+    return res;
+  }
+  standings.forEach(s=>{
+    const tWorst = s.pts;                         // s loses every remaining game
+    const tBest  = s.pts + 2*rem(s);              // s wins every remaining game
+    let canReachS = 0;                            // rivals that could finish >= s (s's worst case)
+    let certainlyAbove = 0;                       // rivals already above s's ceiling
+    standings.forEach(o=>{
+      if(o.team===s.team) return;
+      const oBest = o.pts + 2*rem(o);
+      if(oBest >= tWorst) canReachS++;            // >= : tie is a threat (NRR not guaranteed)
+      if(o.pts  >  tBest) certainlyAbove++;       // strictly above s's max — s can't catch
+    });
+    res[s.team] = { qualified: canReachS <= 3, eliminated: certainlyAbove >= 4 };
+  });
+  return res;
+}
+
 /* ---------- render ---------- */
 function updateUI(){
   const standings=computeStandings();
@@ -536,16 +568,19 @@ function updateUI(){
   const unplayed=fixtures.filter(f=>f&&!f.played);
   const probs=unplayed.length? runMonteCarlo(standings) : (()=>{ const o={}; standings.forEach((s,i)=>o[s.team]=i<4?100:0); return o; })();
 
+  const clinch=computeClinch(standings);
   const status={};
   standings.forEach(s=>{
-    const pr=probs[s.team]||0; const maxPossible=s.pts+((TOTAL_MATCHES_PER_TEAM-s.p)*2);
+    const pr=probs[s.team]||0;
+    const qualified=clinch[s.team].qualified;
+    const eliminated=clinch[s.team].eliminated;
     let html;
-    if(pr>=99.9){ html='<span class="tag q" style="background:var(--accent-color);color:#050505;">QUALIFIED</span>'; }
-    else if(pr<=0.1 && maxPossible<16){ html='<span class="tag e" style="border:1px dashed #444;color:#555;">ELIMINATED</span>'; }
+    if(qualified){ html='<span class="tag q" style="background:var(--accent-color);color:#050505;">QUALIFIED</span>'; }
+    else if(eliminated){ html='<span class="tag e" style="border:1px dashed #444;color:#555;">ELIMINATED</span>'; }
     else if(pr>60){ html='<span style="color:#00e676;font-weight:bold;">LIKELY</span>'; }
     else if(pr<20){ html='<span style="color:#ff5252;font-weight:bold;">AT RISK</span>'; }
     else { html='<span style="color:#aaa;font-weight:bold;">IN THE HUNT</span>'; }
-    status[s.team]={ html, tag: pr>=99.9?'<span class="tag q">Q</span>':(pr<=0.1&&maxPossible<16?'<span class="tag e">E</span>':'-') };
+    status[s.team]={ html, tag: qualified?'<span class="tag q">Q</span>':(eliminated?'<span class="tag e">E</span>':'-') };
   });
 
   // points table
@@ -554,7 +589,7 @@ function updateUI(){
     const trC=(idx<4 && played.length>=1)?'class="top4-row"':'';
     const nv=parseFloat(s.nrr), nc=nv>0?'#00e676':(nv<0?'#ff5252':'#aaa');
     const fh=s.form.slice(-5).reverse().map((f,i)=>`<span class="form-letter letter-${f.res.toLowerCase()} ${i===0?'latest-form':''}" title="${f.detail}" onclick="window.openFormModal('${s.team}')">${f.res}</span>`).join('');
-    pb.innerHTML+=`<tr ${trC}><td style="color:#fff;text-align:left;font-weight:bold;"><b class="team-link" onclick="window.takeoverTeam('${s.team}')">${s.team.toUpperCase()}</b></td><td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td><td style="color:var(--accent-color);font-size:1.2rem;"><b>${s.pts}</b></td><td style="color:${nc};font-weight:500;">${s.nrr}</td><td style="text-align:center;">${s.next3||'<span style="color:#444;font-style:italic;font-size:.7rem;">— done —</span>'}</td><td style="text-align:left;"><div class="form-letters">${fh||'-'}</div></td><td>${status[s.team].tag}</td></tr>`;
+    pb.innerHTML+=`<tr ${trC}><td style="color:#fff;text-align:left;font-weight:bold;"><b class="team-link" onclick="window.takeoverTeam('${s.team}')">${s.team.toUpperCase()}</b></td><td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td><td style="color:var(--accent-color);font-size:1.2rem;"><b>${s.pts}</b></td><td style="color:${nc};font-weight:500;">${s.nrr}</td><td style="color:#00e676;font-weight:600;">${s.avg_fp}</td><td style="text-align:center;">${s.next3||'<span style="color:#444;font-style:italic;font-size:.7rem;">— done —</span>'}</td><td style="text-align:left;"><div class="form-letters">${fh||'-'}</div></td><td>${status[s.team].tag}</td></tr>`;
   });
 
   // leaderboards
