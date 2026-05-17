@@ -310,9 +310,6 @@
                 </tr></thead>
                 <tbody id="ptable_body">
                     <tr><td class="skeleton">TEAM</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0.000</td><td class="skeleton">vs XXX</td><td class="skeleton">WWWWW</td><td class="skeleton">LIKELY</td></tr>
-                    <tr><td class="skeleton">TEAM</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0.000</td><td class="skeleton">vs XXX</td><td class="skeleton">WWWWW</td><td class="skeleton">LIKELY</td></tr>
-                    <tr><td class="skeleton">TEAM</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0.000</td><td class="skeleton">vs XXX</td><td class="skeleton">WWWWW</td><td class="skeleton">LIKELY</td></tr>
-                    <tr><td class="skeleton">TEAM</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0.000</td><td class="skeleton">vs XXX</td><td class="skeleton">WWWWW</td><td class="skeleton">LIKELY</td></tr>
                 </tbody></table>
             </div>
         </div>
@@ -441,13 +438,18 @@
                 <canvas id="nrrChart"></canvas>
             </div>
             
+            <div style="position: relative; height: 350px; width: 100%; background: #0d0d0d; border-radius: 8px; padding: 15px; border: 1px solid #222; margin-bottom: 20px;">
+                <h3 style="text-align:center; color:var(--accent-color); margin-bottom: 15px; font-size: 1rem;">Performance Matrix (Total Runs vs Total Wickets)</h3>
+                <canvas id="matrixChart"></canvas>
+            </div>
+
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
                 <div style="position: relative; height: 300px; background: #0d0d0d; border-radius: 8px; padding: 15px; border: 1px solid #222;">
-                    <h3 style="text-align:center; color:#d4af37; margin-bottom: 15px; font-size: 1rem;">Orange Cap (Team Runs)</h3>
+                    <h3 style="text-align:center; color:var(--accent-color); margin-bottom: 15px; font-size: 1rem;">Orange Cap (Team Runs)</h3>
                     <canvas id="runsChart"></canvas>
                 </div>
                 <div style="position: relative; height: 300px; background: #0d0d0d; border-radius: 8px; padding: 15px; border: 1px solid #222;">
-                    <h3 style="text-align:center; color:#d4af37; margin-bottom: 15px; font-size: 1rem;">Purple Cap (Team Wickets)</h3>
+                    <h3 style="text-align:center; color:var(--accent-color); margin-bottom: 15px; font-size: 1rem;">Purple Cap (Team Wickets)</h3>
                     <canvas id="wktsChart"></canvas>
                 </div>
             </div>
@@ -513,6 +515,7 @@ let _lastNextMatchId = null;
 let chartInstance = null;
 let runsChartInstance = null;
 let wktsChartInstance = null;
+let matrixChartInstance = null;
 let communityVotes = {};
 
 setInterval(() => { 
@@ -648,12 +651,17 @@ function pushToCloud(){ set(dbRef,{schedule}); }
 
 onValue(dbRef, snapshot=>{
     const data = snapshot.val();
-    if (data && data.schedule) {
+    
+    if (data && data.schedule && data.schedule.length === 70) {
         schedule = data.schedule;
+    } else if (!data) {
+        // FATAL FLAW FIXED: Do not automatically push a blank schedule if the database reads null
+        schedule = generateSchedule();
+    } else {
+        // Merge partial data if corrupted somehow
+        schedule = data.schedule || [];
         const base = generateSchedule();
         for(let i=0; i<70; i++) { if(!schedule[i] || !schedule[i].t1) schedule[i] = base[i]; }
-    } else {
-        schedule = generateSchedule(); pushToCloud();
     }
     
     if(!isDataLoaded){
@@ -685,10 +693,8 @@ window.castVote = function(teamIndex) {
 
 function renderCommunityVotesUI() {
     const fanCard = document.getElementById('fan_vote_card');
-    if(!fanCard) return;
-
-    if(!_lastNextMatchId) {
-        fanCard.style.display = 'none';
+    if(!fanCard || !_lastNextMatchId) {
+        if(fanCard) fanCard.style.display = 'none';
         return;
     }
     
@@ -710,11 +716,11 @@ function renderCommunityVotesUI() {
     const t2Btn = document.getElementById('vote_btn_t2');
     
     if(t1Btn && t2Btn) {
-        t1Btn.innerText = t1.toUpperCase();
+        t1Btn.innerText = (t1 || 'T1').toUpperCase();
         t1Btn.style.color = TEAM_COLORS[t1] || '#fff';
         t1Btn.style.borderColor = TEAM_COLORS[t1] || '#fff';
         
-        t2Btn.innerText = t2.toUpperCase();
+        t2Btn.innerText = (t2 || 'T2').toUpperCase();
         t2Btn.style.color = TEAM_COLORS[t2] || '#fff';
         t2Btn.style.borderColor = TEAM_COLORS[t2] || '#fff';
     }
@@ -746,12 +752,14 @@ function renderCommunityVotesUI() {
 
 function renderChart() {
     const ctxNrr = document.getElementById('nrrChart');
+    const ctxMatrix = document.getElementById('matrixChart');
     const ctxRuns = document.getElementById('runsChart');
     const ctxWkts = document.getElementById('wktsChart');
     
     if(!ctxNrr || !window.currentStandings || window.currentStandings.length === 0) return;
     
     if(chartInstance) chartInstance.destroy();
+    if(matrixChartInstance) matrixChartInstance.destroy();
     if(runsChartInstance) runsChartInstance.destroy();
     if(wktsChartInstance) wktsChartInstance.destroy();
     
@@ -785,7 +793,32 @@ function renderChart() {
         }
     });
 
-    // 2. Runs Chart (Orange Cap)
+    // 2. Matrix Scatter Plot
+    matrixChartInstance = new Chart(ctxMatrix, {
+        type: 'scatter',
+        data: {
+            datasets: window.currentStandings.map(s => ({
+                label: s.team.toUpperCase(),
+                data: [{ x: s.rf, y: s.wkts_taken }],
+                backgroundColor: TEAM_COLORS[s.team] || '#fff',
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }))
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.x + ' Runs, ' + ctx.parsed.y + ' Wkts'; } } }
+            },
+            scales: {
+                x: { title: { display: true, text: 'Total Runs Scored', color: '#888' }, grid: { color: '#222' } },
+                y: { title: { display: true, text: 'Total Wickets Taken', color: '#888' }, grid: { color: '#222' } }
+            }
+        }
+    });
+
+    // 3. Runs Chart (Orange Cap)
     const sortedByRuns = [...window.currentStandings].sort((a,b) => b.rf - a.rf);
     runsChartInstance = new Chart(ctxRuns, {
         type: 'bar',
@@ -808,7 +841,7 @@ function renderChart() {
         }
     });
 
-    // 3. Wkts Chart (Purple Cap)
+    // 4. Wkts Chart (Purple Cap)
     const sortedByWkts = [...window.currentStandings].sort((a,b) => b.wkts_taken - a.wkts_taken);
     wktsChartInstance = new Chart(ctxWkts, {
         type: 'bar',
@@ -1103,22 +1136,15 @@ function updateUI() {
     let teamStatus = {};
     standings.forEach(s => {
         let prob = mcProbs[s.team] || 0;
-        let max_pts = s.pts + ((TOTAL_MATCHES_PER_TEAM - s.p) * 2);
-
-        if (s.pts < 18 && prob >= 99) {
-            prob = 92 + (Math.random() * 5); 
-        }
-
-        if (max_pts < 14) prob = 0;
-        if (prob < 0.1) prob = 0;
 
         let statusHtml = '-';
         let tagHtml = '-';
 
-        if (prob >= 99.9 || s.pts >= 18) {
+        // STRICT LOGIC: 0.1% or lower is officially eliminated.
+        if (prob >= 99.5 || s.pts >= 16) {
             statusHtml = '<span class="tag q" style="background:var(--accent-color); color:#050505;">QUALIFIED</span>';
             tagHtml = '<span class="tag q">Q</span>';
-        } else if (prob === 0) {
+        } else if (prob <= 0.1) {
             statusHtml = '<span class="tag e" style="border:1px dashed #444; color:#555;">ELIMINATED</span>';
             tagHtml = '<span class="tag e">E</span>';
         } else if (prob > 60) {
@@ -1138,10 +1164,9 @@ function updateUI() {
     try { safeRenderProgressUI(mcProbs, teamStatus); } catch(e) { console.error("Error rendering progress UI:", e); }
     
     const nextMatch = unplayed.length > 0 ? unplayed[0] : null;
-    if(nextMatch && nextMatch.id !== _lastNextMatchId) {
-        _lastNextMatchId = nextMatch.id;
-        renderCommunityVotesUI(); 
-    }
+    if(nextMatch) { _lastNextMatchId = nextMatch.id; }
+    // Force call this so DOM updates unconditionally 
+    renderCommunityVotesUI(); 
 }
 
 function safeRenderBaseData(standings) {
