@@ -572,7 +572,7 @@ function updateUI(){
   const status={};
   standings.forEach(s=>{
     const pr=probs[s.team]||0;
-    const qualified=clinch[s.team].qualified;
+    const qualified=(s.pts>=18) || clinch[s.team].qualified;   // 18 pts = sure qualification; or mathematically locked at 14/16
     const eliminated=clinch[s.team].eliminated;
     let html;
     if(qualified){ html='<span class="tag q" style="background:var(--accent-color);color:#050505;">QUALIFIED</span>'; }
