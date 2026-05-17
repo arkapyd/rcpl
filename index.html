@@ -396,12 +396,15 @@ function ingest(raw, fromCloud){
   if(fromCloud && !norm) pushToCloud();   // first run: seed empty fixtures into the cloud
   _bootDone=true; bootUI();
 }
+// Firebase RTDB rejects any object containing `undefined` (it throws on set()).
+// This strips undefined (and converts stray undefined array slots to null).
+function sanitize(o){ return JSON.parse(JSON.stringify(o, (k,v)=> v===undefined ? null : v)); }
 function pushToCloud(){
   saveLocal();
   try{
-    const p=set(dbRef,{ fixtures });
+    const p=set(dbRef, sanitize({ fixtures }));
     if(p&&p.catch) p.catch(e=>{ console.error('Cloud write failed:',e); window.showToast('Cloud write blocked — saved locally only.','error'); setConnBanner('offline'); });
-  }catch(e){ console.error(e); }
+  }catch(e){ console.error('Cloud write threw:',e); window.showToast('Cloud write error — saved locally only.','error'); }
 }
 const _fbTimeout=setTimeout(()=>{ if(_bootDone) return; console.warn('Firebase slow — booting from cache.'); setConnBanner('offline'); window.showToast('Cloud slow/unreachable — loaded local data.','error'); ingest(loadLocal(),false); },5000);
 
@@ -652,7 +655,7 @@ window.addMatch=function(){
   else { slot.result={t1:slot.t1,t2:slot.t2,r1:d.r2,w1:d.w2,b1:d.b2,fp1:d.fp2,r2:d.r1,w2:d.w1,b2:d.b1,fp2:d.fp1,desc:d.desc,
     super_over:d.super_over?{r1:d.super_over.r2,w1:d.super_over.w2,b1:d.super_over.b2,r2:d.super_over.r1,w2:d.super_over.w1,b2:d.super_over.b1}:undefined}; }
   slot.played=true;
-  pushToCloud(); if(!_cloudConnected) bootUI();
+  pushToCloud(); bootUI();
   ['r1','w1','r2','w2','match_desc','so_r1','so_w1','so_r2','so_w2'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
   ['b1','b2'].forEach(id=>document.getElementById(id).value=30);
   ['fp1','fp2'].forEach(id=>document.getElementById(id).value=10);
@@ -664,7 +667,7 @@ window.updateMatchSummary=function(){
   const id=+document.getElementById('edit_summary_match').value;
   if(!id){ window.showToast('Select a match.','error'); return; }
   const f=fixtures.find(x=>x.id===id);
-  if(f&&f.played&&f.result){ f.result.desc=document.getElementById('edit_summary_text').value.trim(); pushToCloud(); if(!_cloudConnected) bootUI(); document.getElementById('edit_summary_text').value=''; window.showToast('Summary updated.','success'); }
+  if(f&&f.played&&f.result){ f.result.desc=document.getElementById('edit_summary_text').value.trim(); pushToCloud(); bootUI(); document.getElementById('edit_summary_text').value=''; window.showToast('Summary updated.','success'); }
 };
 
 window.resetSpecificMatch=function(){
@@ -672,7 +675,7 @@ window.resetSpecificMatch=function(){
   if(!id){ window.showToast('Select a match.','error'); return; }
   if(confirm(`Reset Match ${id}? Its result will be cleared.`)){
     const f=fixtures.find(x=>x.id===id);
-    if(f){ f.played=false; f.result=null; pushToCloud(); if(!_cloudConnected) bootUI(); window.showToast(`Match ${id} reset.`,'success'); }
+    if(f){ f.played=false; f.result=null; pushToCloud(); bootUI(); window.showToast(`Match ${id} reset.`,'success'); }
   }
 };
 
@@ -685,7 +688,7 @@ window.swapMatches=function(){
     const oi=fixtures[i].id, oj=fixtures[j].id;
     [fixtures[i],fixtures[j]]=[fixtures[j],fixtures[i]];
     fixtures[i].id=oi; fixtures[j].id=oj;
-    pushToCloud(); if(!_cloudConnected) bootUI();
+    pushToCloud(); bootUI();
     document.getElementById('swap_i').value=''; document.getElementById('swap_j').value='';
     window.showToast('Match order swapped.','success');
   }
@@ -700,7 +703,7 @@ window.editFixture=function(){
   if(!f||f.played){ window.showToast('That match is already played.','error'); return; }
   if(confirm(`Set Match ${id} to ${t1.toUpperCase()} vs ${t2.toUpperCase()}?`)){
     f.t1=t1; f.t2=t2; f.amb=false;
-    pushToCloud(); if(!_cloudConnected) bootUI();
+    pushToCloud(); bootUI();
     window.showToast(`Fixture ${id} updated.`,'success');
   }
 };
