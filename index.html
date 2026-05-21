@@ -126,180 +126,187 @@ tbody tr:hover td:first-child{ background:var(--bg-card-hover); }
 <body>
 <div id="toast-container"></div>
 <div class="top-ribbon">
-  <span class="ribbon-text">RCPL SEASON 4</span>
-  <img src="logorcpl.jpg" alt="RCPL" class="ribbon-logo">
-  <span class="ribbon-text">THE RUN-IN</span>
+  <span class="ribbon-text">RCPL SEASON 4</span>
+  <img src="logorcpl.jpg" alt="RCPL" class="ribbon-logo">
+  <span class="ribbon-text">THE RUN-IN</span>
 </div>
 <div id="tourney_progress_wrap"><div id="tourney_progress_bar"></div></div>
 <div id="conn_banner"></div>
 
 <div class="container" id="main_app">
-  <div class="left-col" id="admin_panel">
-    <div class="card">
-      <h2 style="text-align:left;">Add Match Result</h2>
-      <div class="row">
-        <div><label style="color:var(--accent-color);">Team 1 (Bat First)</label><select id="t1"></select></div>
-        <div><label>Runs</label><input type="number" id="r1" min="0"></div>
-        <div><label>Wkts</label><input type="number" id="w1" min="0" max="10"></div>
-        <div><label>Balls</label><input type="number" id="b1" min="0" max="30" value="30"></div>
-        <div><label>FP /10</label><input type="number" id="fp1" min="0" max="10" value="10"></div>
-      </div>
-      <div class="row">
-        <div><label style="color:var(--accent-color);">Team 2 (Chase)</label><select id="t2"></select></div>
-        <div><label>Runs</label><input type="number" id="r2" min="0"></div>
-        <div><label>Wkts</label><input type="number" id="w2" min="0" max="10"></div>
-        <div><label>Balls</label><input type="number" id="b2" min="0" max="30" value="30"></div>
-        <div><label>FP /10</label><input type="number" id="fp2" min="0" max="10" value="10"></div>
-      </div>
-      <div class="row" style="margin-top:10px;"><div style="flex:1;"><label>Match Summary (optional)</label><input type="text" id="match_desc" placeholder="e.g. last over thriller..."></div></div>
-      <div class="row" style="margin-top:10px;"><div style="flex:1;">
-        <label style="color:var(--accent-color);cursor:pointer;">
-          <input type="checkbox" id="has_super_over" onchange="document.getElementById('super_over_panel').style.display=this.checked?'block':'none'" style="width:auto;display:inline-block;vertical-align:middle;margin-right:5px;">
-          Match Tied? Add Super Over
-        </label>
-      </div></div>
-      <div id="super_over_panel" style="display:none;background:#151515;padding:15px;border-radius:4px;margin-bottom:10px;border:1px dashed var(--accent-color);">
-        <div class="row">
-          <div><label>T1 Runs</label><input type="number" id="so_r1" min="0"></div>
-          <div><label>Wkts</label><input type="number" id="so_w1" min="0" max="10"></div>
-          <div><label>Balls</label><input type="number" id="so_b1" min="0" max="12" value="12"></div>
-        </div>
-        <div class="row">
-          <div><label>T2 Runs</label><input type="number" id="so_r2" min="0"></div>
-          <div><label>Wkts</label><input type="number" id="so_w2" min="0" max="10"></div>
-          <div><label>Balls</label><input type="number" id="so_b2" min="0" max="12" value="12"></div>
-        </div>
-      </div>
-      <button onclick="window.addMatch()">Save Match</button>
+  <div class="left-col" id="admin_panel">
+    <div class="card">
+      <h2 style="text-align:left;">Add Match Result</h2>
+      <div class="row">
+        <div><label style="color:var(--accent-color);">Team 1 (Bat First)</label><select id="t1"></select></div>
+        <div><label>Runs</label><input type="number" id="r1" min="0"></div>
+        <div><label>Wkts</label><input type="number" id="w1" min="0" max="10"></div>
+        <div><label>Balls</label><input type="number" id="b1" min="0" max="30" value="30"></div>
+        <div><label>FP /10</label><input type="number" id="fp1" min="0" max="10" value="10"></div>
+      </div>
+      <div class="row">
+        <div><label style="color:var(--accent-color);">Team 2 (Chase)</label><select id="t2"></select></div>
+        <div><label>Runs</label><input type="number" id="r2" min="0"></div>
+        <div><label>Wkts</label><input type="number" id="w2" min="0" max="10"></div>
+        <div><label>Balls</label><input type="number" id="b2" min="0" max="30" value="30"></div>
+        <div><label>FP /10</label><input type="number" id="fp2" min="0" max="10" value="10"></div>
+      </div>
+      <div class="row" style="margin-top:10px;"><div style="flex:1;"><label>Match Summary (optional)</label><input type="text" id="match_desc" placeholder="e.g. last over thriller..."></div></div>
+      <div class="row" style="margin-top:10px;"><div style="flex:1;">
+        <label style="color:var(--accent-color);cursor:pointer;">
+          <input type="checkbox" id="has_super_over" onchange="document.getElementById('super_over_panel').style.display=this.checked?'block':'none'" style="width:auto;display:inline-block;vertical-align:middle;margin-right:5px;">
+          Match Tied? Add Super Over
+        </label>
+      </div></div>
+      <div id="super_over_panel" style="display:none;background:#151515;padding:15px;border-radius:4px;margin-bottom:10px;border:1px dashed var(--accent-color);">
+        <div class="row">
+          <div><label>T1 Runs</label><input type="number" id="so_r1" min="0"></div>
+          <div><label>Wkts</label><input type="number" id="so_w1" min="0" max="10"></div>
+          <div><label>Balls</label><input type="number" id="so_b1" min="0" max="12" value="12"></div>
+        </div>
+        <div class="row">
+          <div><label>T2 Runs</label><input type="number" id="so_r2" min="0"></div>
+          <div><label>Wkts</label><input type="number" id="so_w2" min="0" max="10"></div>
+          <div><label>Balls</label><input type="number" id="so_b2" min="0" max="12" value="12"></div>
+        </div>
+      </div>
+      <button onclick="window.addMatch()">Save Match</button>
 
-      <div style="margin-top:15px;padding-top:15px;border-top:1px solid #333;">
-        <label style="color:var(--accent-color);margin-bottom:5px;">Edit Past Match Summary</label>
-        <div class="row" style="margin-bottom:5px;"><div style="flex:1;"><select id="edit_summary_match"></select></div></div>
-        <div class="row" style="margin-bottom:5px;"><div style="flex:1;"><input type="text" id="edit_summary_text" placeholder="New summary..."></div></div>
-        <button class="action" onclick="window.updateMatchSummary()" style="margin-top:0;">Update Summary</button>
-      </div>
+      <div style="margin-top:15px;padding-top:15px;border-top:1px solid #333;">
+        <label style="color:var(--accent-color);margin-bottom:5px;">Edit Past Match Summary</label>
+        <div class="row" style="margin-bottom:5px;"><div style="flex:1;"><select id="edit_summary_match"></select></div></div>
+        <div class="row" style="margin-bottom:5px;"><div style="flex:1;"><input type="text" id="edit_summary_text" placeholder="New summary..."></div></div>
+        <button class="action" onclick="window.updateMatchSummary()" style="margin-top:0;">Update Summary</button>
+      </div>
 
-      <div style="margin-top:15px;padding-top:15px;border-top:1px solid #333;">
-        <label style="color:var(--accent-color);margin-bottom:5px;">Reset a Match (un-play)</label>
-        <div class="row" style="margin-bottom:5px;"><div style="flex:1;"><select id="reset_match_select"></select></div></div>
-        <button class="action danger" onclick="window.resetSpecificMatch()" style="margin-top:0;background:transparent;color:#ff5252;border:1px solid #ff5252;">Reset Match</button>
-      </div>
+      <div style="margin-top:15px;padding-top:15px;border-top:1px solid #333;">
+        <label style="color:var(--accent-color);margin-bottom:5px;">Reset a Match (un-play)</label>
+        <div class="row" style="margin-bottom:5px;"><div style="flex:1;"><select id="reset_match_select"></select></div></div>
+        <button class="action danger" onclick="window.resetSpecificMatch()" style="margin-top:0;background:transparent;color:#ff5252;border:1px solid #ff5252;">Reset Match</button>
+      </div>
 
-      <div style="margin-top:15px;padding-top:15px;border-top:1px solid #333;">
-        <label style="color:var(--accent-color);margin-bottom:5px;">Swap Match Order (by M#)</label>
-        <div class="row" style="margin-bottom:5px;">
-          <div><input type="number" id="swap_i" placeholder="Match A" min="1"></div>
-          <div><input type="number" id="swap_j" placeholder="Match B" min="1"></div>
-        </div>
-        <button class="action" onclick="window.swapMatches()" style="margin-top:0;">Swap Sequence</button>
-      </div>
+      <div style="margin-top:15px;padding-top:15px;border-top:1px solid #333;">
+        <label style="color:var(--accent-color);margin-bottom:5px;">Swap Match Order (by M#)</label>
+        <div class="row" style="margin-bottom:5px;">
+          <div><input type="number" id="swap_i" placeholder="Match A" min="1"></div>
+          <div><input type="number" id="swap_j" placeholder="Match B" min="1"></div>
+        </div>
+        <button class="action" onclick="window.swapMatches()" style="margin-top:0;">Swap Sequence</button>
+      </div>
 
-      <div style="margin-top:15px;padding-top:15px;border-top:1px solid #333;">
-        <label style="color:var(--accent-color);margin-bottom:5px;">Edit Fixture (change teams of an UN-played match)</label>
-        <div class="row" style="margin-bottom:5px;"><div style="flex:1;"><select id="edit_fix_match"></select></div></div>
-        <div class="row" style="margin-bottom:5px;">
-          <div><select id="edit_fix_t1"></select></div>
-          <div style="flex:0.2;text-align:center;line-height:40px;color:var(--accent-color);font-weight:bold;">vs</div>
-          <div><select id="edit_fix_t2"></select></div>
-        </div>
-        <button class="action" onclick="window.editFixture()" style="margin-top:0;">Update Fixture</button>
-      </div>
-    </div>
-  </div>
+      <div style="margin-top:15px;padding-top:15px;border-top:1px solid #333;">
+        <label style="color:var(--accent-color);margin-bottom:5px;">Edit Fixture (change teams of an UN-played match)</label>
+        <div class="row" style="margin-bottom:5px;"><div style="flex:1;"><select id="edit_fix_match"></select></div></div>
+        <div class="row" style="margin-bottom:5px;">
+          <div><select id="edit_fix_t1"></select></div>
+          <div style="flex:0.2;text-align:center;line-height:40px;color:var(--accent-color);font-weight:bold;">vs</div>
+          <div><select id="edit_fix_t2"></select></div>
+        </div>
+        <button class="action" onclick="window.editFixture()" style="margin-top:0;">Update Fixture</button>
+      </div>
+    </div>
+  </div>
 
-  <div class="right-col" id="view_panel" style="grid-column:1/-1;">
-    <div class="groups-container">
-      <div class="group-box"><h3>Group A</h3><div id="group_a_teams"></div></div>
-      <div class="group-box"><h3>Group B</h3><div id="group_b_teams"></div></div>
-    </div>
+  <div class="right-col" id="view_panel" style="grid-column:1/-1;">
+    <div class="groups-container">
+      <div class="group-box"><h3>Group A</h3><div id="group_a_teams"></div></div>
+      <div class="group-box"><h3>Group B</h3><div id="group_b_teams"></div></div>
+    </div>
 
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:15px;margin-bottom:15px;">
-        <h2 style="border:none;padding:0;margin:0;">Points Table</h2>
-        <div id="live_clock"></div>
-      </div>
-      <div class="scrollable-table">
-        <table><thead><tr>
-          <th>Team</th><th>P</th><th>W</th><th>L</th><th>T</th><th>Pts</th>
-          <th style="padding-left:25px;">NRR</th><th>FP</th><th>Next 3</th>
-          <th style="text-align:left;">Form</th><th>Status</th>
-        </tr></thead>
-        <tbody id="ptable_body">
-          <tr><td class="skeleton">TEAM</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0.000</td><td class="skeleton">10.0</td><td class="skeleton">vs XXX</td><td class="skeleton">WWWWW</td><td class="skeleton">LIKELY</td></tr>
-        </tbody></table>
-      </div>
-      <div class="note">Standings seeded from the pre-run-in figures. Only the remaining matches are played here; each new result updates points, NRR and form on top of the base.</div>
-    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:15px;margin-bottom:15px;">
+        <h2 style="border:none;padding:0;margin:0;">Points Table</h2>
+        <div id="live_clock"></div>
+      </div>
+      <div class="scrollable-table">
+        <table><thead><tr>
+          <th>Team</th><th>P</th><th>W</th><th>L</th><th>T</th><th>Pts</th>
+          <th style="padding-left:25px;">NRR</th><th>FP</th><th>Next 3</th>
+          <th style="text-align:left;">Form</th><th>Status</th>
+        </tr></thead>
+        <tbody id="ptable_body">
+          <tr><td class="skeleton">TEAM</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0</td><td class="skeleton">0.000</td><td class="skeleton">10.0</td><td class="skeleton">vs XXX</td><td class="skeleton">WWWWW</td><td class="skeleton">LIKELY</td></tr>
+        </tbody></table>
+      </div>
+      <div class="note">Standings seeded from the pre-run-in figures. Only the remaining matches are played here; each new result updates points, NRR and form on top of the base.</div>
+    </div>
 
-    <div class="flex-split">
-      <div class="card"><h2 style="text-align:left;font-size:1rem;">Orange Cap (Most Runs)</h2><table><thead><tr><th>Team</th><th>Runs</th></tr></thead><tbody id="orange_body"><tr><td class="skeleton">T</td><td class="skeleton">0</td></tr></tbody></table></div>
-      <div class="card"><h2 style="text-align:left;font-size:1rem;">Purple Cap (Most Wkts)</h2><table><thead><tr><th>Team</th><th>Wkts</th></tr></thead><tbody id="purple_body"><tr><td class="skeleton">T</td><td class="skeleton">0</td></tr></tbody></table></div>
-      <div class="card"><h2 style="text-align:left;font-size:1rem;">Highest Totals (Run-In)</h2><table><thead><tr><th>Team</th><th>Score</th><th>Opp</th></tr></thead><tbody id="highest_totals_body"><tr><td class="skeleton">T</td><td class="skeleton">0</td><td class="skeleton">O</td></tr></tbody></table></div>
-      <div class="card"><h2 style="text-align:left;font-size:1rem;color:#00e676;">Fairplay Award</h2><table><thead><tr><th>Team</th><th>Rating</th></tr></thead><tbody id="fairplay_body"><tr><td class="skeleton">T</td><td class="skeleton">10.0</td></tr></tbody></table></div>
-    </div>
+    <div class="flex-split">
+      <div class="card"><h2 style="text-align:left;font-size:1rem;">Orange Cap (Most Runs)</h2><table><thead><tr><th>Team</th><th>Runs</th></tr></thead><tbody id="orange_body"><tr><td class="skeleton">T</td><td class="skeleton">0</td></tr></tbody></table></div>
+      <div class="card"><h2 style="text-align:left;font-size:1rem;">Purple Cap (Most Wkts)</h2><table><thead><tr><th>Team</th><th>Wkts</th></tr></thead><tbody id="purple_body"><tr><td class="skeleton">T</td><td class="skeleton">0</td></tr></tbody></table></div>
+      <div class="card"><h2 style="text-align:left;font-size:1rem;">Highest Totals (Run-In)</h2><table><thead><tr><th>Team</th><th>Score</th><th>Opp</th></tr></thead><tbody id="highest_totals_body"><tr><td class="skeleton">T</td><td class="skeleton">0</td><td class="skeleton">O</td></tr></tbody></table></div>
+      <div class="card"><h2 style="text-align:left;font-size:1rem;color:#00e676;">Fairplay Award</h2><table><thead><tr><th>Team</th><th>Rating</th></tr></thead><tbody id="fairplay_body"><tr><td class="skeleton">T</td><td class="skeleton">10.0</td></tr></tbody></table></div>
+    </div>
 
-    <div class="card full-width no-hover-card vote-card" id="fan_vote_card" style="display:none;">
-      <h2 style="text-align:center;color:#fff;border-bottom:none;">Community Prediction</h2>
-      <p style="text-align:center;color:#aaa;font-size:.9rem;margin-top:-10px;margin-bottom:20px;" id="vote_subtitle">Who wins the next match?</p>
-      <div style="max-width:600px;margin:0 auto;">
-        <div style="display:flex;gap:20px;justify-content:center;">
-          <button id="vote_btn_t1" class="vote-btn" onclick="window.castVote(1)"></button>
-          <span style="display:flex;align-items:center;color:#555;font-style:italic;">VS</span>
-          <button id="vote_btn_t2" class="vote-btn" onclick="window.castVote(2)"></button>
-        </div>
-        <div class="vote-bar-container"><div id="vote_bar_t1" class="vote-bar"></div><div id="vote_bar_t2" class="vote-bar"></div></div>
-        <div style="text-align:center;font-size:.8rem;color:#666;margin-top:10px;"><span id="total_votes">0</span> total votes</div>
-      </div>
-    </div>
+    <div class="card full-width no-hover-card vote-card" id="fan_vote_card" style="display:none;">
+      <h2 style="text-align:center;color:#fff;border-bottom:none;">Community Prediction</h2>
+      <p style="text-align:center;color:#aaa;font-size:.9rem;margin-top:-10px;margin-bottom:20px;" id="vote_subtitle">Who wins the next match?</p>
+      <div style="max-width:600px;margin:0 auto;">
+        <div style="display:flex;gap:20px;justify-content:center;">
+          <button id="vote_btn_t1" class="vote-btn" onclick="window.castVote(1)"></button>
+          <span style="display:flex;align-items:center;color:#555;font-style:italic;">VS</span>
+          <button id="vote_btn_t2" class="vote-btn" onclick="window.castVote(2)"></button>
+        </div>
+        <div class="vote-bar-container"><div id="vote_bar_t1" class="vote-bar"></div><div id="vote_bar_t2" class="vote-bar"></div></div>
+        <div style="text-align:center;font-size:.8rem;color:#666;margin-top:10px;"><span id="total_votes">0</span> total votes</div>
+      </div>
+    </div>
 
-    <div class="card full-width">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <h2 style="text-align:left;border:none;padding:0;margin:0;">Match Log — The Run-In</h2>
-        <div style="display:flex;gap:15px;align-items:center;">
-          <button class="action" onclick="window.resetTakeover()" style="width:auto;margin:0;font-size:.75rem;padding:6px 12px;border-radius:20px;">Reset UI Takeover</button>
-          <span id="match_progress" style="color:#aaa;font-size:.9rem;font-weight:bold;"></span>
-        </div>
-      </div>
-      <div id="log_filters" style="margin-top:12px;"></div>
-      <div class="scrollable-log" style="margin-top:10px;">
-        <table><thead><tr><th style="width:60px;">M#</th><th class="match-fixture">Fixture</th><th style="text-align:left;">Result</th></tr></thead>
-        <tbody id="match_log_body"></tbody></table>
-      </div>
-    </div>
+    <div class="card full-width">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h2 style="text-align:left;border:none;padding:0;margin:0;">Match Log — The Run-In</h2>
+        <div style="display:flex;gap:15px;align-items:center;">
+          <button class="action" onclick="window.resetTakeover()" style="width:auto;margin:0;font-size:.75rem;padding:6px 12px;border-radius:20px;">Reset UI Takeover</button>
+          <span id="match_progress" style="color:#aaa;font-size:.9rem;font-weight:bold;"></span>
+        </div>
+      </div>
+      <div id="log_filters" style="margin-top:12px;"></div>
+      <div class="scrollable-log" style="margin-top:10px;">
+        <table><thead><tr><th style="width:60px;">M#</th><th class="match-fixture">Fixture</th><th style="text-align:left;">Result</th></tr></thead>
+        <tbody id="match_log_body"></tbody></table>
+      </div>
+    </div>
 
-    <div class="card full-width no-hover-card">
-      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:10px;margin-bottom:15px;">
-        <h2 style="border:none;padding:0;margin:0;">Playoff Probability Engine</h2>
-        <span style="font-size:.8rem;color:#aaa;background:#1a1a1a;padding:4px 10px;border-radius:12px;border:1px solid #333;">1000 Monte Carlo Sims</span>
-      </div>
-      <div class="scrollable-table">
-        <table><thead><tr><th style="text-align:left;">Team</th><th>Top 4 Probability</th><th>Status</th></tr></thead>
-        <tbody id="mc_body"></tbody></table>
-      </div>
-    </div>
+    <div class="card full-width no-hover-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:10px;margin-bottom:15px;">
+        <h2 style="border:none;padding:0;margin:0;">Playoff Probability Engine</h2>
+        <span style="font-size:.8rem;color:#aaa;background:#1a1a1a;padding:4px 10px;border-radius:12px;border:1px solid #333;">1000 Monte Carlo Sims</span>
+      </div>
+      <div class="scrollable-table">
+        <table><thead><tr><th style="text-align:left;">Team</th><th>Top 4 Probability</th><th>Status</th></tr></thead>
+        <tbody id="mc_body"></tbody></table>
+      </div>
+    </div>
 
-    <div class="card full-width no-hover-card">
-      <h2 style="text-align:left;">Match Win Predictor</h2>
-      <div style="max-width:500px;margin:0 auto;">
-        <div class="row">
-          <div><select id="pred_t1"></select></div>
-          <div style="text-align:center;line-height:40px;color:var(--accent-color);flex:.2;font-weight:bold;">vs</div>
-          <div><select id="pred_t2"></select></div>
-        </div>
-        <button onclick="window.predictMatch()" class="action" style="margin-top:10px;">Compare &amp; Predict</button>
-      </div>
-      <div id="prediction_result" style="margin-top:20px;text-align:center;max-width:600px;margin-left:auto;margin-right:auto;"></div>
-    </div>
-  </div>
+    <div class="card full-width no-hover-card">
+      <h2 style="text-align:left;">Match Win Predictor</h2>
+      <div style="max-width:500px;margin:0 auto;">
+        <div class="row">
+          <div><select id="pred_t1"></select></div>
+          <div style="text-align:center;line-height:40px;color:var(--accent-color);flex:.2;font-weight:bold;">vs</div>
+          <div><select id="pred_t2"></select></div>
+        </div>
+        <button onclick="window.predictMatch()" class="action" style="margin-top:10px;">Compare &amp; Predict</button>
+      </div>
+      <div id="prediction_result" style="margin-top:20px;text-align:center;max-width:600px;margin-left:auto;margin-right:auto;"></div>
+    </div>
+  </div>
 </div>
 
 <div id="form_modal" class="modal-overlay">
-  <div class="modal-content">
-    <span class="modal-close" onclick="document.getElementById('form_modal').classList.remove('show')">&times;</span>
-    <h2 id="form_modal_team" style="border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:10px;margin-top:0;color:var(--accent-color);"></h2>
-    <p style="color:#aaa;font-size:.85rem;margin-bottom:15px;">Recent Match History (Last 5)</p>
-    <div id="form_modal_body"></div>
-  </div>
+  <div class="modal-content">
+    <span class="modal-close" onclick="document.getElementById('form_modal').classList.remove('show')">&times;</span>
+    <h2 id="form_modal_team" style="border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:10px;margin-top:0;color:var(--accent-color);"></h2>
+    <p style="color:#aaa;font-size:.85rem;margin-bottom:15px;">Recent Match History (Last 5)</p>
+    <div id="form_modal_body"></div>
+  </div>
+</div>
+
+<div id="poster_modal" class="modal-overlay show">
+  <div class="modal-content" style="padding:0; border:2px solid var(--accent-color); max-width:800px; background:#000;">
+    <span class="modal-close" style="position:absolute; top:10px; right:15px; color:#fff; background:rgba(0,0,0,0.6); width:32px; height:32px; border-radius:50%; text-align:center; line-height:32px; font-size:1.8rem; z-index:10;" onclick="document.getElementById('poster_modal').classList.remove('show')">&times;</span>
+    <img src="image_6eee75.png" alt="RCPL Playoffs Bound" style="width:100%; display:block; border-radius:10px;">
+  </div>
 </div>
 
 <div class="admin-trigger" onclick="window.unlockAdmin()">Admin</div>
@@ -310,51 +317,51 @@ import { getDatabase, ref, set, onValue, get, child } from "https://www.gstatic.
 
 /* ===== FIREBASE — see the setup notes below the page for how to point this at your DB ===== */
 const firebaseConfig = {
-  apiKey: "AIzaSyC_q2XGkzgWGVSX4_RSckQnQVrKNdVc6ek",
-  authDomain: "rcpls4.firebaseapp.com",
-  databaseURL: "https://rcpls4-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "rcpls4",
-  storageBucket: "rcpls4.firebasestorage.app",
-  messagingSenderId: "381635970086",
-  appId: "1:381635970086:web:56bba7dd966d6cc8b6d2e7"
+  apiKey: "AIzaSyC_q2XGkzgWGVSX4_RSckQnQVrKNdVc6ek",
+  authDomain: "rcpls4.firebaseapp.com",
+  databaseURL: "https://rcpls4-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "rcpls4",
+  storageBucket: "rcpls4.firebasestorage.app",
+  messagingSenderId: "381635970086",
+  appId: "1:381635970086:web:56bba7dd966d6cc8b6d2e7"
 };
 const app = initializeApp(firebaseConfig);
-const db  = getDatabase(app);
+const db  = getDatabase(app);
 // NEW, clean path so this run-in app never collides with the old (corrupted) 70-match blob:
-const dbRef    = ref(db, 'rcpl_runin_v1');
+const dbRef    = ref(db, 'rcpl_runin_v1');
 const votesRef = ref(db, 'rcpl_runin_votes_v1');
 
 const TEAMS = ['csk','mi','rcb','kkr','dc','rr','pbks','srh','lsg','gt'];
 const GROUP_A = ['kkr','mi','lsg','srh','dc'];
 const GROUP_B = ['csk','rcb','gt','pbks','rr'];
-const TOTAL_MATCHES_PER_TEAM = 14;          // full-season games per team (used for elimination math)
+const TOTAL_MATCHES_PER_TEAM = 14;          // full-season games per team (used for elimination math)
 const TEAM_COLORS = { pbks:'#f05545', kkr:'#7c43bd', rcb:'#ff4444', mi:'#757de8', csk:'#e6c619', dc:'#5f5fc4', rr:'#e91e63', srh:'#ff7043', lsg:'#26c6da', gt:'#7986cb' };
 
 /* Base standings carried into the run-in (your given figures).
-   of/oa are overs (5 per innings here, i.e. 30 balls). NRR accumulates on top of these. */
+   of/oa are overs (5 per innings here, i.e. 30 balls). NRR accumulates on top of these. */
 const BASE = {
-  lsg: { p:11, w:8, l:3, t:0, pts:16, nrr:"+2.577", rf:500, of:55, ra:358, oa:55, fp:10.0, wkts:50, form:['W','W','W','W','W'] },
-  mi:  { p:11, w:8, l:3, t:0, pts:16, nrr:"+1.155", rf:500, of:55, ra:436, oa:55, fp:9.8,  wkts:50, form:['W','L','W','W','W'] },
-  rcb: { p:10, w:7, l:3, t:0, pts:14, nrr:"+2.736", rf:500, of:50, ra:363, oa:50, fp:10.0, wkts:56, form:['W','L','L','W','W'] },
-  kkr: { p:10, w:6, l:4, t:0, pts:12, nrr:"+0.591", rf:500, of:50, ra:470, oa:50, fp:9.8,  wkts:45, form:['W','L','W','W','L'] },
-  pbks:{ p:11, w:5, l:6, t:0, pts:10, nrr:"+0.038", rf:500, of:55, ra:498, oa:55, fp:9.8,  wkts:45, form:['L','W','L','W','L'] },
-  dc:  { p:10, w:5, l:5, t:0, pts:10, nrr:"-0.315", rf:411, of:50, ra:427, oa:50, fp:10.0, wkts:45, form:['W','W','L','W','L'] },
-  rr:  { p:11, w:5, l:6, t:0, pts:10, nrr:"-0.413", rf:399, of:55, ra:422, oa:55, fp:10.0, wkts:54, form:['L','L','L','W','L'] },
-  srh: { p:10, w:4, l:6, t:0, pts:8,  nrr:"-1.660", rf:400, of:50, ra:483, oa:50, fp:9.5,  wkts:40, form:['L','W','W','W','L'] },
-  gt:  { p:10, w:3, l:7, t:0, pts:6,  nrr:"-1.594", rf:400, of:50, ra:480, oa:50, fp:9.8,  wkts:40, form:['L','L','L','L','L'] },
-  csk: { p:10, w:1, l:9, t:0, pts:2,  nrr:"-3.616", rf:300, of:50, ra:481, oa:50, fp:9.6,  wkts:35, form:['L','L','L','L','W'] }
+  lsg: { p:11, w:8, l:3, t:0, pts:16, nrr:"+2.577", rf:500, of:55, ra:358, oa:55, fp:10.0, wkts:50, form:['W','W','W','W','W'] },
+  mi:  { p:11, w:8, l:3, t:0, pts:16, nrr:"+1.155", rf:500, of:55, ra:436, oa:55, fp:9.8,  wkts:50, form:['W','L','W','W','W'] },
+  rcb: { p:10, w:7, l:3, t:0, pts:14, nrr:"+2.736", rf:500, of:50, ra:363, oa:50, fp:10.0, wkts:56, form:['W','L','L','W','W'] },
+  kkr: { p:10, w:6, l:4, t:0, pts:12, nrr:"+0.591", rf:500, of:50, ra:470, oa:50, fp:9.8,  wkts:45, form:['W','L','W','W','L'] },
+  pbks:{ p:11, w:5, l:6, t:0, pts:10, nrr:"+0.038", rf:500, of:55, ra:498, oa:55, fp:9.8,  wkts:45, form:['L','W','L','W','L'] },
+  dc:  { p:10, w:5, l:5, t:0, pts:10, nrr:"-0.315", rf:411, of:50, ra:427, oa:50, fp:10.0, wkts:45, form:['W','W','L','W','L'] },
+  rr:  { p:11, w:5, l:6, t:0, pts:10, nrr:"-0.413", rf:399, of:55, ra:422, oa:55, fp:10.0, wkts:54, form:['L','L','L','W','L'] },
+  srh: { p:10, w:4, l:6, t:0, pts:8,  nrr:"-1.660", rf:400, of:50, ra:483, oa:50, fp:9.5,  wkts:40, form:['L','W','W','W','L'] },
+  gt:  { p:10, w:3, l:7, t:0, pts:6,  nrr:"-1.594", rf:400, of:50, ra:480, oa:50, fp:9.8,  wkts:40, form:['L','L','L','L','L'] },
+  csk: { p:10, w:1, l:9, t:0, pts:2,  nrr:"-3.616", rf:300, of:50, ra:481, oa:50, fp:9.6,  wkts:35, form:['L','L','L','L','W'] }
 };
 
 /* The 18 leftover fixtures, reconstructed from the "Next 3" data in your screenshots.
-   #17 & #18 are the only ambiguous pair (RCB/DC/SRH/GT each need one more game);
-   the alternative completion is RCB-GT + DC-SRH. Use the admin "Edit Fixture" tool
-   if your real remaining games differ. addMatch matches by team-pair, not by slot. */
+   #17 & #18 are the only ambiguous pair (RCB/DC/SRH/GT each need one more game);
+   the alternative completion is RCB-GT + DC-SRH. Use the admin "Edit Fixture" tool
+   if your real remaining games differ. addMatch matches by team-pair, not by slot. */
 const FIXTURES = [
-  {t1:'mi', t2:'rr' }, {t1:'rcb',t2:'srh'}, {t1:'kkr',t2:'gt' }, {t1:'csk',t2:'dc' },
-  {t1:'lsg',t2:'csk'}, {t1:'pbks',t2:'srh'}, {t1:'mi', t2:'gt' }, {t1:'rcb',t2:'kkr'},
-  {t1:'dc', t2:'gt' }, {t1:'rr', t2:'srh'}, {t1:'lsg',t2:'rcb'}, {t1:'pbks',t2:'dc' },
-  {t1:'kkr',t2:'csk'}, {t1:'mi', t2:'csk'}, {t1:'rr', t2:'kkr'}, {t1:'lsg',t2:'pbks'},
-  {t1:'rcb',t2:'dc', amb:true}, {t1:'srh',t2:'gt', amb:true}
+  {t1:'mi', t2:'rr' }, {t1:'rcb',t2:'srh'}, {t1:'kkr',t2:'gt' }, {t1:'csk',t2:'dc' },
+  {t1:'lsg',t2:'csk'}, {t1:'pbks',t2:'srh'}, {t1:'mi', t2:'gt' }, {t1:'rcb',t2:'kkr'},
+  {t1:'dc', t2:'gt' }, {t1:'rr', t2:'srh'}, {t1:'lsg',t2:'rcb'}, {t1:'pbks',t2:'dc' },
+  {t1:'kkr',t2:'csk'}, {t1:'mi', t2:'csk'}, {t1:'rr', t2:'kkr'}, {t1:'lsg',t2:'pbks'},
+  {t1:'rcb',t2:'dc', amb:true}, {t1:'srh',t2:'gt', amb:true}
 ];
 const TOTAL = FIXTURES.length; // 18
 
@@ -375,41 +382,41 @@ const loadLocal=()=>{ try{ const r=localStorage.getItem(LS_KEY); return r?JSON.p
 function genFixtures(){ return FIXTURES.map((m,i)=>({ id:i+1, t1:m.t1, t2:m.t2, amb:!!m.amb, played:false, result:null })); }
 
 function normalize(raw){
-  if(!raw) return null;
-  let arr = Array.isArray(raw) ? raw.slice() : Object.keys(raw).sort((a,b)=>(+a)-(+b)).map(k=>raw[k]);
-  arr = arr.filter(m=>m && m.t1 && m.t2);
-  return arr.length===TOTAL ? arr : null;
+  if(!raw) return null;
+  let arr = Array.isArray(raw) ? raw.slice() : Object.keys(raw).sort((a,b)=>(+a)-(+b)).map(k=>raw[k]);
+  arr = arr.filter(m=>m && m.t1 && m.t2);
+  return arr.length===TOTAL ? arr : null;
 }
 function setConnBanner(state){
-  const el=document.getElementById('conn_banner'); if(!el) return;
-  if(state==='online'){ el.className='online'; el.textContent='● Live — connected. Results sync across devices.'; setTimeout(()=>{ if(_cloudConnected&&el.className==='online') el.style.display='none'; },4000); }
-  else { el.className='offline'; el.textContent='● Offline — cloud unreachable. Results saved on THIS device only (publish Firebase rules to re-enable sync).'; }
+  const el=document.getElementById('conn_banner'); if(!el) return;
+  if(state==='online'){ el.className='online'; el.textContent='● Live — connected. Results sync across devices.'; setTimeout(()=>{ if(_cloudConnected&&el.className==='online') el.style.display='none'; },4000); }
+  else { el.className='offline'; el.textContent='● Offline — cloud unreachable. Results saved on THIS device only (publish Firebase rules to re-enable sync).'; }
 }
 function bootUI(){
-  if(!isDataLoaded){ try{ initUI(); }catch(e){ console.error(e); } isDataLoaded=true; const a=document.getElementById('main_app'); if(a) a.style.opacity='1'; }
-  try{ updateUI(); }catch(e){ console.error('updateUI failed:',e); }
+  if(!isDataLoaded){ try{ initUI(); }catch(e){ console.error(e); } isDataLoaded=true; const a=document.getElementById('main_app'); if(a) a.style.opacity='1'; }
+  try{ updateUI(); }catch(e){ console.error('updateUI failed:',e); }
 }
 function ingest(raw, fromCloud){
-  const norm=normalize(raw);
-  fixtures = norm || genFixtures();
-  saveLocal();
-  if(fromCloud && !norm) pushToCloud();   // first run: seed empty fixtures into the cloud
-  _bootDone=true; bootUI();
+  const norm=normalize(raw);
+  fixtures = norm || genFixtures();
+  saveLocal();
+  if(fromCloud && !norm) pushToCloud();   // first run: seed empty fixtures into the cloud
+  _bootDone=true; bootUI();
 }
 // Firebase RTDB rejects any object containing `undefined` (it throws on set()).
 // This strips undefined (and converts stray undefined array slots to null).
 function sanitize(o){ return JSON.parse(JSON.stringify(o, (k,v)=> v===undefined ? null : v)); }
 function pushToCloud(){
-  saveLocal();
-  try{
-    const p=set(dbRef, sanitize({ fixtures }));
-    if(p&&p.catch) p.catch(e=>{ console.error('Cloud write failed:',e); window.showToast('Cloud write blocked — saved locally only.','error'); setConnBanner('offline'); });
-  }catch(e){ console.error('Cloud write threw:',e); window.showToast('Cloud write error — saved locally only.','error'); }
+  saveLocal();
+  try{
+    const p=set(dbRef, sanitize({ fixtures }));
+    if(p&&p.catch) p.catch(e=>{ console.error('Cloud write failed:',e); window.showToast('Cloud write blocked — saved locally only.','error'); setConnBanner('offline'); });
+  }catch(e){ console.error('Cloud write threw:',e); window.showToast('Cloud write error — saved locally only.','error'); }
 }
 const _fbTimeout=setTimeout(()=>{ if(_bootDone) return; console.warn('Firebase slow — booting from cache.'); setConnBanner('offline'); window.showToast('Cloud slow/unreachable — loaded local data.','error'); ingest(loadLocal(),false); },5000);
 
 onValue(dbRef, s=>{ clearTimeout(_fbTimeout); _cloudConnected=true; setConnBanner('online'); const d=s.val(); ingest(d&&d.fixtures,true); },
-  e=>{ clearTimeout(_fbTimeout); _cloudConnected=false; console.error('Firebase read failed:',e); setConnBanner('offline'); window.showToast('Firebase read denied/blocked — using local data.','error'); ingest(loadLocal(),false); });
+  e=>{ clearTimeout(_fbTimeout); _cloudConnected=false; console.error('Firebase read failed:',e); setConnBanner('offline'); window.showToast('Firebase read denied/blocked — using local data.','error'); ingest(loadLocal(),false); });
 
 onValue(votesRef, s=>{ communityVotes=s.val()||{}; renderVotes(); }, e=>console.error('Votes read failed:',e));
 
@@ -419,348 +426,348 @@ const fmtOvers =b=>Math.floor(b/6)+'.'+(b%6);
 window.showToast=function(msg,type='default'){ const c=document.getElementById('toast-container'); if(!c) return; const t=document.createElement('div'); t.className=`toast ${type}`; t.innerText=msg; c.appendChild(t); setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=>t.remove(),300); },3000); };
 
 window.takeoverTeam=function(team){
-  const hex=TEAM_COLORS[team]||'#d4af37';
-  document.documentElement.style.setProperty('--accent-color',hex);
-  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
-  document.documentElement.style.setProperty('--accent-rgb',`${r},${g},${b}`);
-  window.filterLog(team); window.showToast(`${team.toUpperCase()} Takeover Active`,'success');
+  const hex=TEAM_COLORS[team]||'#d4af37';
+  document.documentElement.style.setProperty('--accent-color',hex);
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  document.documentElement.style.setProperty('--accent-rgb',`${r},${g},${b}`);
+  window.filterLog(team); window.showToast(`${team.toUpperCase()} Takeover Active`,'success');
 };
 window.resetTakeover=function(){ document.documentElement.style.setProperty('--accent-color','#d4af37'); document.documentElement.style.setProperty('--accent-rgb','212, 175, 55'); window.filterLog(''); window.showToast('Reset UI Takeover','success'); };
 
 window.filterLog=function(team){
-  document.querySelectorAll('.log-filter-btn').forEach(b=>b.classList.remove('active'));
-  const fb=document.getElementById('filter_btn_'+(team||'all')); if(fb) fb.classList.add('active');
-  document.querySelectorAll('.match-row').forEach(row=>{ row.style.display=(!team||row.dataset.t1===team||row.dataset.t2===team)?'':'none'; });
+  document.querySelectorAll('.log-filter-btn').forEach(b=>b.classList.remove('active'));
+  const fb=document.getElementById('filter_btn_'+(team||'all')); if(fb) fb.classList.add('active');
+  document.querySelectorAll('.match-row').forEach(row=>{ row.style.display=(!team||row.dataset.t1===team||row.dataset.t2===team)?'':'none'; });
 };
 
 window.openFormModal=function(team){
-  const s=window.currentStandings.find(x=>x.team===team); if(!s) return;
-  document.getElementById('form_modal_team').innerText=team.toUpperCase()+' Form Guide';
-  const recent=s.form.slice().reverse();
-  let html=recent.length? '' : '<p style="color:#666;font-style:italic;">No matches yet.</p>';
-  recent.forEach(f=>{
-    const bg=f.res==='W'?'rgba(0,230,118,.1)':(f.res==='L'?'rgba(255,82,82,.1)':'rgba(170,170,170,.1)');
-    const col=f.res==='W'?'#00e676':(f.res==='L'?'#ff5252':'#aaa');
-    html+=`<div class="form-match-row"><div style="display:flex;align-items:center;gap:12px;"><div class="form-res-badge" style="background:${bg};color:${col};border:1px solid ${col};">${f.res}</div><div style="font-size:.95rem;color:#ddd;">${f.mId?('Match '+f.mId):'Pre run-in'} <span style="color:#666;font-size:.8rem;margin-left:8px;">${f.opp?('vs '+f.opp.toUpperCase()):''}</span></div></div><div style="font-size:.85rem;color:#aaa;text-align:right;">${f.detail}</div></div>`;
-  });
-  document.getElementById('form_modal_body').innerHTML=html;
-  document.getElementById('form_modal').classList.add('show');
+  const s=window.currentStandings.find(x=>x.team===team); if(!s) return;
+  document.getElementById('form_modal_team').innerText=team.toUpperCase()+' Form Guide';
+  const recent=s.form.slice().reverse();
+  let html=recent.length? '' : '<p style="color:#666;font-style:italic;">No matches yet.</p>';
+  recent.forEach(f=>{
+    const bg=f.res==='W'?'rgba(0,230,118,.1)':(f.res==='L'?'rgba(255,82,82,.1)':'rgba(170,170,170,.1)');
+    const col=f.res==='W'?'#00e676':(f.res==='L'?'#ff5252':'#aaa');
+    html+=`<div class="form-match-row"><div style="display:flex;align-items:center;gap:12px;"><div class="form-res-badge" style="background:${bg};color:${col};border:1px solid ${col};">${f.res}</div><div style="font-size:.95rem;color:#ddd;">${f.mId?('Match '+f.mId):'Pre run-in'} <span style="color:#666;font-size:.8rem;margin-left:8px;">${f.opp?('vs '+f.opp.toUpperCase()):''}</span></div></div><div style="font-size:.85rem;color:#aaa;text-align:right;">${f.detail}</div></div>`;
+  });
+  document.getElementById('form_modal_body').innerHTML=html;
+  document.getElementById('form_modal').classList.add('show');
 };
 
 /* ---------- init dropdowns / groups / filters ---------- */
 function fillTeamSelect(id){ const el=document.getElementById(id); if(!el) return; el.innerHTML=''; TEAMS.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.innerText=t.toUpperCase(); el.appendChild(o); }); }
 function initUI(){
-  ['t1','t2','pred_t1','pred_t2','edit_fix_t1','edit_fix_t2'].forEach(fillTeamSelect);
-  const s2=document.getElementById('t2'); if(s2) s2.selectedIndex=1;
-  const p2=document.getElementById('pred_t2'); if(p2) p2.selectedIndex=1;
-  const e2=document.getElementById('edit_fix_t2'); if(e2) e2.selectedIndex=1;
-  document.getElementById('group_a_teams').innerHTML=GROUP_A.map(t=>`<span class="team-pill" style="border-color:${TEAM_COLORS[t]};" onclick="window.takeoverTeam('${t}')">${t.toUpperCase()}</span>`).join('');
-  document.getElementById('group_b_teams').innerHTML=GROUP_B.map(t=>`<span class="team-pill" style="border-color:${TEAM_COLORS[t]};" onclick="window.takeoverTeam('${t}')">${t.toUpperCase()}</span>`).join('');
-  document.getElementById('log_filters').innerHTML=`<button class="log-filter-btn active" id="filter_btn_all" onclick="window.filterLog('')">ALL</button>`+TEAMS.map(t=>`<button class="log-filter-btn" id="filter_btn_${t}" onclick="window.filterLog('${t}')">${t.toUpperCase()}</button>`).join('');
+  ['t1','t2','pred_t1','pred_t2','edit_fix_t1','edit_fix_t2'].forEach(fillTeamSelect);
+  const s2=document.getElementById('t2'); if(s2) s2.selectedIndex=1;
+  const p2=document.getElementById('pred_t2'); if(p2) p2.selectedIndex=1;
+  const e2=document.getElementById('edit_fix_t2'); if(e2) e2.selectedIndex=1;
+  document.getElementById('group_a_teams').innerHTML=GROUP_A.map(t=>`<span class="team-pill" style="border-color:${TEAM_COLORS[t]};" onclick="window.takeoverTeam('${t}')">${t.toUpperCase()}</span>`).join('');
+  document.getElementById('group_b_teams').innerHTML=GROUP_B.map(t=>`<span class="team-pill" style="border-color:${TEAM_COLORS[t]};" onclick="window.takeoverTeam('${t}')">${t.toUpperCase()}</span>`).join('');
+  document.getElementById('log_filters').innerHTML=`<button class="log-filter-btn active" id="filter_btn_all" onclick="window.filterLog('')">ALL</button>`+TEAMS.map(t=>`<button class="log-filter-btn" id="filter_btn_${t}" onclick="window.filterLog('${t}')">${t.toUpperCase()}</button>`).join('');
 }
 
 /* ---------- standings from BASE + played fixtures ---------- */
 function computeStandings(){
-  const T={};
-  TEAMS.forEach(t=>{
-    const b=BASE[t];
-    T[t]={ team:t, p:b.p, w:b.w, l:b.l, t:b.t, pts:b.pts, rf:b.rf, of:b.of, ra:b.ra, oa:b.oa, wkts:b.wkts,
-           fp_total:b.fp*b.p, fp_n:b.p, baseNrr:b.nrr, newPlayed:false,
-           form:b.form.map(r=>({res:r,detail:'Pre run-in standing',mId:null,opp:null})) };
-  });
-  const played=fixtures.filter(f=>f && f.played && f.result);
-  played.forEach(f=>{
-    const m=f.result, A=T[f.t1], B=T[f.t2]; if(!A||!B) return;
-    const o1=calcOvers(m.b1), o2=calcOvers(m.b2);
-    A.p++; B.p++;
-    A.rf+=m.r1; A.of+=o1; A.ra+=m.r2; A.oa+=o2; A.wkts+=(m.w2||0);
-    B.rf+=m.r2; B.of+=o2; B.ra+=m.r1; B.oa+=o1; B.wkts+=(m.w1||0);
-    A.fp_total+=(m.fp1??10); A.fp_n++; B.fp_total+=(m.fp2??10); B.fp_n++;
-    let rA,rB,dA,dB;
-    if(m.r1>m.r2){ A.w++;A.pts+=2; B.l++; rA='W';rB='L';
-      dA=`${f.t1.toUpperCase()} ${m.r1}/${m.w1} def ${f.t2.toUpperCase()} ${m.r2}/${m.w2} by ${m.r1-m.r2} runs`; dB=dA; }
-    else if(m.r2>m.r1){ B.w++;B.pts+=2; A.l++; rA='L';rB='W';
-      dA=`${f.t2.toUpperCase()} ${m.r2}/${m.w2} def ${f.t1.toUpperCase()} ${m.r1}/${m.w1} by ${10-(m.w2||0)} wkts`; dB=dA; }
-    else{
-      if(m.super_over && m.super_over.r1>m.super_over.r2){ A.w++;A.pts+=2; B.l++; rA='W';rB='L'; dA=`Won Super Over vs ${f.t2.toUpperCase()}`; dB=`Lost Super Over to ${f.t1.toUpperCase()}`; }
-      else if(m.super_over && m.super_over.r2>m.super_over.r1){ B.w++;B.pts+=2; A.l++; rA='L';rB='W'; dA=`Lost Super Over to ${f.t2.toUpperCase()}`; dB=`Won Super Over vs ${f.t1.toUpperCase()}`; }
-      else { A.t++;A.pts++; B.t++;B.pts++; rA='T';rB='T'; dA=`Tied vs ${f.t2.toUpperCase()}`; dB=`Tied vs ${f.t1.toUpperCase()}`; }
-    }
-    A.form.push({res:rA,detail:dA,mId:f.id,opp:f.t2}); B.form.push({res:rB,detail:dB,mId:f.id,opp:f.t1});
-    A.newPlayed=B.newPlayed=true;
-  });
-  const unplayed=fixtures.filter(f=>f && !f.played);
-  return TEAMS.map(t=>{
-    const x=T[t];
-    let nrr;
-    if(x.newPlayed){ const v=(x.of>0?x.rf/x.of:0)-(x.oa>0?x.ra/x.oa:0); nrr=v>0?`+${v.toFixed(3)}`:v.toFixed(3); if(v===0) nrr='0.000'; }
-    else nrr=x.baseNrr;
-    const next3=unplayed.filter(f=>f.t1===t||f.t2===t).slice(0,3)
-      .map(f=>`<span style="font-size:.65rem;background:#1a1a1a;padding:3px 5px;border-radius:4px;border:1px solid #333;margin-right:3px;color:#aaa;">vs ${(f.t1===t?f.t2:f.t1).toUpperCase()}</span>`).join('');
-    const avg_fp=x.fp_n>0?(x.fp_total/x.fp_n).toFixed(1):'0.0';
-    return { ...x, nrr, next3, avg_fp };
-  }).sort((a,b)=>b.pts-a.pts||parseFloat(b.nrr)-parseFloat(a.nrr));
+  const T={};
+  TEAMS.forEach(t=>{
+    const b=BASE[t];
+    T[t]={ team:t, p:b.p, w:b.w, l:b.l, t:b.t, pts:b.pts, rf:b.rf, of:b.of, ra:b.ra, oa:b.oa, wkts:b.wkts,
+           fp_total:b.fp*b.p, fp_n:b.p, baseNrr:b.nrr, newPlayed:false,
+           form:b.form.map(r=>({res:r,detail:'Pre run-in standing',mId:null,opp:null})) };
+  });
+  const played=fixtures.filter(f=>f && f.played && f.result);
+  played.forEach(f=>{
+    const m=f.result, A=T[f.t1], B=T[f.t2]; if(!A||!B) return;
+    const o1=calcOvers(m.b1), o2=calcOvers(m.b2);
+    A.p++; B.p++;
+    A.rf+=m.r1; A.of+=o1; A.ra+=m.r2; A.oa+=o2; A.wkts+=(m.w2||0);
+    B.rf+=m.r2; B.of+=o2; B.ra+=m.r1; B.oa+=o1; B.wkts+=(m.w1||0);
+    A.fp_total+=(m.fp1??10); A.fp_n++; B.fp_total+=(m.fp2??10); B.fp_n++;
+    let rA,rB,dA,dB;
+    if(m.r1>m.r2){ A.w++;A.pts+=2; B.l++; rA='W';rB='L';
+      dA=`${f.t1.toUpperCase()} ${m.r1}/${m.w1} def ${f.t2.toUpperCase()} ${m.r2}/${m.w2} by ${m.r1-m.r2} runs`; dB=dA; }
+    else if(m.r2>m.r1){ B.w++;B.pts+=2; A.l++; rA='L';rB='W';
+      dA=`${f.t2.toUpperCase()} ${m.r2}/${m.w2} def ${f.t1.toUpperCase()} ${m.r1}/${m.w1} by ${10-(m.w2||0)} wkts`; dB=dA; }
+    else{
+      if(m.super_over && m.super_over.r1>m.super_over.r2){ A.w++;A.pts+=2; B.l++; rA='W';rB='L'; dA=`Won Super Over vs ${f.t2.toUpperCase()}`; dB=`Lost Super Over to ${f.t1.toUpperCase()}`; }
+      else if(m.super_over && m.super_over.r2>m.super_over.r1){ B.w++;B.pts+=2; A.l++; rA='L';rB='W'; dA=`Lost Super Over to ${f.t2.toUpperCase()}`; dB=`Won Super Over vs ${f.t1.toUpperCase()}`; }
+      else { A.t++;A.pts++; B.t++;B.pts++; rA='T';rB='T'; dA=`Tied vs ${f.t2.toUpperCase()}`; dB=`Tied vs ${f.t1.toUpperCase()}`; }
+    }
+    A.form.push({res:rA,detail:dA,mId:f.id,opp:f.t2}); B.form.push({res:rB,detail:dB,mId:f.id,opp:f.t1});
+    A.newPlayed=B.newPlayed=true;
+  });
+  const unplayed=fixtures.filter(f=>f && !f.played);
+  return TEAMS.map(t=>{
+    const x=T[t];
+    let nrr;
+    if(x.newPlayed){ const v=(x.of>0?x.rf/x.of:0)-(x.oa>0?x.ra/x.oa:0); nrr=v>0?`+${v.toFixed(3)}`:v.toFixed(3); if(v===0) nrr='0.000'; }
+    else nrr=x.baseNrr;
+    const next3=unplayed.filter(f=>f.t1===t||f.t2===t).slice(0,3)
+      .map(f=>`<span style="font-size:.65rem;background:#1a1a1a;padding:3px 5px;border-radius:4px;border:1px solid #333;margin-right:3px;color:#aaa;">vs ${(f.t1===t?f.t2:f.t1).toUpperCase()}</span>`).join('');
+    const avg_fp=x.fp_n>0?(x.fp_total/x.fp_n).toFixed(1):'0.0';
+    return { ...x, nrr, next3, avg_fp };
+  }).sort((a,b)=>b.pts-a.pts||parseFloat(b.nrr)-parseFloat(a.nrr));
 }
 
 /* ---------- Monte Carlo (Elo from played run-in games, seeded points from standings) ---------- */
 function runMonteCarlo(standings){
-  const unplayed=fixtures.filter(f=>f && !f.played);
-  const elo={}; TEAMS.forEach(t=>elo[t]=1500);
-  fixtures.filter(f=>f&&f.played&&f.result).forEach(f=>{
-    const m=f.result, e1=elo[f.t1], e2=elo[f.t2];
-    const x1=1/(1+Math.pow(10,(e2-e1)/400)), x2=1/(1+Math.pow(10,(e1-e2)/400));
-    let s1=.5,s2=.5; if(m.r1>m.r2){s1=1;s2=0;} else if(m.r2>m.r1){s1=0;s2=1;}
-    elo[f.t1]=e1+32*(s1-x1); elo[f.t2]=e2+32*(s2-x2);
-  });
-  const top4={}; TEAMS.forEach(t=>top4[t]=0);
-  const N=1000;
-  for(let i=0;i<N;i++){
-    const pts={}, w={}, nrr={};
-    standings.forEach(s=>{ pts[s.team]=s.pts; w[s.team]=s.w; nrr[s.team]=parseFloat(s.nrr); });
-    unplayed.forEach(f=>{
-      const e1=elo[f.t1]||1500, e2=elo[f.t2]||1500;
-      const x1=1/(1+Math.pow(10,(e2-e1)/400));
-      if(Math.random()<x1){ pts[f.t1]+=2; w[f.t1]++; } else { pts[f.t2]+=2; w[f.t2]++; }
-    });
-    const arr=TEAMS.map(t=>({t,pts:pts[t],w:w[t],nrr:nrr[t]})).sort((a,b)=>b.pts-a.pts||b.w-a.w||b.nrr-a.nrr);
-    for(let j=0;j<4;j++) top4[arr[j].t]++;
-  }
-  const out={}; TEAMS.forEach(t=>out[t]=(top4[t]/N)*100); return out;
+  const unplayed=fixtures.filter(f=>f && !f.played);
+  const elo={}; TEAMS.forEach(t=>elo[t]=1500);
+  fixtures.filter(f=>f&&f.played&&f.result).forEach(f=>{
+    const m=f.result, e1=elo[f.t1], e2=elo[f.t2];
+    const x1=1/(1+Math.pow(10,(e2-e1)/400)), x2=1/(1+Math.pow(10,(e1-e2)/400));
+    let s1=.5,s2=.5; if(m.r1>m.r2){s1=1;s2=0;} else if(m.r2>m.r1){s1=0;s2=1;}
+    elo[f.t1]=e1+32*(s1-x1); elo[f.t2]=e2+32*(s2-x2);
+  });
+  const top4={}; TEAMS.forEach(t=>top4[t]=0);
+  const N=1000;
+  for(let i=0;i<N;i++){
+    const pts={}, w={}, nrr={};
+    standings.forEach(s=>{ pts[s.team]=s.pts; w[s.team]=s.w; nrr[s.team]=parseFloat(s.nrr); });
+    unplayed.forEach(f=>{
+      const e1=elo[f.t1]||1500, e2=elo[f.t2]||1500;
+      const x1=1/(1+Math.pow(10,(e2-e1)/400));
+      if(Math.random()<x1){ pts[f.t1]+=2; w[f.t1]++; } else { pts[f.t2]+=2; w[f.t2]++; }
+    });
+    const arr=TEAMS.map(t=>({t,pts:pts[t],w:w[t],nrr:nrr[t]})).sort((a,b)=>b.pts-a.pts||b.w-a.w||b.nrr-a.nrr);
+    for(let j=0;j<4;j++) top4[arr[j].t]++;
+  }
+  const out={}; TEAMS.forEach(t=>out[t]=(top4[t]/N)*100); return out;
 }
 
 /* ---------- mathematical qualification ----------
-   A team is QUALIFIED only when it is locked into the top 4 no matter how every
-   remaining game goes — i.e. in the team's WORST case (it loses all its remaining
-   games) at most 3 other teams can even reach its points (a tie counts as a threat
-   because NRR can't be guaranteed). It is ELIMINATED only when at least 4 teams are
-   certainly above its BEST possible finish. Points totals (14/16/18...) are irrelevant
-   on their own — only the standings math matters. Once every game is played, the top 4
-   of the already-NRR-aware sort are the qualifiers. */
+   A team is QUALIFIED only when it is locked into the top 4 no matter how every
+   remaining game goes — i.e. in the team's WORST case (it loses all its remaining
+   games) at most 3 other teams can even reach its points (a tie counts as a threat
+   because NRR can't be guaranteed). It is ELIMINATED only when at least 4 teams are
+   certainly above its BEST possible finish. Points totals (14/16/18...) are irrelevant
+   on their own — only the standings math matters. Once every game is played, the top 4
+   of the already-NRR-aware sort are the qualifiers. */
 function computeClinch(standings){
-  const rem = t => Math.max(0, TOTAL_MATCHES_PER_TEAM - t.p);
-  const unplayed = fixtures.filter(f=>f && !f.played);
-  const res = {};
-  if(unplayed.length===0){                       // league finished: top 4 by pts then NRR
-    standings.forEach((s,i)=>{ res[s.team]={ qualified:i<4, eliminated:i>=4 }; });
-    return res;
-  }
-  standings.forEach(s=>{
-    const tWorst = s.pts;                         // s loses every remaining game
-    const tBest  = s.pts + 2*rem(s);              // s wins every remaining game
-    let canReachS = 0;                            // rivals that could finish >= s (s's worst case)
-    let certainlyAbove = 0;                       // rivals already above s's ceiling
-    standings.forEach(o=>{
-      if(o.team===s.team) return;
-      const oBest = o.pts + 2*rem(o);
-      if(oBest >= tWorst) canReachS++;            // >= : tie is a threat (NRR not guaranteed)
-      if(o.pts  >  tBest) certainlyAbove++;       // strictly above s's max — s can't catch
-    });
-    res[s.team] = { qualified: canReachS <= 3, eliminated: certainlyAbove >= 4 };
-  });
-  return res;
+  const rem = t => Math.max(0, TOTAL_MATCHES_PER_TEAM - t.p);
+  const unplayed = fixtures.filter(f=>f && !f.played);
+  const res = {};
+  if(unplayed.length===0){                       // league finished: top 4 by pts then NRR
+    standings.forEach((s,i)=>{ res[s.team]={ qualified:i<4, eliminated:i>=4 }; });
+    return res;
+  }
+  standings.forEach(s=>{
+    const tWorst = s.pts;                         // s loses every remaining game
+    const tBest  = s.pts + 2*rem(s);              // s wins every remaining game
+    let canReachS = 0;                            // rivals that could finish >= s (s's worst case)
+    let certainlyAbove = 0;                       // rivals already above s's ceiling
+    standings.forEach(o=>{
+      if(o.team===s.team) return;
+      const oBest = o.pts + 2*rem(o);
+      if(oBest >= tWorst) canReachS++;            // >= : tie is a threat (NRR not guaranteed)
+      if(o.pts  >  tBest) certainlyAbove++;       // strictly above s's max — s can't catch
+    });
+    res[s.team] = { qualified: canReachS <= 3, eliminated: certainlyAbove >= 4 };
+  });
+  return res;
 }
 
 /* ---------- render ---------- */
 function updateUI(){
-  const standings=computeStandings();
-  window.currentStandings=standings;
-  const played=fixtures.filter(f=>f&&f.played&&f.result);
-  const unplayed=fixtures.filter(f=>f&&!f.played);
-  const probs=unplayed.length? runMonteCarlo(standings) : (()=>{ const o={}; standings.forEach((s,i)=>o[s.team]=i<4?100:0); return o; })();
+  const standings=computeStandings();
+  window.currentStandings=standings;
+  const played=fixtures.filter(f=>f&&f.played&&f.result);
+  const unplayed=fixtures.filter(f=>f&&!f.played);
+  const probs=unplayed.length? runMonteCarlo(standings) : (()=>{ const o={}; standings.forEach((s,i)=>o[s.team]=i<4?100:0); return o; })();
 
-  const clinch=computeClinch(standings);
-  const status={};
-  standings.forEach(s=>{
-    const pr=probs[s.team]||0;
-    const qualified=(s.pts>=18) || clinch[s.team].qualified;   // 18 pts = sure qualification; or mathematically locked at 14/16
-    const eliminated=clinch[s.team].eliminated;
-    let html;
-    if(qualified){ html='<span class="tag q" style="background:var(--accent-color);color:#050505;">QUALIFIED</span>'; }
-    else if(eliminated){ html='<span class="tag e" style="border:1px dashed #444;color:#555;">ELIMINATED</span>'; }
-    else if(pr>60){ html='<span style="color:#00e676;font-weight:bold;">LIKELY</span>'; }
-    else if(pr<20){ html='<span style="color:#ff5252;font-weight:bold;">AT RISK</span>'; }
-    else { html='<span style="color:#aaa;font-weight:bold;">IN THE HUNT</span>'; }
-    status[s.team]={ html, tag: qualified?'<span class="tag q">Q</span>':(eliminated?'<span class="tag e">E</span>':'-') };
-  });
+  const clinch=computeClinch(standings);
+  const status={};
+  standings.forEach(s=>{
+    const pr=probs[s.team]||0;
+    const qualified=(s.pts>=18) || clinch[s.team].qualified;   // 18 pts = sure qualification; or mathematically locked at 14/16
+    const eliminated=clinch[s.team].eliminated;
+    let html;
+    if(qualified){ html='<span class="tag q" style="background:var(--accent-color);color:#050505;">QUALIFIED</span>'; }
+    else if(eliminated){ html='<span class="tag e" style="border:1px dashed #444;color:#555;">ELIMINATED</span>'; }
+    else if(pr>60){ html='<span style="color:#00e676;font-weight:bold;">LIKELY</span>'; }
+    else if(pr<20){ html='<span style="color:#ff5252;font-weight:bold;">AT RISK</span>'; }
+    else { html='<span style="color:#aaa;font-weight:bold;">IN THE HUNT</span>'; }
+    status[s.team]={ html, tag: qualified?'<span class="tag q">Q</span>':(eliminated?'<span class="tag e">E</span>':'-') };
+  });
 
-  // points table
-  const pb=document.getElementById('ptable_body'); pb.innerHTML='';
-  standings.forEach((s,idx)=>{
-    const trC=(idx<4 && played.length>=1)?'class="top4-row"':'';
-    const nv=parseFloat(s.nrr), nc=nv>0?'#00e676':(nv<0?'#ff5252':'#aaa');
-    const fh=s.form.slice(-5).reverse().map((f,i)=>`<span class="form-letter letter-${f.res.toLowerCase()} ${i===0?'latest-form':''}" title="${f.detail}" onclick="window.openFormModal('${s.team}')">${f.res}</span>`).join('');
-    pb.innerHTML+=`<tr ${trC}><td style="color:#fff;text-align:left;font-weight:bold;"><b class="team-link" onclick="window.takeoverTeam('${s.team}')">${s.team.toUpperCase()}</b></td><td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td><td style="color:var(--accent-color);font-size:1.2rem;"><b>${s.pts}</b></td><td style="color:${nc};font-weight:500;">${s.nrr}</td><td style="color:#00e676;font-weight:600;">${s.avg_fp}</td><td style="text-align:center;">${s.next3||'<span style="color:#444;font-style:italic;font-size:.7rem;">— done —</span>'}</td><td style="text-align:left;"><div class="form-letters">${fh||'-'}</div></td><td>${status[s.team].tag}</td></tr>`;
-  });
+  // points table
+  const pb=document.getElementById('ptable_body'); pb.innerHTML='';
+  standings.forEach((s,idx)=>{
+    const trC=(idx<4 && played.length>=1)?'class="top4-row"':'';
+    const nv=parseFloat(s.nrr), nc=nv>0?'#00e676':(nv<0?'#ff5252':'#aaa');
+    const fh=s.form.slice(-5).reverse().map((f,i)=>`<span class="form-letter letter-${f.res.toLowerCase()} ${i===0?'latest-form':''}" title="${f.detail}" onclick="window.openFormModal('${s.team}')">${f.res}</span>`).join('');
+    pb.innerHTML+=`<tr ${trC}><td style="color:#fff;text-align:left;font-weight:bold;"><b class="team-link" onclick="window.takeoverTeam('${s.team}')">${s.team.toUpperCase()}</b></td><td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td><td style="color:var(--accent-color);font-size:1.2rem;"><b>${s.pts}</b></td><td style="color:${nc};font-weight:500;">${s.nrr}</td><td style="color:#00e676;font-weight:600;">${s.avg_fp}</td><td style="text-align:center;">${s.next3||'<span style="color:#444;font-style:italic;font-size:.7rem;">— done —</span>'}</td><td style="text-align:left;"><div class="form-letters">${fh||'-'}</div></td><td>${status[s.team].tag}</td></tr>`;
+  });
 
-  // leaderboards
-  const maxR=Math.max(...standings.map(s=>s.rf),1);
-  document.getElementById('orange_body').innerHTML=[...standings].sort((a,b)=>b.rf-a.rf).slice(0,5).map(s=>`<tr style="background:linear-gradient(90deg,rgba(var(--accent-rgb),.15) ${(s.rf/maxR)*100}%,transparent ${(s.rf/maxR)*100}%);"><td style="text-transform:uppercase;text-align:left;font-weight:bold;">${s.team}</td><td style="color:var(--accent-color);font-weight:bold;">${s.rf}</td></tr>`).join('');
-  const maxW=Math.max(...standings.map(s=>s.wkts),1);
-  document.getElementById('purple_body').innerHTML=[...standings].sort((a,b)=>b.wkts-a.wkts).slice(0,5).map(s=>`<tr style="background:linear-gradient(90deg,rgba(var(--accent-rgb),.15) ${(s.wkts/maxW)*100}%,transparent ${(s.wkts/maxW)*100}%);"><td style="text-transform:uppercase;text-align:left;font-weight:bold;">${s.team}</td><td style="color:var(--accent-color);font-weight:bold;">${s.wkts}</td></tr>`).join('');
-  const maxF=Math.max(...standings.map(s=>parseFloat(s.avg_fp)),1);
-  document.getElementById('fairplay_body').innerHTML=[...standings].sort((a,b)=>parseFloat(b.avg_fp)-parseFloat(a.avg_fp)).slice(0,5).map(s=>`<tr style="background:linear-gradient(90deg,rgba(0,230,118,.15) ${(parseFloat(s.avg_fp)/maxF)*100}%,transparent ${(parseFloat(s.avg_fp)/maxF)*100}%);"><td style="text-transform:uppercase;text-align:left;font-weight:bold;">${s.team}</td><td style="color:#00e676;font-weight:bold;">${s.avg_fp}</td></tr>`).join('');
-  let ht=[]; played.forEach(f=>{ const m=f.result; ht.push({team:f.t1,r:m.r1,w:m.w1,vs:f.t2},{team:f.t2,r:m.r2,w:m.w2,vs:f.t1}); });
-  ht.sort((a,b)=>b.r-a.r); if(!ht.length) ht=[{team:'-',r:0,w:0,vs:'-'}];
-  document.getElementById('highest_totals_body').innerHTML=ht.slice(0,5).map(t=>`<tr><td style="text-transform:uppercase;text-align:left;font-weight:bold;">${t.team}</td><td style="color:var(--accent-color);font-weight:bold;">${t.r}/${t.w}</td><td style="font-size:.75rem;color:#888;">vs ${(t.vs||'').toUpperCase()}</td></tr>`).join('');
+  // leaderboards
+  const maxR=Math.max(...standings.map(s=>s.rf),1);
+  document.getElementById('orange_body').innerHTML=[...standings].sort((a,b)=>b.rf-a.rf).slice(0,5).map(s=>`<tr style="background:linear-gradient(90deg,rgba(var(--accent-rgb),.15) ${(s.rf/maxR)*100}%,transparent ${(s.rf/maxR)*100}%);"><td style="text-transform:uppercase;text-align:left;font-weight:bold;">${s.team}</td><td style="color:var(--accent-color);font-weight:bold;">${s.rf}</td></tr>`).join('');
+  const maxW=Math.max(...standings.map(s=>s.wkts),1);
+  document.getElementById('purple_body').innerHTML=[...standings].sort((a,b)=>b.wkts-a.wkts).slice(0,5).map(s=>`<tr style="background:linear-gradient(90deg,rgba(var(--accent-rgb),.15) ${(s.wkts/maxW)*100}%,transparent ${(s.wkts/maxW)*100}%);"><td style="text-transform:uppercase;text-align:left;font-weight:bold;">${s.team}</td><td style="color:var(--accent-color);font-weight:bold;">${s.wkts}</td></tr>`).join('');
+  const maxF=Math.max(...standings.map(s=>parseFloat(s.avg_fp)),1);
+  document.getElementById('fairplay_body').innerHTML=[...standings].sort((a,b)=>parseFloat(b.avg_fp)-parseFloat(a.avg_fp)).slice(0,5).map(s=>`<tr style="background:linear-gradient(90deg,rgba(0,230,118,.15) ${(parseFloat(s.avg_fp)/maxF)*100}%,transparent ${(parseFloat(s.avg_fp)/maxF)*100}%);"><td style="text-transform:uppercase;text-align:left;font-weight:bold;">${s.team}</td><td style="color:#00e676;font-weight:bold;">${s.avg_fp}</td></tr>`).join('');
+  let ht=[]; played.forEach(f=>{ const m=f.result; ht.push({team:f.t1,r:m.r1,w:m.w1,vs:f.t2},{team:f.t2,r:m.r2,w:m.w2,vs:f.t1}); });
+  ht.sort((a,b)=>b.r-a.r); if(!ht.length) ht=[{team:'-',r:0,w:0,vs:'-'}];
+  document.getElementById('highest_totals_body').innerHTML=ht.slice(0,5).map(t=>`<tr><td style="text-transform:uppercase;text-align:left;font-weight:bold;">${t.team}</td><td style="color:var(--accent-color);font-weight:bold;">${t.r}/${t.w}</td><td style="font-size:.75rem;color:#888;">vs ${(t.vs||'').toUpperCase()}</td></tr>`).join('');
 
-  // match log
-  const lb=document.getElementById('match_log_body'); let rows='', pc=0, up=0;
-  fixtures.forEach(f=>{
-    if(!f||!f.t1||!f.t2) return;
-    let cell, cls='';
-    const ambTag=f.amb?`<span class="amb-badge" title="Reconstructed pairing — verify / edit if needed">UNCONFIRMED</span>`:'';
-    if(f.played&&f.result){
-      pc++; const m=f.result;
-      let win='Match Tied';
-      if(m.r1>m.r2) win=`<span style="color:#00e676;font-weight:bold;">${f.t1.toUpperCase()} won by ${m.r1-m.r2} runs</span>`;
-      else if(m.r2>m.r1) win=`<span style="color:#00e676;font-weight:bold;">${f.t2.toUpperCase()} won by ${10-(m.w2||0)} wkts</span>`;
-      else if(m.super_over) win=`<span style="color:#00e676;font-weight:bold;">${(m.super_over.r1>m.super_over.r2?f.t1:f.t2).toUpperCase()} won Super Over</span>`;
-      const d=m.desc?` <span style="color:#888;font-style:italic;">— ${m.desc}</span>`:'';
-      cell=`<td style="text-align:left;">${f.t1.toUpperCase()}: ${m.r1}/${m.w1} (${fmtOvers(m.b1)}) &nbsp;|&nbsp; ${f.t2.toUpperCase()}: ${m.r2}/${m.w2} (${fmtOvers(m.b2)}) &nbsp;—&nbsp; ${win}${d}</td>`;
-    } else {
-      up++; cls=' is-upcoming';
-      const badge=up===1?`<span class="upcoming-badge" style="background:rgba(var(--accent-rgb),.22);">NEXT UP</span>`:`<span class="upcoming-badge">UPCOMING</span>`;
-      cell=`<td style="text-align:left;">${badge}<span style="color:#888;font-style:italic;">Scheduled — awaiting result</span></td>`;
-    }
-    rows+=`<tr class="match-row${cls}" data-t1="${f.t1}" data-t2="${f.t2}"><td style="color:#666;text-align:left;font-weight:bold;">${f.id}</td><td class="match-fixture" onclick="window.takeoverTeam('${f.t1}')" style="cursor:pointer;">${f.t1.toUpperCase()} vs ${f.t2.toUpperCase()}${ambTag}</td>${cell}</tr>`;
-  });
-  lb.innerHTML=rows;
-  document.getElementById('match_progress').innerText=`${pc} / ${TOTAL} Played  •  ${up} Upcoming`;
-  document.getElementById('tourney_progress_bar').style.width=((pc/TOTAL)*100)+'%';
+  // match log
+  const lb=document.getElementById('match_log_body'); let rows='', pc=0, up=0;
+  fixtures.forEach(f=>{
+    if(!f||!f.t1||!f.t2) return;
+    let cell, cls='';
+    const ambTag=f.amb?`<span class="amb-badge" title="Reconstructed pairing — verify / edit if needed">UNCONFIRMED</span>`:'';
+    if(f.played&&f.result){
+      pc++; const m=f.result;
+      let win='Match Tied';
+      if(m.r1>m.r2) win=`<span style="color:#00e676;font-weight:bold;">${f.t1.toUpperCase()} won by ${m.r1-m.r2} runs</span>`;
+      else if(m.r2>m.r1) win=`<span style="color:#00e676;font-weight:bold;">${f.t2.toUpperCase()} won by ${10-(m.w2||0)} wkts</span>`;
+      else if(m.super_over) win=`<span style="color:#00e676;font-weight:bold;">${(m.super_over.r1>m.super_over.r2?f.t1:f.t2).toUpperCase()} won Super Over</span>`;
+      const d=m.desc?` <span style="color:#888;font-style:italic;">— ${m.desc}</span>`:'';
+      cell=`<td style="text-align:left;">${f.t1.toUpperCase()}: ${m.r1}/${m.w1} (${fmtOvers(m.b1)}) &nbsp;|&nbsp; ${f.t2.toUpperCase()}: ${m.r2}/${m.w2} (${fmtOvers(m.b2)}) &nbsp;—&nbsp; ${win}${d}</td>`;
+    } else {
+      up++; cls=' is-upcoming';
+      const badge=up===1?`<span class="upcoming-badge" style="background:rgba(var(--accent-rgb),.22);">NEXT UP</span>`:`<span class="upcoming-badge">UPCOMING</span>`;
+      cell=`<td style="text-align:left;">${badge}<span style="color:#888;font-style:italic;">Scheduled — awaiting result</span></td>`;
+    }
+    rows+=`<tr class="match-row${cls}" data-t1="${f.t1}" data-t2="${f.t2}"><td style="color:#666;text-align:left;font-weight:bold;">${f.id}</td><td class="match-fixture" onclick="window.takeoverTeam('${f.t1}')" style="cursor:pointer;">${f.t1.toUpperCase()} vs ${f.t2.toUpperCase()}${ambTag}</td>${cell}</tr>`;
+  });
+  lb.innerHTML=rows;
+  document.getElementById('match_progress').innerText=`${pc} / ${TOTAL} Played  •  ${up} Upcoming`;
+  document.getElementById('tourney_progress_bar').style.width=((pc/TOTAL)*100)+'%';
 
-  // playoff engine
-  document.getElementById('mc_body').innerHTML=Object.keys(probs).map(t=>({t,p:probs[t]})).sort((a,b)=>b.p-a.p)
-    .map(o=>`<tr><td style="text-transform:uppercase;font-weight:bold;color:var(--accent-color);text-align:left;cursor:pointer;letter-spacing:1px;" onclick="window.takeoverTeam('${o.t}')">${o.t}</td><td style="font-weight:bold;">${o.p.toFixed(1)}%</td><td>${status[o.t].html}</td></tr>`).join('');
+  // playoff engine
+  document.getElementById('mc_body').innerHTML=Object.keys(probs).map(t=>({t,p:probs[t]})).sort((a,b)=>b.p-a.p)
+    .map(o=>`<tr><td style="text-transform:uppercase;font-weight:bold;color:var(--accent-color);text-align:left;cursor:pointer;letter-spacing:1px;" onclick="window.takeoverTeam('${o.t}')">${o.t}</td><td style="font-weight:bold;">${o.p.toFixed(1)}%</td><td>${status[o.t].html}</td></tr>`).join('');
 
-  // admin dropdowns
-  const es=document.getElementById('edit_summary_match');
-  if(es){ const cur=es.value; es.innerHTML='<option value="">Select played match…</option>'+played.map(f=>`<option value="${f.id}">M${f.id}: ${f.t1.toUpperCase()} vs ${f.t2.toUpperCase()}</option>`).join(''); if(cur) es.value=cur; }
-  const rs=document.getElementById('reset_match_select');
-  if(rs){ const cur=rs.value; rs.innerHTML='<option value="">Select played match…</option>'+played.map(f=>`<option value="${f.id}">M${f.id}: ${f.t1.toUpperCase()} vs ${f.t2.toUpperCase()}</option>`).join(''); if(cur) rs.value=cur; }
-  const ef=document.getElementById('edit_fix_match');
-  if(ef){ const cur=ef.value; ef.innerHTML='<option value="">Select un-played match…</option>'+unplayed.map(f=>`<option value="${f.id}">M${f.id}: ${f.t1.toUpperCase()} vs ${f.t2.toUpperCase()}${f.amb?' (unconfirmed)':''}</option>`).join(''); if(cur) ef.value=cur; }
+  // admin dropdowns
+  const es=document.getElementById('edit_summary_match');
+  if(es){ const cur=es.value; es.innerHTML='<option value="">Select played match…</option>'+played.map(f=>`<option value="${f.id}">M${f.id}: ${f.t1.toUpperCase()} vs ${f.t2.toUpperCase()}</option>`).join(''); if(cur) es.value=cur; }
+  const rs=document.getElementById('reset_match_select');
+  if(rs){ const cur=rs.value; rs.innerHTML='<option value="">Select played match…</option>'+played.map(f=>`<option value="${f.id}">M${f.id}: ${f.t1.toUpperCase()} vs ${f.t2.toUpperCase()}</option>`).join(''); if(cur) rs.value=cur; }
+  const ef=document.getElementById('edit_fix_match');
+  if(ef){ const cur=ef.value; ef.innerHTML='<option value="">Select un-played match…</option>'+unplayed.map(f=>`<option value="${f.id}">M${f.id}: ${f.t1.toUpperCase()} vs ${f.t2.toUpperCase()}${f.amb?' (unconfirmed)':''}</option>`).join(''); if(cur) ef.value=cur; }
 
-  const next=unplayed[0]||null; if(next) _lastNextMatchId=next.id; else _lastNextMatchId=null;
-  renderVotes();
+  const next=unplayed[0]||null; if(next) _lastNextMatchId=next.id; else _lastNextMatchId=null;
+  renderVotes();
 }
 
 /* ---------- community votes ---------- */
 function renderVotes(){
-  const card=document.getElementById('fan_vote_card'); if(!card) return;
-  const m=_lastNextMatchId? fixtures.find(f=>f.id===_lastNextMatchId):null;
-  if(!m||m.played){ card.style.display='none'; return; }
-  card.style.display='block';
-  document.getElementById('vote_subtitle').innerText=`Who wins Match ${m.id}?`;
-  const b1=document.getElementById('vote_btn_t1'), b2=document.getElementById('vote_btn_t2');
-  b1.innerText=m.t1.toUpperCase(); b1.style.color=TEAM_COLORS[m.t1]; b1.style.borderColor=TEAM_COLORS[m.t1];
-  b2.innerText=m.t2.toUpperCase(); b2.style.color=TEAM_COLORS[m.t2]; b2.style.borderColor=TEAM_COLORS[m.t2];
-  const mv=communityVotes[m.id]||{}; const v1=mv[m.t1]||0, v2=mv[m.t2]||0, tot=v1+v2;
-  document.getElementById('total_votes').innerText=tot;
-  const p1=tot>0?(v1/tot)*100:50, p2=100-p1;
-  const bar1=document.getElementById('vote_bar_t1'), bar2=document.getElementById('vote_bar_t2');
-  bar1.style.width=p1+'%'; bar1.style.backgroundColor=TEAM_COLORS[m.t1]; bar1.innerText=tot>0&&p1>10?p1.toFixed(0)+'%':'';
-  bar2.style.width=p2+'%'; bar2.style.backgroundColor=TEAM_COLORS[m.t2]; bar2.innerText=tot>0&&p2>10?p2.toFixed(0)+'%':'';
+  const card=document.getElementById('fan_vote_card'); if(!card) return;
+  const m=_lastNextMatchId? fixtures.find(f=>f.id===_lastNextMatchId):null;
+  if(!m||m.played){ card.style.display='none'; return; }
+  card.style.display='block';
+  document.getElementById('vote_subtitle').innerText=`Who wins Match ${m.id}?`;
+  const b1=document.getElementById('vote_btn_t1'), b2=document.getElementById('vote_btn_t2');
+  b1.innerText=m.t1.toUpperCase(); b1.style.color=TEAM_COLORS[m.t1]; b1.style.borderColor=TEAM_COLORS[m.t1];
+  b2.innerText=m.t2.toUpperCase(); b2.style.color=TEAM_COLORS[m.t2]; b2.style.borderColor=TEAM_COLORS[m.t2];
+  const mv=communityVotes[m.id]||{}; const v1=mv[m.t1]||0, v2=mv[m.t2]||0, tot=v1+v2;
+  document.getElementById('total_votes').innerText=tot;
+  const p1=tot>0?(v1/tot)*100:50, p2=100-p1;
+  const bar1=document.getElementById('vote_bar_t1'), bar2=document.getElementById('vote_bar_t2');
+  bar1.style.width=p1+'%'; bar1.style.backgroundColor=TEAM_COLORS[m.t1]; bar1.innerText=tot>0&&p1>10?p1.toFixed(0)+'%':'';
+  bar2.style.width=p2+'%'; bar2.style.backgroundColor=TEAM_COLORS[m.t2]; bar2.innerText=tot>0&&p2>10?p2.toFixed(0)+'%':'';
 }
 window.castVote=function(i){
-  if(!_lastNextMatchId) return;
-  const m=fixtures.find(f=>f.id===_lastNextMatchId); if(!m) return;
-  const key=i===1?m.t1:m.t2;
-  get(child(votesRef,`${m.id}/${key}`)).then(s=>{ set(child(votesRef,`${m.id}/${key}`),(s.val()||0)+1); window.showToast(`Vote cast for ${key.toUpperCase()}!`,'success'); })
-    .catch(e=>{ console.error(e); window.showToast('Vote could not be saved (cloud blocked).','error'); });
+  if(!_lastNextMatchId) return;
+  const m=fixtures.find(f=>f.id===_lastNextMatchId); if(!m) return;
+  const key=i===1?m.t1:m.t2;
+  get(child(votesRef,`${m.id}/${key}`)).then(s=>{ set(child(votesRef,`${m.id}/${key}`),(s.val()||0)+1); window.showToast(`Vote cast for ${key.toUpperCase()}!`,'success'); })
+    .catch(e=>{ console.error(e); window.showToast('Vote could not be saved (cloud blocked).','error'); });
 };
 
 /* ---------- admin actions ---------- */
 window.addMatch=function(){
-  const d={
-    t1:document.getElementById('t1').value, r1:+document.getElementById('r1').value||0, w1:+document.getElementById('w1').value||0, b1:+document.getElementById('b1').value||0,
-    fp1:isNaN(parseFloat(document.getElementById('fp1').value))?10:parseFloat(document.getElementById('fp1').value),
-    t2:document.getElementById('t2').value, r2:+document.getElementById('r2').value||0, w2:+document.getElementById('w2').value||0, b2:+document.getElementById('b2').value||0,
-    fp2:isNaN(parseFloat(document.getElementById('fp2').value))?10:parseFloat(document.getElementById('fp2').value),
-    desc:document.getElementById('match_desc').value.trim()
-  };
-  if(document.getElementById('has_super_over').checked){
-    d.super_over={ r1:+document.getElementById('so_r1').value||0, w1:+document.getElementById('so_w1').value||0, b1:+document.getElementById('so_b1').value||0,
-                   r2:+document.getElementById('so_r2').value||0, w2:+document.getElementById('so_w2').value||0, b2:+document.getElementById('so_b2').value||0 };
-  }
-  if(d.t1===d.t2){ window.showToast('Teams must be different.','error'); return; }
-  const slot=fixtures.find(f=>f && !f.played && ((f.t1===d.t1&&f.t2===d.t2)||(f.t1===d.t2&&f.t2===d.t1)));
-  if(!slot){ window.showToast('No remaining fixture for that pair. (Use Edit Fixture if the schedule is wrong.)','error'); return; }
-  // store result oriented to the fixture's own t1/t2 so display stays consistent
-  if(slot.t1===d.t1){ slot.result={t1:slot.t1,t2:slot.t2,r1:d.r1,w1:d.w1,b1:d.b1,fp1:d.fp1,r2:d.r2,w2:d.w2,b2:d.b2,fp2:d.fp2,desc:d.desc,super_over:d.super_over}; }
-  else { slot.result={t1:slot.t1,t2:slot.t2,r1:d.r2,w1:d.w2,b1:d.b2,fp1:d.fp2,r2:d.r1,w2:d.w1,b2:d.b1,fp2:d.fp1,desc:d.desc,
-    super_over:d.super_over?{r1:d.super_over.r2,w1:d.super_over.w2,b1:d.super_over.b2,r2:d.super_over.r1,w2:d.super_over.w1,b2:d.super_over.b1}:undefined}; }
-  slot.played=true;
-  pushToCloud(); bootUI();
-  ['r1','w1','r2','w2','match_desc','so_r1','so_w1','so_r2','so_w2'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
-  ['b1','b2'].forEach(id=>document.getElementById(id).value=30);
-  ['fp1','fp2'].forEach(id=>document.getElementById(id).value=10);
-  document.getElementById('has_super_over').checked=false; document.getElementById('super_over_panel').style.display='none';
-  window.showToast(`Match ${slot.id} saved.`,'success');
+  const d={
+    t1:document.getElementById('t1').value, r1:+document.getElementById('r1').value||0, w1:+document.getElementById('w1').value||0, b1:+document.getElementById('b1').value||0,
+    fp1:isNaN(parseFloat(document.getElementById('fp1').value))?10:parseFloat(document.getElementById('fp1').value),
+    t2:document.getElementById('t2').value, r2:+document.getElementById('r2').value||0, w2:+document.getElementById('w2').value||0, b2:+document.getElementById('b2').value||0,
+    fp2:isNaN(parseFloat(document.getElementById('fp2').value))?10:parseFloat(document.getElementById('fp2').value),
+    desc:document.getElementById('match_desc').value.trim()
+  };
+  if(document.getElementById('has_super_over').checked){
+    d.super_over={ r1:+document.getElementById('so_r1').value||0, w1:+document.getElementById('so_w1').value||0, b1:+document.getElementById('so_b1').value||0,
+                   r2:+document.getElementById('so_r2').value||0, w2:+document.getElementById('so_w2').value||0, b2:+document.getElementById('so_b2').value||0 };
+  }
+  if(d.t1===d.t2){ window.showToast('Teams must be different.','error'); return; }
+  const slot=fixtures.find(f=>f && !f.played && ((f.t1===d.t1&&f.t2===d.t2)||(f.t1===d.t2&&f.t2===d.t1)));
+  if(!slot){ window.showToast('No remaining fixture for that pair. (Use Edit Fixture if the schedule is wrong.)','error'); return; }
+  // store result oriented to the fixture's own t1/t2 so display stays consistent
+  if(slot.t1===d.t1){ slot.result={t1:slot.t1,t2:slot.t2,r1:d.r1,w1:d.w1,b1:d.b1,fp1:d.fp1,r2:d.r2,w2:d.w2,b2:d.b2,fp2:d.fp2,desc:d.desc,super_over:d.super_over}; }
+  else { slot.result={t1:slot.t1,t2:slot.t2,r1:d.r2,w1:d.w2,b1:d.b2,fp1:d.fp2,r2:d.r1,w2:d.w1,b2:d.b1,fp2:d.fp1,desc:d.desc,
+    super_over:d.super_over?{r1:d.super_over.r2,w1:d.super_over.w2,b1:d.super_over.b2,r2:d.super_over.r1,w2:d.super_over.w1,b2:d.super_over.b1}:undefined}; }
+  slot.played=true;
+  pushToCloud(); bootUI();
+  ['r1','w1','r2','w2','match_desc','so_r1','so_w1','so_r2','so_w2'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
+  ['b1','b2'].forEach(id=>document.getElementById(id).value=30);
+  ['fp1','fp2'].forEach(id=>document.getElementById(id).value=10);
+  document.getElementById('has_super_over').checked=false; document.getElementById('super_over_panel').style.display='none';
+  window.showToast(`Match ${slot.id} saved.`,'success');
 };
 
 window.updateMatchSummary=function(){
-  const id=+document.getElementById('edit_summary_match').value;
-  if(!id){ window.showToast('Select a match.','error'); return; }
-  const f=fixtures.find(x=>x.id===id);
-  if(f&&f.played&&f.result){ f.result.desc=document.getElementById('edit_summary_text').value.trim(); pushToCloud(); bootUI(); document.getElementById('edit_summary_text').value=''; window.showToast('Summary updated.','success'); }
+  const id=+document.getElementById('edit_summary_match').value;
+  if(!id){ window.showToast('Select a match.','error'); return; }
+  const f=fixtures.find(x=>x.id===id);
+  if(f&&f.played&&f.result){ f.result.desc=document.getElementById('edit_summary_text').value.trim(); pushToCloud(); bootUI(); document.getElementById('edit_summary_text').value=''; window.showToast('Summary updated.','success'); }
 };
 
 window.resetSpecificMatch=function(){
-  const id=+document.getElementById('reset_match_select').value;
-  if(!id){ window.showToast('Select a match.','error'); return; }
-  if(confirm(`Reset Match ${id}? Its result will be cleared.`)){
-    const f=fixtures.find(x=>x.id===id);
-    if(f){ f.played=false; f.result=null; pushToCloud(); bootUI(); window.showToast(`Match ${id} reset.`,'success'); }
-  }
+  const id=+document.getElementById('reset_match_select').value;
+  if(!id){ window.showToast('Select a match.','error'); return; }
+  if(confirm(`Reset Match ${id}? Its result will be cleared.`)){
+    const f=fixtures.find(x=>x.id===id);
+    if(f){ f.played=false; f.result=null; pushToCloud(); bootUI(); window.showToast(`Match ${id} reset.`,'success'); }
+  }
 };
 
 window.swapMatches=function(){
-  const a=+document.getElementById('swap_i').value, b=+document.getElementById('swap_j').value;
-  if(!a||!b||a===b){ window.showToast('Enter two different match numbers.','error'); return; }
-  const i=fixtures.findIndex(f=>f.id===a), j=fixtures.findIndex(f=>f.id===b);
-  if(i===-1||j===-1){ window.showToast('Match number(s) not found.','error'); return; }
-  if(confirm(`Swap order of Match ${a} and Match ${b}?`)){
-    const oi=fixtures[i].id, oj=fixtures[j].id;
-    [fixtures[i],fixtures[j]]=[fixtures[j],fixtures[i]];
-    fixtures[i].id=oi; fixtures[j].id=oj;
-    pushToCloud(); bootUI();
-    document.getElementById('swap_i').value=''; document.getElementById('swap_j').value='';
-    window.showToast('Match order swapped.','success');
-  }
+  const a=+document.getElementById('swap_i').value, b=+document.getElementById('swap_j').value;
+  if(!a||!b||a===b){ window.showToast('Enter two different match numbers.','error'); return; }
+  const i=fixtures.findIndex(f=>f.id===a), j=fixtures.findIndex(f=>f.id===b);
+  if(i===-1||j===-1){ window.showToast('Match number(s) not found.','error'); return; }
+  if(confirm(`Swap order of Match ${a} and Match ${b}?`)){
+    const oi=fixtures[i].id, oj=fixtures[j].id;
+    [fixtures[i],fixtures[j]]=[fixtures[j],fixtures[i]];
+    fixtures[i].id=oi; fixtures[j].id=oj;
+    pushToCloud(); bootUI();
+    document.getElementById('swap_i').value=''; document.getElementById('swap_j').value='';
+    window.showToast('Match order swapped.','success');
+  }
 };
 
 window.editFixture=function(){
-  const id=+document.getElementById('edit_fix_match').value;
-  if(!id){ window.showToast('Select an un-played match.','error'); return; }
-  const t1=document.getElementById('edit_fix_t1').value, t2=document.getElementById('edit_fix_t2').value;
-  if(t1===t2){ window.showToast('Teams must be different.','error'); return; }
-  const f=fixtures.find(x=>x.id===id);
-  if(!f||f.played){ window.showToast('That match is already played.','error'); return; }
-  if(confirm(`Set Match ${id} to ${t1.toUpperCase()} vs ${t2.toUpperCase()}?`)){
-    f.t1=t1; f.t2=t2; f.amb=false;
-    pushToCloud(); bootUI();
-    window.showToast(`Fixture ${id} updated.`,'success');
-  }
+  const id=+document.getElementById('edit_fix_match').value;
+  if(!id){ window.showToast('Select an un-played match.','error'); return; }
+  const t1=document.getElementById('edit_fix_t1').value, t2=document.getElementById('edit_fix_t2').value;
+  if(t1===t2){ window.showToast('Teams must be different.','error'); return; }
+  const f=fixtures.find(x=>x.id===id);
+  if(!f||f.played){ window.showToast('That match is already played.','error'); return; }
+  if(confirm(`Set Match ${id} to ${t1.toUpperCase()} vs ${t2.toUpperCase()}?`)){
+    f.t1=t1; f.t2=t2; f.amb=false;
+    pushToCloud(); bootUI();
+    window.showToast(`Fixture ${id} updated.`,'success');
+  }
 };
 
 window.predictMatch=function(){
-  const t1=document.getElementById('pred_t1').value, t2=document.getElementById('pred_t2').value;
-  const rd=document.getElementById('prediction_result');
-  if(t1===t2){ rd.innerHTML='<span style="color:#d50000;">Select different teams.</span>'; return; }
-  const s1=window.currentStandings.find(s=>s.team===t1), s2=window.currentStandings.find(s=>s.team===t2);
-  if(!s1||!s2){ rd.innerHTML='<span style="color:#aaa;">Not enough data yet.</span>'; return; }
-  const c1=(s1.pts*1.5)+(parseFloat(s1.nrr)*5), c2=(s2.pts*1.5)+(parseFloat(s2.nrr)*5);
-  const tot=(c1+c2)||1; const p1=Math.max(10,Math.min(90,(c1/tot)*100)), p2=100-p1;
-  const col1=TEAM_COLORS[t1], col2=TEAM_COLORS[t2];
-  rd.innerHTML=`<div class="vote-bar-container" style="height:20px;"><div class="vote-bar" style="width:${p1}%;background:${col1};"></div><div class="vote-bar" style="width:${p2}%;background:${col2};"></div></div><div style="font-size:1.2rem;display:flex;justify-content:space-between;margin-top:10px;"><span><span style="color:${col1};font-weight:bold;">${t1.toUpperCase()}:</span> <span style="color:#fff;">${p1.toFixed(1)}%</span></span><span><span style="color:${col2};font-weight:bold;">${t2.toUpperCase()}:</span> <span style="color:#fff;">${p2.toFixed(1)}%</span></span></div>`;
+  const t1=document.getElementById('pred_t1').value, t2=document.getElementById('pred_t2').value;
+  const rd=document.getElementById('prediction_result');
+  if(t1===t2){ rd.innerHTML='<span style="color:#d50000;">Select different teams.</span>'; return; }
+  const s1=window.currentStandings.find(s=>s.team===t1), s2=window.currentStandings.find(s=>s.team===t2);
+  if(!s1||!s2){ rd.innerHTML='<span style="color:#aaa;">Not enough data yet.</span>'; return; }
+  const c1=(s1.pts*1.5)+(parseFloat(s1.nrr)*5), c2=(s2.pts*1.5)+(parseFloat(s2.nrr)*5);
+  const tot=(c1+c2)||1; const p1=Math.max(10,Math.min(90,(c1/tot)*100)), p2=100-p1;
+  const col1=TEAM_COLORS[t1], col2=TEAM_COLORS[t2];
+  rd.innerHTML=`<div class="vote-bar-container" style="height:20px;"><div class="vote-bar" style="width:${p1}%;background:${col1};"></div><div class="vote-bar" style="width:${p2}%;background:${col2};"></div></div><div style="font-size:1.2rem;display:flex;justify-content:space-between;margin-top:10px;"><span><span style="color:${col1};font-weight:bold;">${t1.toUpperCase()}:</span> <span style="color:#fff;">${p1.toFixed(1)}%</span></span><span><span style="color:${col2};font-weight:bold;">${t2.toUpperCase()}:</span> <span style="color:#fff;">${p2.toFixed(1)}%</span></span></div>`;
 };
 
 window.unlockAdmin=function(){
-  if(prompt('Enter admin password:')==='rcpl2026'){
-    document.getElementById('admin_panel').style.display='block';
-    document.getElementById('view_panel').style.gridColumn='auto';
-    window.showToast('Admin access granted.','success');
-  }
+  if(prompt('Enter admin password:')==='rcpl2026'){
+    document.getElementById('admin_panel').style.display='block';
+    document.getElementById('view_panel').style.gridColumn='auto';
+    window.showToast('Admin access granted.','success');
+  }
 };
 </script>
 </body>
