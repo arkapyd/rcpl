@@ -303,9 +303,9 @@ tbody tr:hover td:first-child{ background:var(--bg-card-hover); }
 </div>
 
 <div id="poster_modal" class="modal-overlay show">
-  <div class="modal-content" style="padding:0; border:2px solid var(--accent-color); max-width:800px; background:#000;">
-    <span class="modal-close" style="position:absolute; top:10px; right:15px; color:#fff; background:rgba(0,0,0,0.6); width:32px; height:32px; border-radius:50%; text-align:center; line-height:32px; font-size:1.8rem; z-index:10;" onclick="document.getElementById('poster_modal').classList.remove('show')">&times;</span>
-    <img src="image.png" alt="RCPL Playoffs Bound" style="width:100%; display:block; border-radius:10px;">
+  <div class="modal-content" style="padding:0; border:2px solid var(--accent-color); max-width:800px; background:#000; max-height:95vh; overflow-y:auto; overflow-x:hidden;">
+    <span class="modal-close" style="position:absolute; top:10px; right:15px; color:#fff; background:rgba(0,0,0,0.6); width:32px; height:32px; border-radius:50%; text-align:center; line-height:32px; font-size:1.8rem; z-index:10; cursor:pointer;" onclick="document.getElementById('poster_modal').classList.remove('show')">&times;</span>
+    <img src="image_6eee75.png" alt="RCPL Playoffs Bound" style="width:100%; max-height:85vh; object-fit:contain; display:block; border-radius:10px; margin:0 auto;">
   </div>
 </div>
 
