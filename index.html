@@ -8,9 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<!-- Firebase compat SDK (works in modules, file://, sandboxed previews, anywhere) -->
 <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 /* ============================================================
    RCPL SEASON 5 — design tokens
@@ -129,9 +129,16 @@ table th.num,
    ============================================================ */
 .hero{
   max-width:1340px; margin:0 auto; padding:40px 28px 24px;
-  display:grid; grid-template-columns:1fr auto; gap:40px;
-  align-items:end;
+  display:flex;
+  align-items:center;
+  position:relative;
   border-bottom:1px solid var(--border);
+  min-height: 420px;
+}
+.hero-left {
+  position:relative;
+  z-index:10;
+  flex:1;
 }
 .hero-left .eyebrow{
   font-family:'JetBrains Mono',monospace;
@@ -156,16 +163,20 @@ table th.num,
   color:var(--text-muted); font-size:1.05rem; max-width:560px;
 }
 .hero-right{
+  position:absolute;
+  right:5%;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:1;
+  opacity:0.35;
   display:flex;
   flex-direction:column;
   align-items:center;
-  justify-content:center;
   gap:14px;
-  position:relative;
 }
 .hero-logo{
-  width:clamp(220px,26vw,320px);
-  height:clamp(220px,26vw,320px);
+  width:clamp(280px,32vw,400px);
+  height:clamp(280px,32vw,400px);
   border-radius:50%;
   border:3px solid var(--accent);
   box-shadow:
@@ -174,12 +185,6 @@ table th.num,
   object-fit:cover;
   background:#000;
   transition:transform .4s cubic-bezier(.2,.8,.3,1), box-shadow .4s;
-}
-.hero-logo:hover{
-  transform:scale(1.03);
-  box-shadow:
-    0 0 80px rgba(var(--accent-rgb),0.6),
-    0 0 0 12px rgba(var(--accent-rgb),0.13);
 }
 .hero-logo-label{
   font-family:'JetBrains Mono',monospace;
@@ -379,15 +384,15 @@ tbody tr:hover{ background:var(--surface-2); }
   width:30px;
 }
 .team-cell{
-  display:flex; align-items:center; gap:10px;
+  display:inline-block;
   font-weight:700; letter-spacing:.05em;
   text-transform:uppercase;
   cursor:pointer;
+  color: #ffffff;
+  transition: text-shadow 0.3s ease;
 }
-.team-cell:hover{ color:var(--accent); }
-.team-bar{
-  width:3px; height:18px; border-radius:2px;
-  background:var(--accent);
+.team-cell:hover{
+  text-shadow: 0 0 10px var(--team-glow), 0 0 20px var(--team-glow);
 }
 .col-pts{
   font-weight:800; color:var(--text); font-size:1rem;
@@ -425,10 +430,11 @@ tbody tr:hover{ background:var(--surface-2); }
 }
 @media (max-width:900px){
   .split{ grid-template-columns:1fr; }
-  .hero{ grid-template-columns:1fr; gap:30px; }
-  .hero-right{ display:flex; }
+  .hero{ flex-direction:column; align-items:flex-start; min-height:auto; }
+  .hero-right{ position:relative; right:auto; top:auto; transform:none; opacity:1; margin-top:40px; align-self:center; }
   .groups{ grid-template-columns:1fr; }
   .stat-strip{ grid-template-columns:repeat(2,1fr); }
+  #stats_graphs > div { grid-template-columns: 1fr !important; }
 }
 
 .feed{
@@ -552,11 +558,11 @@ tbody tr:hover{ background:var(--surface-2); }
 }
 .sched-status{ text-align:right; }
 
-/* filter pills */
+/* filter pills & tabs */
 .filter-bar{
   display:flex; gap:6px; align-items:center;
 }
-.filter-pill{
+.filter-pill, .tab-btn{
   padding:5px 12px;
   font-family:'JetBrains Mono',monospace;
   font-size:.7rem;
@@ -569,8 +575,8 @@ tbody tr:hover{ background:var(--surface-2); }
   cursor:pointer;
   transition:all .2s;
 }
-.filter-pill:hover{ color:var(--text); border-color:var(--border-bright); }
-.filter-pill.active{
+.filter-pill:hover, .tab-btn:hover{ color:var(--text); border-color:var(--border-bright); }
+.filter-pill.active, .tab-btn.active{
   color:var(--accent);
   background:rgba(var(--accent-rgb),.1);
   border-color:rgba(var(--accent-rgb),.5);
@@ -808,7 +814,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   font-weight:400;
   letter-spacing:.04em;
   color:var(--wm-color);
-  opacity:0.09;
+  opacity:0.35; /* increased opacity for splash of colour */
   white-space:nowrap;
   user-select:none;
   line-height:.9;
@@ -938,7 +944,6 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   border-top:1px solid var(--border);
 }
 .vista::before{
-  /* subtle radial glow centered behind the india outline */
   content:'';
   position:absolute; inset:0;
   background:radial-gradient(ellipse at 50% 45%, rgba(var(--accent-rgb),.05) 0%, transparent 60%);
@@ -1063,7 +1068,6 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 
 <div id="toast-container"></div>
 
-<!-- AMBIENT TEAM-COLOR WATERMARKS in the page-side gutters (visible on wide screens) -->
 <div class="side-watermarks" aria-hidden="true">
   <span class="watermark" style="--wm-color:#fbbf24; top:160px;  left:1.6%;  font-size:clamp(2.4rem,3.8vw,4.4rem); transform:rotate(-8deg);">CSK</span>
   <span class="watermark" style="--wm-color:#3b82f6; top:240px;  right:1.6%; font-size:clamp(2.2rem,3.4vw,4rem);   transform:rotate(7deg);">MI</span>
@@ -1077,7 +1081,6 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   <span class="watermark" style="--wm-color:#f97316; top:2260px; right:1.6%; font-size:clamp(2.3rem,3.6vw,4.2rem); transform:rotate(8deg);">SRH</span>
 </div>
 
-<!-- TOP RIBBON -->
 <div class="ribbon">
   <div class="ribbon-left">
     <div class="ribbon-title">REAL CRICKET <span class="accent">PREMIER</span> LEAGUE</div>
@@ -1089,7 +1092,6 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 <div id="progress_bar_wrap"><div id="progress_bar"></div></div>
 <div id="conn_banner"></div>
 
-<!-- HERO -->
 <section class="hero">
   <div class="hero-left">
     <div class="eyebrow">// Season Five · Now Live</div>
@@ -1108,7 +1110,6 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   </div>
 </section>
 
-<!-- GROUPS -->
 <div class="groups">
   <div class="group">
     <div class="group-label">// Pool</div>
@@ -1124,7 +1125,6 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 
 <div class="container">
 
-  <!-- STAT LEADERS -->
   <section class="section">
     <div class="section-head">
       <h2 class="section-title"><span class="num-pre">01</span>Season Leaders</h2>
@@ -1133,7 +1133,6 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     <div class="stat-strip" id="stat_strip"></div>
   </section>
 
-  <!-- STANDINGS -->
   <section class="section">
     <div class="section-head">
       <h2 class="section-title"><span class="num-pre">02</span>Standings</h2>
@@ -1158,7 +1157,6 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     </div>
   </section>
 
-  <!-- MATCH LOG (full 70-match schedule) -->
   <section class="section">
     <div class="section-head">
       <h2 class="section-title"><span class="num-pre">03</span>Match Log</h2>
@@ -1183,7 +1181,6 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     </div>
   </section>
 
-  <!-- PREVIOUS FIXTURES + UP NEXT -->
   <section class="section split">
     <div>
       <div class="section-head">
@@ -1201,13 +1198,19 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     </div>
   </section>
 
-  <!-- SEASON STATISTICS -->
   <section class="section">
-    <div class="section-head">
-      <h2 class="section-title"><span class="num-pre">06</span>Season Statistics</h2>
-      <div class="section-meta" id="stats_meta">team-level · across played matches</div>
+    <div class="section-head" style="flex-direction:column; align-items:flex-start; gap:8px;">
+      <div style="display:flex; justify-content:space-between; width:100%; align-items:baseline;">
+        <h2 class="section-title"><span class="num-pre">06</span>Season Statistics</h2>
+        <div class="section-meta" id="stats_meta">team-level · across played matches</div>
+      </div>
+      <div class="stats-header" style="display:flex; gap:10px; margin-top:4px;">
+        <button class="tab-btn active" onclick="window.switchStatsTab('boards')">Leaderboards</button>
+        <button class="tab-btn" onclick="window.switchStatsTab('graphs')">Graphs</button>
+      </div>
     </div>
-    <div class="stat-grid">
+    
+    <div class="stat-grid" id="stats_boards">
       <div class="stat-board">
         <div class="stat-board-head">
           <h3>Top Run Scorers</h3>
@@ -1237,9 +1240,25 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
         <div class="stat-board-body" id="board_average"></div>
       </div>
     </div>
+
+    <div id="stats_graphs" style="display:none;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        <div style="background:var(--surface); border:1px solid var(--border); padding:15px; border-radius:6px;">
+          <canvas id="chartPos"></canvas>
+        </div>
+        <div style="background:var(--surface); border:1px solid var(--border); padding:15px; border-radius:6px;">
+          <canvas id="chartPts"></canvas>
+        </div>
+        <div style="background:var(--surface); border:1px solid var(--border); padding:15px; border-radius:6px;">
+          <canvas id="chartRuns"></canvas>
+        </div>
+        <div style="background:var(--surface); border:1px solid var(--border); padding:15px; border-radius:6px;">
+          <canvas id="chartWkts"></canvas>
+        </div>
+      </div>
+    </div>
   </section>
 
-  <!-- ADMIN -->
   <section class="admin-wrap" id="admin_panel">    <div class="admin-section">
       <h3>Match Result Entry</h3>
       <div class="row">
@@ -1303,7 +1322,6 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 
 <div class="admin-trigger" onclick="window.unlockAdmin()">// admin</div>
 
-<!-- MODAL: TEAM FORM -->
 <div id="form_modal" class="modal-overlay">
   <div class="modal-content">
     <span class="modal-close" onclick="document.getElementById('form_modal').classList.remove('show')">&times;</span>
@@ -1343,7 +1361,7 @@ const TEAM_COLORS = {
 };
 const OVERS_PER_INNINGS = 5;
 
-// 70-match schedule — generated offline to guarantee even spacing (3-6 match gaps, no consecutive plays)
+// 70-match schedule
 const SCHEDULE = [
   {id:'M01', a:'csk', b:'dc'}, {id:'M02', a:'rcb', b:'lsg'}, {id:'M03', a:'srh', b:'gt'},
   {id:'M04', a:'mi',  b:'pbks'},{id:'M05', a:'kkr', b:'rr'}, {id:'M06', a:'csk', b:'lsg'},
@@ -1415,6 +1433,13 @@ window.setFilter = function(f){
     el.classList.toggle('active', el.dataset.filter === f);
   });
   renderSchedule();
+};
+
+window.switchStatsTab = function(tab) {
+  document.getElementById('stats_boards').style.display = tab === 'boards' ? 'grid' : 'none';
+  document.getElementById('stats_graphs').style.display = tab === 'graphs' ? 'block' : 'none';
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.tab-btn[onclick="window.switchStatsTab('${tab}')"]`).classList.add('active');
 };
 
 // ============================== CONNECTION BANNER ==============================
@@ -1585,8 +1610,7 @@ function renderStandings(standings){
       <tr class="${top4}">
         <td class="pos num">${String(i+1).padStart(2,'0')}</td>
         <td>
-          <div class="team-cell" onclick="window.openFormModal('${s.team}')">
-            <span class="team-bar" style="background:${TEAM_COLORS[s.team]};"></span>
+          <div class="team-cell" style="--team-glow:${TEAM_COLORS[s.team]};" onclick="window.openFormModal('${s.team}')">
             ${s.team.toUpperCase()}
           </div>
         </td>
@@ -1865,6 +1889,109 @@ function renderStatBoards(){
   if(meta) meta.innerText = `${totalPlayed}/70 matches · top 5 in each`;
 }
 
+// ============================== GRAPHS RENDERING ==============================
+let chartInstances = {};
+function renderCharts() {
+  if (typeof Chart === 'undefined') return;
+
+  // calculate histories up to current played match
+  let hist = {};
+  TEAMS.forEach(t => hist[t] = { pts: [0], runs: [0], wkts: [0], pos: [], current: blankStats(t) });
+
+  const getRankings = () => {
+    let arr = TEAMS.map(t => {
+      let s = hist[t].current;
+      let oversFor = s.of_balls / 6;
+      let oversAgainst = s.oa_balls / 6;
+      let nrr = (oversFor > 0 ? s.rf/oversFor : 0) - (oversAgainst > 0 ? s.ra/oversAgainst : 0);
+      return { team: t, pts: s.pts, nrr: nrr, w: s.w };
+    });
+    arr.sort((a,b) => b.pts - a.pts || b.nrr - a.nrr || b.w - a.w);
+    let ranks = {};
+    arr.forEach((x, i) => ranks[x.team] = i + 1);
+    return ranks;
+  };
+
+  // initial ranks at game 0
+  let initRanks = getRankings();
+  TEAMS.forEach(t => hist[t].pos.push(initRanks[t]));
+
+  SCHEDULE.forEach(f => {
+    const r = results[f.id];
+    if(!r) return;
+
+    let s1 = hist[r.t1].current;
+    let s2 = hist[r.t2].current;
+
+    s1.p++; s2.p++;
+    const b1 = (r.w1 >= 10) ? OVERS_PER_INNINGS*6 : (r.b1 || OVERS_PER_INNINGS*6);
+    const b2 = (r.w2 >= 10) ? OVERS_PER_INNINGS*6 : (r.b2 || OVERS_PER_INNINGS*6);
+
+    s1.rf += r.r1||0; s1.of_balls += b1; s1.wickets_taken = (s1.wickets_taken||0) + (r.w2||0);
+    s1.ra += r.r2||0; s1.oa_balls += b2;
+
+    s2.rf += r.r2||0; s2.of_balls += b2; s2.wickets_taken = (s2.wickets_taken||0) + (r.w1||0);
+    s2.ra += r.r1||0; s2.oa_balls += b1;
+
+    const winner = getWinner(r);
+    if(winner === r.t1) { s1.w++; s1.pts += 2; s2.l++; }
+    else if(winner === r.t2) { s2.w++; s2.pts += 2; s1.l++; }
+    else { s1.t++; s1.pts += 1; s2.t++; s2.pts += 1; }
+
+    let currentRanks = getRankings();
+
+    hist[r.t1].pts.push(s1.pts);
+    hist[r.t1].runs.push(s1.rf);
+    hist[r.t1].wkts.push(s1.wickets_taken);
+    hist[r.t1].pos.push(currentRanks[r.t1]);
+
+    hist[r.t2].pts.push(s2.pts);
+    hist[r.t2].runs.push(s2.rf);
+    hist[r.t2].wkts.push(s2.wickets_taken);
+    hist[r.t2].pos.push(currentRanks[r.t2]);
+  });
+
+  const buildDatasets = (key) => TEAMS.map(t => ({
+    label: t.toUpperCase(),
+    data: hist[t][key],
+    borderColor: TEAM_COLORS[t],
+    backgroundColor: TEAM_COLORS[t],
+    tension: 0.2,
+    borderWidth: 2,
+    pointRadius: 3
+  }));
+
+  const drawChart = (id, title, datasets, reverseY) => {
+    const ctx = document.getElementById(id);
+    if (!ctx) return;
+    if (chartInstances[id]) chartInstances[id].destroy();
+    
+    // 0 to 14 matches mapped for the x-axis
+    const matchLabels = Array.from({length: 15}, (_, i) => i); 
+    
+    chartInstances[id] = new Chart(ctx, {
+      type: 'line',
+      data: { labels: matchLabels, datasets },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: true, text: title, color: '#f5f5f4', font: {family:'Anton', size: 16, letterSpacing: 2} },
+          legend: { labels: { color: '#a3a3a3', font: {family:'JetBrains Mono'} } }
+        },
+        scales: {
+          x: { title: { display: true, text: 'Match No.', color: '#737373' }, ticks: { color: '#a3a3a3' }, grid: { color: '#262626' } },
+          y: { reverse: reverseY, ticks: { color: '#a3a3a3' }, grid: { color: '#262626' } }
+        }
+      }
+    });
+  };
+
+  drawChart('chartPos', 'TEAM POSITIONS', buildDatasets('pos'), true);
+  drawChart('chartPts', 'TEAM POINTS', buildDatasets('pts'), false);
+  drawChart('chartRuns', 'RUNS SCORED', buildDatasets('runs'), false);
+  drawChart('chartWkts', 'WICKETS TAKEN', buildDatasets('wkts'), false);
+}
+
 function updateUI(){
   const standings = computeStandings();
   window.currentStandings = standings;
@@ -1874,6 +2001,7 @@ function updateUI(){
   renderUpcomingFeed();
   renderSchedule();
   renderStatBoards();
+  renderCharts(); // Added to refresh charts with new data
 
   const playedCount = Object.keys(results).length;
   document.getElementById('progress_bar').style.width = (playedCount / 70 * 100) + '%';
