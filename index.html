@@ -395,7 +395,7 @@ tbody tr:hover{ background:var(--surface-2); }
   max-height:480px;
   overflow-y:auto;
 }
-.feed.tall{ max-height:640px; }
+.feed.tall{ max-height:300px; }
 .feed-item{
   padding:14px 18px;
   border-bottom:1px solid var(--border);
@@ -749,6 +749,119 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 .form-res-pill.L{ background:rgba(239,68,68,.15); color:#f87171; border:1px solid rgba(239,68,68,.4); }
 .form-res-pill.T{ background:rgba(250,204,21,.15); color:var(--tie); border:1px solid rgba(250,204,21,.4); }
 
+/* ============================================================
+   THE STAGE — bottom decorative panel
+   India map outline + team-color watermarks
+   ============================================================ */
+.stage-section{
+  position:relative;
+  margin-top:80px;
+  padding:90px 28px 100px;
+  min-height:560px;
+  overflow:hidden;
+  border-top:1px solid var(--border);
+  background:
+    radial-gradient(ellipse at center top, rgba(var(--accent-rgb),0.05), transparent 60%),
+    radial-gradient(ellipse at bottom, rgba(var(--accent-rgb),0.04), transparent 65%);
+}
+
+.stage-watermarks{
+  position:absolute; inset:0;
+  pointer-events:none;
+  overflow:hidden;
+}
+.watermark{
+  position:absolute;
+  font-family:'Anton',sans-serif;
+  font-weight:400;
+  letter-spacing:.04em;
+  color:var(--wm-color);
+  opacity:0.09;
+  white-space:nowrap;
+  user-select:none;
+  line-height:.9;
+}
+
+.india-map{
+  position:absolute;
+  top:50%; left:50%;
+  transform:translate(-50%, -50%);
+  width:520px;
+  max-width:80%;
+  height:auto;
+  color:var(--accent);
+  opacity:.55;
+  filter:drop-shadow(0 0 24px rgba(var(--accent-rgb),0.35));
+  pointer-events:none;
+}
+.india-map path,
+.india-map ellipse,
+.india-map circle{
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.6;
+  stroke-linejoin:round;
+  stroke-linecap:round;
+}
+
+.stage-content{
+  position:relative;
+  z-index:2;
+  max-width:1340px;
+  margin:0 auto;
+  text-align:center;
+}
+.stage-content .eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.75rem;
+  letter-spacing:.32em;
+  color:var(--accent);
+  text-transform:uppercase;
+  margin-bottom:24px;
+}
+.stage-title{
+  font-family:'Anton',sans-serif;
+  font-size:clamp(2.4rem,5.5vw,4.2rem);
+  line-height:.95;
+  letter-spacing:.02em;
+  text-transform:uppercase;
+  margin:0 0 50px;
+  color:var(--text);
+}
+.stage-title .stroke{
+  color:transparent;
+  -webkit-text-stroke:1.5px var(--accent);
+}
+.stage-stats{
+  display:flex;
+  justify-content:center;
+  gap:clamp(20px, 4vw, 64px);
+  flex-wrap:wrap;
+}
+.stage-stat{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.75rem;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--text-muted);
+}
+.stage-stat strong{
+  display:block;
+  font-family:'Anton',sans-serif;
+  font-size:clamp(2.4rem, 5vw, 3.4rem);
+  color:var(--accent);
+  font-weight:400;
+  margin-bottom:4px;
+  letter-spacing:.02em;
+  line-height:1;
+}
+
+@media (max-width:900px){
+  .stage-section{ padding:60px 20px 80px; min-height:480px; }
+  .india-map{ width:300px; opacity:.4; }
+  .watermark{ opacity:0.07; }
+}
+
 /* footer */
 .foot{
   max-width:1340px; margin:60px auto 0; padding:24px 28px 0;
@@ -759,6 +872,137 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   color:var(--text-dim);
   letter-spacing:.15em;
   text-transform:uppercase;
+}
+
+/* ============================================================
+   VISTA — closing flourish: India backdrop + by-the-numbers + team badges
+   ============================================================ */
+.vista{
+  position:relative;
+  margin-top:80px;
+  padding:90px 28px 70px;
+  overflow:hidden;
+  border-top:1px solid var(--border);
+}
+.vista::before{
+  /* subtle radial glow centered behind the india outline */
+  content:'';
+  position:absolute; inset:0;
+  background:radial-gradient(ellipse at 50% 45%, rgba(var(--accent-rgb),.05) 0%, transparent 60%);
+  pointer-events:none;
+}
+.india-bg{
+  position:absolute;
+  top:50%; left:50%;
+  transform:translate(-50%, -48%);
+  width:min(72vw, 620px);
+  height:auto;
+  opacity:.14;
+  pointer-events:none;
+  z-index:0;
+  filter:drop-shadow(0 0 24px rgba(var(--accent-rgb),.25));
+}
+.india-bg path{
+  stroke:var(--accent);
+  fill:none;
+  stroke-width:1.8;
+  stroke-linejoin:round;
+  stroke-linecap:round;
+}
+.vista-content{
+  position:relative;
+  z-index:1;
+  max-width:1340px;
+  margin:0 auto;
+}
+.vista-eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.78rem;
+  letter-spacing:.32em;
+  color:var(--accent);
+  text-transform:uppercase;
+  text-align:center;
+  margin-bottom:54px;
+}
+.vista-stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:24px;
+  margin-bottom:80px;
+}
+.vista-stat{ text-align:center; }
+.vista-num{
+  font-family:'Anton',sans-serif;
+  font-size:clamp(4.5rem, 11vw, 8rem);
+  line-height:1;
+  color:transparent;
+  -webkit-text-stroke:1.5px var(--accent);
+  text-shadow:0 0 50px rgba(var(--accent-rgb),.25);
+  letter-spacing:.02em;
+}
+.vista-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.78rem;
+  letter-spacing:.26em;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  margin-top:14px;
+}
+.vista-divider{
+  text-align:center;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.7rem;
+  letter-spacing:.3em;
+  color:var(--text-dim);
+  text-transform:uppercase;
+  margin-bottom:38px;
+  position:relative;
+}
+.vista-divider::before,
+.vista-divider::after{
+  content:'';
+  position:absolute;
+  top:50%;
+  width:24%;
+  height:1px;
+  background:var(--border);
+}
+.vista-divider::before{ left:14%; }
+.vista-divider::after{ right:14%; }
+.vista-teams{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:22px;
+}
+.vista-team-badge{
+  width:74px; height:74px;
+  border-radius:50%;
+  border:2px solid var(--c);
+  background:rgba(10,10,10,.5);
+  color:var(--c);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'Anton',sans-serif;
+  font-size:1.05rem;
+  letter-spacing:.12em;
+  opacity:.4;
+  cursor:pointer;
+  transition:opacity .25s, transform .25s, box-shadow .25s;
+  backdrop-filter:blur(4px);
+}
+.vista-team-badge:hover{
+  opacity:1;
+  transform:translateY(-3px) scale(1.06);
+  box-shadow:0 0 22px var(--c), inset 0 0 14px rgba(0,0,0,.4);
+}
+
+@media (max-width:700px){
+  .vista{ padding:60px 20px 50px; }
+  .vista-stats{ grid-template-columns:repeat(2,1fr); gap:34px; margin-bottom:60px; }
+  .vista-teams{ gap:14px; }
+  .vista-team-badge{ width:60px; height:60px; font-size:.9rem; }
 }
 </style>
 </head>
@@ -883,9 +1127,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   </section>
 
   <!-- ADMIN -->
-  <section class="admin-wrap" id="admin_panel">
-
-    <div class="admin-section">
+  <section class="admin-wrap" id="admin_panel">    <div class="admin-section">
       <h3>Match Result Entry</h3>
       <div class="row">
         <div style="flex:2;">
@@ -940,6 +1182,42 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     </div>
   </section>
 </div>
+
+<!-- THE STAGE — bottom decorative panel -->
+<section class="stage-section">
+  <!-- team-color watermarks scattered around the map -->
+  <div class="stage-watermarks">
+    <span class="watermark" style="--wm-color:#fbbf24; top:8%;  left:5%;   font-size:clamp(3rem,6.5vw,6.4rem); transform:rotate(-8deg);">CSK</span>
+    <span class="watermark" style="--wm-color:#3b82f6; top:11%; right:7%;  font-size:clamp(2.8rem,5.5vw,5.6rem); transform:rotate(5deg);">MI</span>
+    <span class="watermark" style="--wm-color:#a855f7; top:6%;  left:38%;  font-size:clamp(2.6rem,5vw,5rem);    transform:rotate(-2deg);">KKR</span>
+    <span class="watermark" style="--wm-color:#ef4444; top:34%; left:3%;   font-size:clamp(3.2rem,6.8vw,6.8rem); transform:rotate(-12deg);">RCB</span>
+    <span class="watermark" style="--wm-color:#dc2626; top:29%; right:4%;  font-size:clamp(3rem,6.2vw,6.4rem);  transform:rotate(9deg);">PBKS</span>
+    <span class="watermark" style="--wm-color:#06b6d4; top:60%; right:14%; font-size:clamp(2.6rem,5vw,5rem);    transform:rotate(6deg);">LSG</span>
+    <span class="watermark" style="--wm-color:#ec4899; top:62%; left:8%;   font-size:clamp(2.4rem,4.8vw,4.8rem);transform:rotate(14deg);">RR</span>
+    <span class="watermark" style="--wm-color:#f97316; bottom:6%;left:30%; font-size:clamp(2.6rem,5.2vw,5.2rem);transform:rotate(3deg);">SRH</span>
+    <span class="watermark" style="--wm-color:#2563eb; bottom:5%;left:4%;  font-size:clamp(2.8rem,5.8vw,6rem);  transform:rotate(-6deg);">DC</span>
+    <span class="watermark" style="--wm-color:#84cc16; bottom:9%;right:6%; font-size:clamp(3rem,6.4vw,6.4rem);  transform:rotate(-10deg);">GT</span>
+  </div>
+
+  <!-- India outline, cyan stroke, soft glow -->
+  <svg class="india-map" viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M 175,30 L 220,42 L 265,55 L 305,68 L 320,78 L 305,95 L 285,112 L 300,130 L 312,170 L 318,220 L 308,265 L 292,310 L 270,360 L 248,405 L 225,445 L 212,462 L 200,448 L 184,415 L 170,370 L 158,320 L 148,270 L 138,222 L 122,200 L 96,180 L 78,158 L 84,132 L 96,108 L 112,88 L 130,70 L 152,52 Z" />
+    <!-- Sri Lanka -->
+    <ellipse cx="226" cy="482" rx="13" ry="8" />
+  </svg>
+
+  <!-- Foreground tagline / stats -->
+  <div class="stage-content">
+    <div class="eyebrow">// The Stage</div>
+    <h2 class="stage-title">Ten <span class="stroke">Teams</span>.<br>Seventy Matches.<br>One Trophy.</h2>
+    <div class="stage-stats">
+      <div class="stage-stat"><strong>10</strong>Teams</div>
+      <div class="stage-stat"><strong>02</strong>Groups</div>
+      <div class="stage-stat"><strong>70</strong>Fixtures</div>
+      <div class="stage-stat"><strong>01</strong>Champion</div>
+    </div>
+  </div>
+</section>
 
 <div class="foot">
   <div>RCPL S5 · The League</div>
