@@ -798,7 +798,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 .form-res-pill.T{ background:rgba(250,204,21,.15); color:var(--tie); border:1px solid rgba(250,204,21,.4); }
 
 /* ============================================================
-   side watermarks — ambient color splashes
+   side watermarks — team logos in gutters
    ============================================================ */
 .side-watermarks{
   position:absolute;
@@ -807,16 +807,14 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   overflow:hidden;
   z-index:0;
 }
-.side-watermarks .splash{
+.gutter-logo{
   position:absolute;
-  width:clamp(250px, 25vw, 500px);
-  height:clamp(250px, 25vw, 500px);
-  background:var(--wm-color);
-  opacity:0.12; 
-  filter:blur(100px);
-  border-radius:40% 60% 70% 30% / 40% 50% 60% 50%;
-  transform:translateZ(0); 
+  width:clamp(150px, 20vw, 350px);
+  height:auto;
+  opacity:0.15; 
+  object-fit:contain;
 }
+
 /* push content above the watermark layer */
 .ribbon, .hero, .groups, .container, .foot{ position:relative; z-index:1; }
 .ribbon{ z-index:1000; }
@@ -937,16 +935,16 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 <div id="toast-container"></div>
 
 <div class="side-watermarks" aria-hidden="true">
-  <div class="splash" style="--wm-color:#fbbf24; top:100px;  left:-8%; transform:rotate(20deg);"></div>
-  <div class="splash" style="--wm-color:#3b82f6; top:300px;  right:-8%; transform:rotate(-15deg);"></div>
-  <div class="splash" style="--wm-color:#a855f7; top:700px;  left:-8%; transform:rotate(45deg);"></div>
-  <div class="splash" style="--wm-color:#ef4444; top:900px;  right:-8%; transform:rotate(-30deg);"></div>
-  <div class="splash" style="--wm-color:#84cc16; top:1300px; left:-8%; transform:rotate(10deg);"></div>
-  <div class="splash" style="--wm-color:#dc2626; top:1500px; right:-8%; transform:rotate(-50deg);"></div>
-  <div class="splash" style="--wm-color:#ec4899; top:1900px; left:-8%; transform:rotate(35deg);"></div>
-  <div class="splash" style="--wm-color:#2563eb; top:2100px; right:-8%; transform:rotate(-20deg);"></div>
-  <div class="splash" style="--wm-color:#06b6d4; top:2500px; left:-8%; transform:rotate(60deg);"></div>
-  <div class="splash" style="--wm-color:#f97316; top:2700px; right:-8%; transform:rotate(-5deg);"></div>
+  <img src="csk.png" alt="csk logo" class="gutter-logo" style="top:100px; left:-5%; transform:rotate(-10deg);">
+  <img src="mi.png" alt="mi logo" class="gutter-logo" style="top:300px; right:-5%; transform:rotate(15deg);">
+  <img src="kkr.png" alt="kkr logo" class="gutter-logo" style="top:700px; left:-5%; transform:rotate(-5deg);">
+  <img src="rcb.png" alt="rcb logo" class="gutter-logo" style="top:900px; right:-5%; transform:rotate(10deg);">
+  <img src="gt.png" alt="gt logo" class="gutter-logo" style="top:1300px; left:-5%; transform:rotate(-15deg);">
+  <img src="pbks.png" alt="pbks logo" class="gutter-logo" style="top:1500px; right:-5%; transform:rotate(20deg);">
+  <img src="rr.png" alt="rr logo" class="gutter-logo" style="top:1900px; left:-5%; transform:rotate(-10deg);">
+  <img src="dc.png" alt="dc logo" class="gutter-logo" style="top:2100px; right:-5%; transform:rotate(5deg);">
+  <img src="lsg.png" alt="lsg logo" class="gutter-logo" style="top:2500px; left:-5%; transform:rotate(-20deg);">
+  <img src="srh.png" alt="srh logo" class="gutter-logo" style="top:2700px; right:-5%; transform:rotate(15deg);">
 </div>
 
 <div class="ribbon">
