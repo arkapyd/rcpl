@@ -85,6 +85,11 @@ table th.num,
   opacity:.6;
 }
 .ribbon-left{ display:flex; align-items:center; gap:14px; }
+.ribbon-logo {
+  height: 48px; width: 48px; /* fits comfortably within 64px */
+  border-radius: 50%; object-fit: cover;
+  border: 1px solid var(--accent);
+}
 .ribbon-title{
   font-family:'Anton',sans-serif;
   font-size:clamp(.95rem,1.6vw,1.25rem);
@@ -132,7 +137,7 @@ table th.num,
   align-items:center;
   position:relative;
   border-bottom:1px solid var(--border);
-  min-height: 420px;
+  min-height: 400px;
 }
 .hero-left {
   position:relative;
@@ -159,38 +164,7 @@ table th.num,
   -webkit-text-stroke:1.5px var(--accent);
 }
 .hero-sub{
-  color:var(--text-muted); font-size:1.05rem; max-width:560px;
-}
-.hero-right{
-  position:absolute;
-  right:5%;
-  top:50%;
-  transform:translateY(-50%);
-  z-index:1;
-  opacity:0.35;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:14px;
-}
-.hero-logo{
-  width:clamp(280px,32vw,400px);
-  height:clamp(280px,32vw,400px);
-  border-radius:50%;
-  border:3px solid var(--accent);
-  box-shadow:
-    0 0 60px rgba(var(--accent-rgb),0.40),
-    0 0 0 8px rgba(var(--accent-rgb),0.08);
-  object-fit:cover;
-  background:#000;
-  transition:transform .4s cubic-bezier(.2,.8,.3,1), box-shadow .4s;
-}
-.hero-logo-label{
-  font-family:'JetBrains Mono',monospace;
-  font-size:.78rem;
-  letter-spacing:.3em;
-  color:var(--accent);
-  text-transform:uppercase;
+  color:var(--text-muted); font-size:1.05rem; max-width:620px;
 }
 
 .hero-stats{
@@ -429,8 +403,6 @@ tbody tr:hover{ background:var(--surface-2); }
 }
 @media (max-width:900px){
   .split{ grid-template-columns:1fr; }
-  .hero{ flex-direction:column; align-items:flex-start; min-height:auto; }
-  .hero-right{ position:relative; right:auto; top:auto; transform:none; opacity:1; margin-top:40px; align-self:center; }
   .groups{ grid-template-columns:1fr; }
   .stat-strip{ grid-template-columns:repeat(2,1fr); }
   #stats_graphs > div { grid-template-columns: 1fr !important; }
@@ -831,6 +803,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   width:clamp(150px, 20vw, 350px);
   height:auto;
   opacity:0.15; 
+  filter: brightness(3.5); /* increased brightness as requested */
   object-fit:contain;
 }
 
@@ -954,20 +927,21 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 <div id="toast-container"></div>
 
 <div class="side-watermarks" aria-hidden="true">
-  <img src="csk.png" alt="csk logo" class="gutter-logo" style="top:100px; left:-5%; transform:rotate(-10deg);">
-  <img src="mi.png" alt="mi logo" class="gutter-logo" style="top:300px; right:-5%; transform:rotate(15deg);">
-  <img src="kkr.png" alt="kkr logo" class="gutter-logo" style="top:700px; left:-5%; transform:rotate(-5deg);">
-  <img src="rcb.png" alt="rcb logo" class="gutter-logo" style="top:900px; right:-5%; transform:rotate(10deg);">
-  <img src="gt.png" alt="gt logo" class="gutter-logo" style="top:1300px; left:-5%; transform:rotate(-15deg);">
-  <img src="pbks.png" alt="pbks logo" class="gutter-logo" style="top:1500px; right:-5%; transform:rotate(20deg);">
-  <img src="rr.png" alt="rr logo" class="gutter-logo" style="top:1900px; left:-5%; transform:rotate(-10deg);">
-  <img src="dc.png" alt="dc logo" class="gutter-logo" style="top:2100px; right:-5%; transform:rotate(5deg);">
-  <img src="lsg.png" alt="lsg logo" class="gutter-logo" style="top:2500px; left:-5%; transform:rotate(-20deg);">
-  <img src="srh.png" alt="srh logo" class="gutter-logo" style="top:2700px; right:-5%; transform:rotate(15deg);">
+  <img src="csk.png" alt="csk logo" class="gutter-logo" style="top:100px; left:-5%; ">
+  <img src="mi.png" alt="mi logo" class="gutter-logo" style="top:300px; right:-5%; ">
+  <img src="kkr.png" alt="kkr logo" class="gutter-logo" style="top:700px; left:-5%; ">
+  <img src="rcb.png" alt="rcb logo" class="gutter-logo" style="top:900px; right:-5%; ">
+  <img src="gt.png" alt="gt logo" class="gutter-logo" style="top:1300px; left:-5%; ">
+  <img src="pbks.png" alt="pbks logo" class="gutter-logo" style="top:1500px; right:-5%; ">
+  <img src="rr.png" alt="rr logo" class="gutter-logo" style="top:1900px; left:-5%; ">
+  <img src="dc.png" alt="dc logo" class="gutter-logo" style="top:2100px; right:-5%; ">
+  <img src="lsg.png" alt="lsg logo" class="gutter-logo" style="top:2500px; left:-5%; ">
+  <img src="srh.png" alt="srh logo" class="gutter-logo" style="top:2700px; right:-5%; ">
 </div>
 
 <div class="ribbon">
   <div class="ribbon-left">
+    <img src="logorcpl.jpg" alt="RCPL Logo" class="ribbon-logo">
     <div class="ribbon-title">REAL CRICKET <span class="accent">PREMIER</span> LEAGUE</div>
   </div>
   <div class="ribbon-right">
@@ -988,10 +962,6 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
       <div class="hero-stat"><strong>70</strong>Fixtures</div>
       <div class="hero-stat"><strong>01</strong>Champion</div>
     </div>
-  </div>
-  <div class="hero-right">
-    <img src="logorcpl.jpg" alt="RCPL" class="hero-logo">
-    <div class="hero-logo-label">// season 05</div>
   </div>
 </section>
 
