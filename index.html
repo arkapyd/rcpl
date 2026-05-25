@@ -1700,27 +1700,36 @@ const SEASON_OUTCOMES = {
 function computeManagerIndex(history){
   let total_w = 0, total_m = 0;
   let champs = 0, finalists = 0, qualifiers = 0, eliminators = 0, groups = 0, pending = 0;
+  let cumulative_value = 0;
+  
   history.forEach(s => {
     if(s.w !== null) total_w += s.w;
     if(s.m !== null) total_m += s.m;
-    if(s.outcome === 'champion') champs++;
-    else if(s.outcome === 'finalist') finalists++;
-    else if(s.outcome === 'qualifier') qualifiers++;
-    else if(s.outcome === 'eliminator') eliminators++;
-    else if(s.outcome === 'group') groups++;
-    else if(s.outcome === 'pending-final') pending++;
+    
+    let season_val = 0;
+    if(s.outcome === 'champion') { champs++; season_val += 60; }
+    else if(s.outcome === 'finalist') { finalists++; }
+    else if(s.outcome === 'qualifier') { qualifiers++; }
+    else if(s.outcome === 'eliminator') { eliminators++; }
+    else if(s.outcome === 'group') { groups++; }
+    else if(s.outcome === 'pending-final') { pending++; }
+    
+    if(['champion', 'finalist', 'qualifier', 'eliminator', 'pending-final'].includes(s.outcome)){
+      season_val += 20;
+    }
+    if(s.m > 0){
+      season_val += (s.w / s.m) * 20;
+    }
+    cumulative_value += season_val;
   });
   
   const finals_appearances = champs + finalists + pending;
   const playoff_appearances = finals_appearances + qualifiers + eliminators;
   const win_rate = total_m > 0 ? total_w/total_m : 0;
   
-  const non_winning_finals = finalists + pending;
-  const playoff_only = qualifiers + eliminators;
-  
-  // Normalized Index: 60 x Win Rate + (40 per title + 20 per final + 10 per playoff appearance) averaged per season played
-  const seasons = Math.max(1, history.length);
-  const index = Math.round( (win_rate * 60) + ((champs * 40 + non_winning_finals * 20 + playoff_only * 10) / seasons) );
+  // Index based on value added per match, scaled back up to a typical 14-match season block (0-100 scale)
+  const index_val = total_m > 0 ? (cumulative_value / total_m) * 14 : 0;
+  const index = Math.round(index_val);
   
   return {
     seasons: history.length, total_w, total_m, win_rate,
@@ -2455,6 +2464,17 @@ function renderExhaustiveStats(){
     return;
   }
   
+  let teamAch = {};
+  TEAMS.forEach(t => teamAch[t] = { titles: 0, playoffs: 0 });
+  Object.values(SEASON_OUTCOMES).forEach(history => {
+      history.forEach(s => {
+          if(s.outcome === 'champion') teamAch[s.team].titles++;
+          if(['champion', 'finalist', 'qualifier', 'eliminator', 'pending-final'].includes(s.outcome)){
+              teamAch[s.team].playoffs++;
+          }
+      });
+  });
+
   let html = '';
   window.currentStandings.forEach(s => {
     let m = s.p;
@@ -2470,16 +2490,18 @@ function renderExhaustiveStats(){
     let wpm = m > 0 ? (wkts / m) : 0;
     let bewm = m > 0 ? (10 + (0.3 * wpm) - (0.7 * econ)) : 0;
     
-    let managerId = (MANAGERS[s.team] || '').toLowerCase();
-    let mgrHistory = SEASON_OUTCOMES[managerId] || [];
-    let mgrStats = computeManagerIndex(mgrHistory);
+    let ach = teamAch[s.team];
+    let titleWeight = Math.min(60, ach.titles * 30);
+    let playoffWeight = Math.min(20, ach.playoffs * 5);
     
-    let titleWeight = Math.min(60, mgrStats.champs * 30);
-    let playoffWeight = Math.min(20, mgrStats.playoff_appearances * 5);
-    let wlRatio = mgrStats.total_m > 0 ? (mgrStats.total_w / mgrStats.total_m) : 0.5;
-    let currRatio = m > 0 ? (s.w / m) : 0.5;
+    let hist = CAREER_STATS[s.team];
+    let histRatio = hist && hist.m > 0 ? (hist.w / hist.m) : 0.5;
+    let wlWeight = histRatio * 5;
     
-    let value = titleWeight + playoffWeight + (wlRatio * 5) + (currRatio * 15);
+    let currRatio = m > 0 ? (s.w / m) : 0; 
+    let currWeight = currRatio * 15;
+    
+    let value = titleWeight + playoffWeight + wlWeight + currWeight;
 
     const isHighlighted = (selectedTeamFilter && s.team === selectedTeamFilter) ? ' highlight-row' : '';
     const nrrCls = nrr > 0 ? 'pos-nrr' : (nrr < 0 ? 'neg-nrr' : '');
@@ -2533,7 +2555,7 @@ function renderOdds(){
     if(mgrStats.seasons === 0) normMgrIndex = 50;
 
     if(!s || s.p === 0) {
-      return (histPct * 0.60) + (normMgrIndex * 0.40);
+      return (histPct * 0.40) + (normMgrIndex * 0.60);
     }
 
     let winPct = (s.w / s.p) * 100;
@@ -2548,7 +2570,7 @@ function renderOdds(){
 
     let nrrBoost = Math.max(-10, Math.min(10, s.nrr * 2));
 
-    return (winPct * 0.30) + (formPct * 0.25) + (histPct * 0.25) + (normMgrIndex * 0.20) + nrrBoost;
+    return (winPct * 0.25) + (formPct * 0.25) + (histPct * 0.20) + (normMgrIndex * 0.30) + nrrBoost;
   };
 
   el.innerHTML = upcoming.map(f => {
@@ -2716,7 +2738,7 @@ window.openManagerModal = function(managerId, currentTeam){
   const hasPending = stats.pending > 0;
   html += `
     <div class="mgr-modal-foot">
-      index = 60 × win rate + (40 × titles + 20 × finals + 10 × playoffs) / seasons.
+      index = avg value added per season (60 per title, 20 per playoff, 20 scaled by win rate).
       ${hasPending ? '<br><strong>S4 final is today</strong> — index may move once the result is in.' : ''}
     </div>
   `;
