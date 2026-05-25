@@ -453,6 +453,10 @@ tbody tr:last-child td{ border-bottom:none; }
 tbody tr{ transition:background .15s; }
 tbody tr:hover{ background:var(--surface-2); }
 
+tbody tr.highlight-row {
+  background: rgba(var(--accent-rgb), 0.15) !important;
+}
+
 .pos{
   font-family:'JetBrains Mono',monospace;
   color:var(--text-dim);
@@ -497,6 +501,16 @@ tbody tr:hover{ background:var(--surface-2); }
 .form-letter.L{ background:rgba(239,68,68,.15); color:#f87171; border:1px solid rgba(239,68,68,.35); }
 .form-letter.T{ background:rgba(250,204,21,.15); color:var(--tie); border:1px solid rgba(250,204,21,.35); }
 .form-letter.NA{ background:transparent; color:var(--text-dim); border:1px dashed var(--border-bright); }
+
+/* Global team link hover */
+.team-link {
+  cursor: pointer;
+  color: #ffffff;
+  transition: color .15s ease;
+}
+.team-link:hover {
+  color: var(--team-glow, var(--accent));
+}
 
 /* split / feeds */
 .split{
@@ -563,8 +577,6 @@ tbody tr:hover{ background:var(--surface-2); }
   color:var(--text-dim); font-weight:400;
   font-size:.85rem; padding:0 4px;
 }
-.feed-fixture .team-link{ cursor:pointer; transition:color .15s; }
-.feed-fixture .team-link:hover{ color:var(--accent); }
 .feed-score{
   margin-top:8px;
   font-family:'JetBrains Mono',monospace;
@@ -623,8 +635,6 @@ tbody tr:hover{ background:var(--surface-2); }
 .sched-teams .vs{
   color:var(--text-dim); font-weight:400; padding:0 4px; font-size:.78rem;
 }
-.sched-teams .team-link{ cursor:pointer; }
-.sched-teams .team-link:hover{ color:var(--accent); }
 .sched-result{
   font-family:'JetBrains Mono',monospace;
   font-size:.8rem;
@@ -1088,7 +1098,11 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   font-size:1.15rem;
   letter-spacing:.08em;
   text-transform:uppercase;
-  color:var(--mgr-color, var(--accent));
+  color:#ffffff;
+  transition:color .2s ease;
+}
+.manager-card:hover .mgr-team-name {
+  color: var(--mgr-color, var(--accent));
 }
 
 /* ============================================================
@@ -1105,7 +1119,15 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   color:var(--text-dim);
   margin-bottom:18px;
 }
-.mgr-modal-team-tag .accent{ color:var(--mgr-color, var(--accent)); font-weight:700; }
+.mgr-modal-team-tag .accent {
+  color: #ffffff;
+  font-weight: 700;
+  transition: color .2s ease;
+}
+.mgr-modal-team-tag:hover .accent {
+  color: var(--mgr-color, var(--accent));
+}
+
 .mgr-modal-index-row{
   display:grid;
   grid-template-columns:1.7fr 1fr 1fr 1fr;
@@ -1178,7 +1200,14 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   font-size:1.1rem;
   letter-spacing:.08em;
   text-transform:uppercase;
+  color: #ffffff;
+  transition: color .2s ease;
+  cursor: default;
 }
+.mgr-career-row:hover .mgr-career-team {
+  color: var(--team-glow, var(--accent));
+}
+
 .mgr-career-record{
   font-family:'JetBrains Mono',monospace;
   font-size:.82rem;
@@ -1675,10 +1704,6 @@ function computeManagerIndex(history){
 }
 
 // ============================== HISTORICAL BASELINE (S1–S3) ==============================
-// Derived from career statistics across 42 matches for the 8 original teams.
-// Rating = 40% career win% + 30% career-NRR-normalized + 30% economy-inverted.
-// GT & LSG added with user-supplied S1 (S4) data — 14 matches each, neutral win% baseline,
-// with the economy splash favouring LSG.
 const HISTORICAL_RATING = {
   pbks: 94,  // dominant: 39W/42 across S1-S3, +0.820 avg NRR, 7.64 economy
   kkr:  77,  // strong: 32W/42, +0.291 avg NRR, 8.01 economy
@@ -1692,8 +1717,6 @@ const HISTORICAL_RATING = {
   srh:  23   // weakest: 9W/42, -0.644 avg NRR, 10.63 economy
 };
 
-// Career aggregate stats from S1-S3 (and user override for GT/LSG)
-// Currently used for the Predictive Odds baseline; can be surfaced in the UI later.
 const CAREER_STATS = {
   pbks: { m:42, w:39, runs:2149, wkts:256, eco:7.64,  nrr: 0.820 },
   kkr:  { m:42, w:32, runs:1709, wkts:172, eco:8.01,  nrr: 0.291 },
@@ -1738,6 +1761,7 @@ const SCHEDULE = [
 // ============================== STATE ==============================
 let results = {}; 
 let currentFilter = 'all';
+let selectedTeamFilter = null;
 let isUiInitialized = false;
 window.currentStandings = [];
 
@@ -1765,11 +1789,16 @@ window.takeoverTeam = function(team){
         g = parseInt(hex.slice(3,5),16),
         b = parseInt(hex.slice(5,7),16);
   document.documentElement.style.setProperty('--accent-rgb', `${r},${g},${b}`);
+  
+  selectedTeamFilter = team;
+  updateUI();
   window.showToast(`${team.toUpperCase()} takeover active`, 'success');
 };
 window.resetTakeover = function(){
   document.documentElement.style.setProperty('--accent', '#b91c1c');
   document.documentElement.style.setProperty('--accent-rgb', '185, 28, 28');
+  selectedTeamFilter = null;
+  updateUI();
   window.showToast('theme reset', 'success');
 };
 
@@ -1964,12 +1993,13 @@ function renderStandings(standings){
   const tbody = document.getElementById('standings_body');
   tbody.innerHTML = standings.map((s, i) => {
     const top4 = i < 4 ? ' top4-row' : '';
+    const isHighlighted = (selectedTeamFilter && s.team === selectedTeamFilter) ? ' highlight-row' : '';
     const recent = s.form.slice(-5);
     while(recent.length < 5) recent.unshift({ res:'NA' });
     const formCells = recent.map(f => `<span class="form-letter ${f.res}" title="${f.detail || 'no match yet'}">${f.res === 'NA' ? '·' : f.res}</span>`).join('');
     const nrrCls = s.nrr > 0 ? 'pos-nrr' : (s.nrr < 0 ? 'neg-nrr' : '');
     return `
-      <tr class="${top4}">
+      <tr class="${top4}${isHighlighted}">
         <td class="pos num">${String(i+1).padStart(2,'0')}</td>
         <td>
           <div class="team-cell" style="--team-glow:${TEAM_COLORS[s.team]};" onclick="window.openFormModal('${s.team}')">
@@ -1999,11 +2029,13 @@ function buildResultLine(fixture, r){
 }
 
 function renderResultsFeed(){
-  const played = SCHEDULE
+  let played = SCHEDULE
     .filter(f => results[f.id])
+    .filter(f => !selectedTeamFilter || f.a === selectedTeamFilter || f.b === selectedTeamFilter)
     .map(f => ({ fixture: f, r: results[f.id] }))
-    .sort((a,b) => (b.r.ts || 0) - (a.r.ts || 0))
-    .slice(0, 3);
+    .sort((a,b) => (b.r.ts || 0) - (a.r.ts || 0));
+
+  played = played.slice(0, selectedTeamFilter ? 14 : 3);
 
   const el = document.getElementById('results_feed');
   if(played.length === 0){
@@ -2020,9 +2052,9 @@ function renderResultsFeed(){
           <span class="tag-played">Played</span>
         </div>
         <div class="feed-fixture">
-          <span class="team-link" onclick="window.takeoverTeam('${r.t1}')">${r.t1.toUpperCase()}</span>
+          <span class="team-link" style="--team-glow:${TEAM_COLORS[r.t1]};" onclick="window.takeoverTeam('${r.t1}')">${r.t1.toUpperCase()}</span>
           <span class="vs">vs</span>
-          <span class="team-link" onclick="window.takeoverTeam('${r.t2}')">${r.t2.toUpperCase()}</span>
+          <span class="team-link" style="--team-glow:${TEAM_COLORS[r.t2]};" onclick="window.takeoverTeam('${r.t2}')">${r.t2.toUpperCase()}</span>
         </div>
         <div class="feed-score">
           ${r.t1.toUpperCase()} ${r.r1}/${r.w1} (${fmtOvers(r.b1)}) &nbsp;·&nbsp; ${r.t2.toUpperCase()} ${r.r2}/${r.w2} (${fmtOvers(r.b2)}) &nbsp;—&nbsp; ${buildResultLine(fixture, r)}
@@ -2030,11 +2062,15 @@ function renderResultsFeed(){
         ${r.desc ? `<div class="feed-desc">${r.desc}</div>` : ''}
       </div>`;
   }).join('');
-  document.getElementById('results_meta').innerText = `latest ${played.length}`;
+  document.getElementById('results_meta').innerText = selectedTeamFilter ? `showing ${played.length} ${selectedTeamFilter.toUpperCase()} matches` : `latest ${played.length}`;
 }
 
 function renderUpcomingFeed(){
-  const upcoming = SCHEDULE.filter(f => !results[f.id]).slice(0, 3);
+  let upcoming = SCHEDULE
+    .filter(f => !results[f.id])
+    .filter(f => !selectedTeamFilter || f.a === selectedTeamFilter || f.b === selectedTeamFilter)
+    .slice(0, selectedTeamFilter ? 14 : 3);
+
   const el = document.getElementById('upcoming_feed');
   if(upcoming.length === 0){
     el.innerHTML = `<div class="feed-empty">all 70 matches played. league stage complete.</div>`;
@@ -2048,13 +2084,16 @@ function renderUpcomingFeed(){
         <span class="tag-upcoming">Upcoming</span>
       </div>
       <div class="feed-fixture">
-        <span class="team-link" onclick="window.takeoverTeam('${f.a}')">${f.a.toUpperCase()}</span>
+        <span class="team-link" style="--team-glow:${TEAM_COLORS[f.a]};" onclick="window.takeoverTeam('${f.a}')">${f.a.toUpperCase()}</span>
         <span class="vs">vs</span>
-        <span class="team-link" onclick="window.takeoverTeam('${f.b}')">${f.b.toUpperCase()}</span>
+        <span class="team-link" style="--team-glow:${TEAM_COLORS[f.b]};" onclick="window.takeoverTeam('${f.b}')">${f.b.toUpperCase()}</span>
       </div>
     </div>`).join('');
-  const remaining = SCHEDULE.length - Object.keys(results).length;
-  document.getElementById('upcoming_meta').innerText = `${remaining} fixtures left`;
+    
+  const remainingText = selectedTeamFilter 
+    ? `showing ${upcoming.length} upcoming` 
+    : `${SCHEDULE.length - Object.keys(results).length} fixtures left`;
+  document.getElementById('upcoming_meta').innerText = remainingText;
 }
 
 function renderSchedule(){
@@ -2079,9 +2118,9 @@ function renderSchedule(){
             <td><span class="sched-id">${f.id}</span></td>
             <td>
               <span class="sched-teams">
-                <span class="team-link" onclick="window.takeoverTeam('${r.t1}')">${r.t1.toUpperCase()}</span>
+                <span class="team-link" style="--team-glow:${TEAM_COLORS[r.t1]};" onclick="window.takeoverTeam('${r.t1}')">${r.t1.toUpperCase()}</span>
                 <span class="vs">vs</span>
-                <span class="team-link" onclick="window.takeoverTeam('${r.t2}')">${r.t2.toUpperCase()}</span>
+                <span class="team-link" style="--team-glow:${TEAM_COLORS[r.t2]};" onclick="window.takeoverTeam('${r.t2}')">${r.t2.toUpperCase()}</span>
               </span>
             </td>
             <td>
@@ -2095,9 +2134,9 @@ function renderSchedule(){
           <td><span class="sched-id">${f.id}</span></td>
           <td>
             <span class="sched-teams">
-              <span class="team-link" onclick="window.takeoverTeam('${f.a}')">${f.a.toUpperCase()}</span>
+              <span class="team-link" style="--team-glow:${TEAM_COLORS[f.a]};" onclick="window.takeoverTeam('${f.a}')">${f.a.toUpperCase()}</span>
               <span class="vs">vs</span>
-              <span class="team-link" onclick="window.takeoverTeam('${f.b}')">${f.b.toUpperCase()}</span>
+              <span class="team-link" style="--team-glow:${TEAM_COLORS[f.b]};" onclick="window.takeoverTeam('${f.b}')">${f.b.toUpperCase()}</span>
             </span>
           </td>
           <td><span class="sched-result">—</span></td>
@@ -2431,12 +2470,12 @@ function renderOdds(){
     return `
       <div class="odd-card">
         <div class="odd-card-teams">
-          <span style="color:${TEAM_COLORS[f.a]}">${f.a.toUpperCase()}</span>
+          <span class="team-link" style="--team-glow:${TEAM_COLORS[f.a]};" onclick="window.takeoverTeam('${f.a}')">${f.a.toUpperCase()}</span>
           <span style="color:var(--text-dim);font-size:0.8rem;font-family:'JetBrains Mono';">VS</span>
-          <span style="color:${TEAM_COLORS[f.b]}">${f.b.toUpperCase()}</span>
+          <span class="team-link" style="--team-glow:${TEAM_COLORS[f.b]};" onclick="window.takeoverTeam('${f.b}')">${f.b.toUpperCase()}</span>
         </div>
         <div class="odd-val">${oddsStr}</div>
-        <div class="odd-fav">${closest.v === 1.0 ? 'evenly matched' : `in favour of <span style="color:${TEAM_COLORS[fav]}">${fav.toUpperCase()}</span>`}</div>
+        <div class="odd-fav">${closest.v === 1.0 ? 'evenly matched' : `in favour of <span class="team-link" style="--team-glow:${TEAM_COLORS[fav]};" onclick="window.takeoverTeam('${fav}')">${fav.toUpperCase()}</span>`}</div>
       </div>
     `;
   }).join('');
@@ -2511,7 +2550,7 @@ window.openManagerModal = function(managerId, currentTeam){
     : `${stats.seasons} tracked season${stats.seasons === 1 ? '' : 's'}`;
 
   let html = `
-    <div class="mgr-modal-team-tag">// s5 team: <span class="accent">${currentTeam.toUpperCase()}</span> · ${seasonCountLabel}</div>
+    <div class="mgr-modal-team-tag">// s5 team: <span class="accent" style="--team-glow:${accent};">${currentTeam.toUpperCase()}</span> · ${seasonCountLabel}</div>
 
     <div class="mgr-modal-index-row">
       <div class="mgr-stat-block headline">
@@ -2560,7 +2599,7 @@ window.openManagerModal = function(managerId, currentTeam){
       html += `
         <div class="mgr-career-row">
           <div class="mgr-career-season">S${String(s.season).padStart(2,'0')}</div>
-          <div class="mgr-career-team" style="color:${teamColor};">${s.team.toUpperCase()}</div>
+          <div class="mgr-career-team" style="--team-glow:${teamColor};">${s.team.toUpperCase()}</div>
           <div class="mgr-career-record">${recordStr}</div>
           <div class="mgr-career-outcome ${outcomeClass}">${outcomeLabels[s.outcome] || s.outcome}</div>
         </div>`;
