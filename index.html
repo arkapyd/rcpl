@@ -133,7 +133,9 @@ table th.num,
    ============================================================ */
 .hero{
   max-width:1340px; margin:0 auto; padding:40px 28px 24px;
-  display:flex;
+  display:grid;
+  grid-template-columns:1.4fr 1fr;
+  gap:48px;
   align-items:center;
   position:relative;
   border-bottom:1px solid var(--border);
@@ -142,7 +144,6 @@ table th.num,
 .hero-left {
   position:relative;
   z-index:10;
-  flex:1;
 }
 .hero-left .eyebrow{
   font-family:'JetBrains Mono',monospace;
@@ -189,6 +190,106 @@ table th.num,
   margin-bottom:4px;
   letter-spacing:.02em;
   line-height:1;
+}
+
+/* ============================================================
+   PAST CHAMPIONS panel
+   ============================================================ */
+.hero-right{
+  position:relative;
+  z-index:10;
+  align-self:stretch;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.champ-panel{
+  background:linear-gradient(180deg, var(--surface) 0%, rgba(20,20,20,0) 120%);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:22px 24px 24px;
+  position:relative;
+  overflow:hidden;
+}
+.champ-panel::before{
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity:.7;
+}
+.champ-eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.7rem; letter-spacing:.3em;
+  color:var(--accent);
+  text-transform:uppercase;
+  margin-bottom:18px;
+}
+.champ-list{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.champ-row{
+  display:grid;
+  grid-template-columns:48px 1fr auto;
+  gap:14px;
+  align-items:center;
+  padding:11px 4px;
+  border-bottom:1px dashed var(--border-bright);
+  position:relative;
+  transition:transform .2s ease;
+}
+.champ-row:last-child{ border-bottom:none; }
+.champ-row:not(.is-pending):hover{ transform:translateX(2px); }
+.champ-season{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.7rem;
+  letter-spacing:.18em;
+  color:var(--text-dim);
+}
+.champ-team{
+  font-family:'Anton',sans-serif;
+  font-size:1.6rem;
+  letter-spacing:.08em;
+  color:#fff;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:color .2s ease, transform .2s ease;
+}
+.champ-team:hover{
+  color:var(--champ-color, var(--accent));
+  transform:translateY(-1px);
+}
+.champ-trophy{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.65rem;
+  letter-spacing:.18em;
+  color:var(--champ-color, var(--text-dim));
+  text-transform:uppercase;
+  white-space:nowrap;
+  opacity:.85;
+}
+.champ-row.is-pending .champ-team{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.78rem;
+  letter-spacing:.12em;
+  color:var(--text-muted);
+  font-weight:600;
+  text-transform:none;
+  cursor:default;
+}
+.champ-row.is-pending .champ-team:hover{ color:var(--text-muted); transform:none; }
+.champ-row.is-pending .champ-trophy{
+  color:var(--accent);
+  animation:pulse-soft 2.4s ease-in-out infinite;
+}
+@keyframes pulse-soft{
+  0%,100%{ opacity:.55; }
+  50%{ opacity:1; }
+}
+
+@media (max-width:900px){
+  .hero{ grid-template-columns:1fr; gap:32px; }
+  .hero-right{ align-self:auto; }
 }
 
 /* groups */
@@ -956,12 +1057,39 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   <div class="hero-left">
     <div class="eyebrow">// season five · now live</div>
     <h1 class="hero-title">The Premier<br><span class="stroke">Fantasy</span> League<br>Returns.</h1>
-    <p class="hero-sub">Every fixture hot. Every result electric. Every team out to claim bragging rights.</p>
+    <p class="hero-sub">Every fixture set. Every result logged. Every standing live from ball one.</p>
     <div class="hero-stats">
       <div class="hero-stat"><strong>10</strong>Teams</div>
       <div class="hero-stat"><strong>02</strong>Groups</div>
       <div class="hero-stat"><strong>70</strong>Fixtures</div>
       <div class="hero-stat"><strong>01</strong>Champion</div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="champ-panel">
+      <div class="champ-eyebrow">// past champions</div>
+      <div class="champ-list">
+        <div class="champ-row" style="--champ-color:#3b82f6;">
+          <div class="champ-season">S01</div>
+          <div class="champ-team" onclick="window.takeoverTeam('mi')">Mumbai Indians</div>
+          <div class="champ-trophy">★ champion</div>
+        </div>
+        <div class="champ-row" style="--champ-color:#ef4444;">
+          <div class="champ-season">S02</div>
+          <div class="champ-team" onclick="window.takeoverTeam('rcb')">RC Bengaluru</div>
+          <div class="champ-trophy">★ champion</div>
+        </div>
+        <div class="champ-row" style="--champ-color:#a855f7;">
+          <div class="champ-season">S03</div>
+          <div class="champ-team" onclick="window.takeoverTeam('kkr')">Kolkata Knight Riders</div>
+          <div class="champ-trophy">★ champion</div>
+        </div>
+        <div class="champ-row is-pending">
+          <div class="champ-season">S04</div>
+          <div class="champ-team">Finals today</div>
+          <div class="champ-trophy">● live</div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1857,13 +1985,33 @@ function renderCharts() {
       data: { labels: matchLabels, datasets },
       options: {
         responsive: true,
+        interaction: { mode: 'nearest', intersect: false },
         plugins: {
           title: { display: true, text: title, color: '#f5f5f4', font: {family:'Anton', size: 16, letterSpacing: 2} },
-          legend: { labels: { color: '#a3a3a3', font: {family:'JetBrains Mono'} } }
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#141414',
+            titleColor: '#f5f5f4',
+            titleFont: { family: 'JetBrains Mono', size: 11, weight: '700' },
+            bodyColor: '#a3a3a3',
+            bodyFont: { family: 'JetBrains Mono', size: 11 },
+            borderColor: '#383838',
+            borderWidth: 1,
+            padding: 10,
+            displayColors: true,
+            boxWidth: 10,
+            boxHeight: 10,
+            callbacks: {
+              title: (items) => items.length ? 'Match ' + items[0].label : '',
+              label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}`
+            }
+          }
         },
         scales: {
           x: { title: { display: true, text: 'match no.', color: '#737373' }, ticks: { color: '#a3a3a3' }, grid: { color: '#262626' } },
-          y: { reverse: reverseY, ticks: { color: '#a3a3a3' }, grid: { color: '#262626' } }
+          y: reverseY
+            ? { reverse: true, min: 1, max: 10, ticks: { color: '#a3a3a3', stepSize: 1 }, grid: { color: '#262626' } }
+            : { beginAtZero: true, ticks: { color: '#a3a3a3' }, grid: { color: '#262626' } }
         }
       }
     });
