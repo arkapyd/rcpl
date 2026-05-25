@@ -1051,7 +1051,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 }
 .manager-card::before{
   content:'';
-  position:absolute top:0; left:0; right:0;
+  position:absolute; top:0; left:0; right:0;
   height:2px;
   background:var(--mgr-color, var(--accent));
   opacity:0;
@@ -2470,8 +2470,16 @@ function renderExhaustiveStats(){
     let wpm = m > 0 ? (wkts / m) : 0;
     let bewm = m > 0 ? (10 + (0.3 * wpm) - (0.7 * econ)) : 0;
     
-    let baseValue = HISTORICAL_RATING[s.team] || 50;
-    let value = baseValue + (s.pts * 2.5) + (nrr * 12) + (bewm > 0 ? bewm * 1.5 : 0);
+    let managerId = (MANAGERS[s.team] || '').toLowerCase();
+    let mgrHistory = SEASON_OUTCOMES[managerId] || [];
+    let mgrStats = computeManagerIndex(mgrHistory);
+    
+    let titleWeight = Math.min(60, mgrStats.champs * 30);
+    let playoffWeight = Math.min(20, mgrStats.playoff_appearances * 5);
+    let wlRatio = mgrStats.total_m > 0 ? (mgrStats.total_w / mgrStats.total_m) : 0.5;
+    let currRatio = m > 0 ? (s.w / m) : 0.5;
+    
+    let value = titleWeight + playoffWeight + (wlRatio * 5) + (currRatio * 15);
 
     const isHighlighted = (selectedTeamFilter && s.team === selectedTeamFilter) ? ' highlight-row' : '';
     const nrrCls = nrr > 0 ? 'pos-nrr' : (nrr < 0 ? 'neg-nrr' : '');
@@ -2518,15 +2526,18 @@ function renderOdds(){
     let s = window.currentStandings.find(x => x.team === t);
     let histPct = HISTORICAL_RATING[t] || 50;
     
+    let managerId = (MANAGERS[t] || '').toLowerCase();
+    let mgrHistory = SEASON_OUTCOMES[managerId] || [];
+    let mgrStats = computeManagerIndex(mgrHistory);
+    let normMgrIndex = Math.min(100, mgrStats.index);
+    if(mgrStats.seasons === 0) normMgrIndex = 50;
+
     if(!s || s.p === 0) {
-      // No S5 data yet — lean entirely on S1-S3 history
-      return histPct;
+      return (histPct * 0.60) + (normMgrIndex * 0.40);
     }
 
-    // current season win percentage (weight 40%)
     let winPct = (s.w / s.p) * 100;
 
-    // current form last 5 matches (weight 30%)
     let recent = s.form.filter(x => x.res !== 'NA');
     let formPct = 50;
     if(recent.length > 0){
@@ -2535,10 +2546,9 @@ function renderOdds(){
       formPct = ((w + (t_res*0.5)) / recent.length) * 100;
     }
 
-    // slight nrr adjustment modifier (-10 to +10 pts)
     let nrrBoost = Math.max(-10, Math.min(10, s.nrr * 2));
 
-    return (winPct * 0.40) + (formPct * 0.30) + (histPct * 0.30) + nrrBoost;
+    return (winPct * 0.30) + (formPct * 0.25) + (histPct * 0.25) + (normMgrIndex * 0.20) + nrrBoost;
   };
 
   el.innerHTML = upcoming.map(f => {
