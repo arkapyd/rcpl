@@ -86,7 +86,7 @@ table th.num,
 }
 .ribbon-left{ display:flex; align-items:center; gap:14px; }
 .ribbon-logo {
-  height: 48px; width: 48px; /* fits comfortably within 64px */
+  height: 48px; width: 48px;
   border-radius: 50%; object-fit: cover;
   border: 1px solid var(--accent);
 }
@@ -789,7 +789,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 .form-res-pill.T{ background:rgba(250,204,21,.15); color:var(--tie); border:1px solid rgba(250,204,21,.4); }
 
 /* ============================================================
-   side watermarks — team logos in gutters
+   side watermarks — team logos with team-color splash
    ============================================================ */
 .side-watermarks{
   position:absolute;
@@ -798,12 +798,25 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   overflow:hidden;
   z-index:0;
 }
-.gutter-logo{
+.gutter-logo-wrap{
   position:absolute;
   width:clamp(150px, 20vw, 350px);
+  height:clamp(150px, 20vw, 350px);
+}
+.gutter-logo-wrap::before{
+  content:'';
+  position:absolute; inset:-20%;
+  background:radial-gradient(circle at center, var(--logo-color), transparent 60%);
+  opacity:0.35;
+  filter:blur(28px);
+  pointer-events:none;
+}
+.gutter-logo{
+  position:relative;
+  width:100%;
   height:auto;
-  opacity:0.15; 
-  filter: brightness(3.5); /* increased brightness as requested */
+  opacity:0.4;
+  filter: brightness(1.6) saturate(1.1);
   object-fit:contain;
 }
 
@@ -873,21 +886,16 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   letter-spacing:.04em;
 }
 .stat-row-team{
-  display:flex;
-  align-items:center;
-  gap:10px;
+  display:inline-block;
   font-weight:700;
   letter-spacing:.05em;
   text-transform:uppercase;
   cursor:pointer;
   font-size:.92rem;
+  color:#fff;
+  transition:text-shadow .25s ease;
 }
-.stat-row-team:hover{ color:var(--accent); }
-.stat-row-bar{
-  width:3px;
-  height:16px;
-  border-radius:2px;
-}
+.stat-row-team:hover{ text-shadow:0 0 10px var(--team-glow), 0 0 20px var(--team-glow); }
 .stat-row-value{
   font-family:'JetBrains Mono',monospace;
   font-variant-numeric:tabular-nums;
@@ -927,16 +935,16 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 <div id="toast-container"></div>
 
 <div class="side-watermarks" aria-hidden="true">
-  <img src="csk.png" alt="csk logo" class="gutter-logo" style="top:100px; left:-5%; ">
-  <img src="mi.png" alt="mi logo" class="gutter-logo" style="top:300px; right:-5%; ">
-  <img src="kkr.png" alt="kkr logo" class="gutter-logo" style="top:700px; left:-5%; ">
-  <img src="rcb.png" alt="rcb logo" class="gutter-logo" style="top:900px; right:-5%; ">
-  <img src="gt.png" alt="gt logo" class="gutter-logo" style="top:1300px; left:-5%; ">
-  <img src="pbks.png" alt="pbks logo" class="gutter-logo" style="top:1500px; right:-5%; ">
-  <img src="rr.png" alt="rr logo" class="gutter-logo" style="top:1900px; left:-5%; ">
-  <img src="dc.png" alt="dc logo" class="gutter-logo" style="top:2100px; right:-5%; ">
-  <img src="lsg.png" alt="lsg logo" class="gutter-logo" style="top:2500px; left:-5%; ">
-  <img src="srh.png" alt="srh logo" class="gutter-logo" style="top:2700px; right:-5%; ">
+  <div class="gutter-logo-wrap" style="top:100px; left:-5%; --logo-color:#fbbf24;"><img src="csk.png" alt="csk logo" class="gutter-logo"></div>
+  <div class="gutter-logo-wrap" style="top:300px; right:-5%; --logo-color:#3b82f6;"><img src="mi.png" alt="mi logo" class="gutter-logo"></div>
+  <div class="gutter-logo-wrap" style="top:700px; left:-5%; --logo-color:#a855f7;"><img src="kkr.png" alt="kkr logo" class="gutter-logo"></div>
+  <div class="gutter-logo-wrap" style="top:900px; right:-5%; --logo-color:#ef4444;"><img src="rcb.png" alt="rcb logo" class="gutter-logo"></div>
+  <div class="gutter-logo-wrap" style="top:1300px; left:-5%; --logo-color:#84cc16;"><img src="gt.png" alt="gt logo" class="gutter-logo"></div>
+  <div class="gutter-logo-wrap" style="top:1500px; right:-5%; --logo-color:#dc2626;"><img src="pbks.png" alt="pbks logo" class="gutter-logo"></div>
+  <div class="gutter-logo-wrap" style="top:1900px; left:-5%; --logo-color:#ec4899;"><img src="rr.png" alt="rr logo" class="gutter-logo"></div>
+  <div class="gutter-logo-wrap" style="top:2100px; right:-5%; --logo-color:#2563eb;"><img src="dc.png" alt="dc logo" class="gutter-logo"></div>
+  <div class="gutter-logo-wrap" style="top:2500px; left:-5%; --logo-color:#06b6d4;"><img src="lsg.png" alt="lsg logo" class="gutter-logo"></div>
+  <div class="gutter-logo-wrap" style="top:2700px; right:-5%; --logo-color:#f97316;"><img src="srh.png" alt="srh logo" class="gutter-logo"></div>
 </div>
 
 <div class="ribbon">
@@ -1117,7 +1125,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   <section class="section">
     <div class="section-head">
       <h2 class="section-title"><span class="num-pre">07</span>Predictive Odds</h2>
-      <div class="section-meta">upcoming fixtures · weighted by form & history</div>
+      <div class="section-meta">upcoming fixtures · weighted by form & S1-S3 history</div>
     </div>
     <div class="odds-grid" id="odds_feed"></div>
   </section>
@@ -1223,6 +1231,39 @@ const TEAM_COLORS = {
   lsg:'#06b6d4', gt:'#84cc16'
 };
 const OVERS_PER_INNINGS = 5;
+
+// ============================== HISTORICAL BASELINE (S1–S3) ==============================
+// Derived from career statistics across 42 matches for the 8 original teams.
+// Rating = 40% career win% + 30% career-NRR-normalized + 30% economy-inverted.
+// GT & LSG added with user-supplied S1 (S4) data — 14 matches each, neutral win% baseline,
+// with the economy splash favouring LSG.
+const HISTORICAL_RATING = {
+  pbks: 94,  // dominant: 39W/42 across S1-S3, +0.820 avg NRR, 7.64 economy
+  kkr:  77,  // strong: 32W/42, +0.291 avg NRR, 8.01 economy
+  rcb:  75,  // strong: 30W/42, +0.296 avg NRR, 8.01 economy
+  lsg:  62,  // new entrant, but excellent economy (7.98) + 103 wkts in 14 matches
+  mi:   54,  // mid-pack: 18W/42 across the three seasons
+  gt:   51,  // new entrant, neutral baseline + 9.67 economy
+  dc:   44,  // 20W/42, -0.400 avg NRR
+  rr:   44,  // 14W/42, -0.268 avg NRR
+  csk:  42,  // 11W/42 — historical underperformer
+  srh:  23   // weakest: 9W/42, -0.644 avg NRR, 10.63 economy
+};
+
+// Career aggregate stats from S1-S3 (and user override for GT/LSG)
+// Currently used for the Predictive Odds baseline; can be surfaced in the UI later.
+const CAREER_STATS = {
+  pbks: { m:42, w:39, runs:2149, wkts:256, eco:7.64,  nrr: 0.820 },
+  kkr:  { m:42, w:32, runs:1709, wkts:172, eco:8.01,  nrr: 0.291 },
+  rcb:  { m:42, w:30, runs:1844, wkts:136, eco:8.01,  nrr: 0.296 },
+  mi:   { m:42, w:18, runs:1680, wkts:140, eco:8.77,  nrr: 0.007 },
+  dc:   { m:42, w:20, runs:1215, wkts: 86, eco:9.67,  nrr:-0.400 },
+  rr:   { m:42, w:14, runs:1364, wkts:108, eco:9.12,  nrr:-0.268 },
+  csk:  { m:42, w:11, runs:1090, wkts:141, eco:8.68,  nrr:-0.360 },
+  srh:  { m:42, w: 9, runs:1206, wkts:110, eco:10.63, nrr:-0.644 },
+  lsg:  { m:14, w: 7, runs: 634, wkts:103, eco:7.98,  nrr: 0.000 },
+  gt:   { m:14, w: 7, runs: 457, wkts: 69, eco:9.67,  nrr: 0.000 }
+};
 
 // 70-match schedule
 const SCHEDULE = [
@@ -1713,8 +1754,7 @@ function renderStatBoards(){
   const rowHtml = (s, i, valStr) => `
     <div class="stat-row">
       <div class="stat-row-rank">${String(i+1).padStart(2,'0')}</div>
-      <div class="stat-row-team" onclick="window.takeoverTeam('${s.team}')">
-        <span class="stat-row-bar" style="background:${TEAM_COLORS[s.team]};"></span>
+      <div class="stat-row-team" style="--team-glow:${TEAM_COLORS[s.team]};" onclick="window.takeoverTeam('${s.team}')">
         ${s.team.toUpperCase()}
       </div>
       <div class="stat-row-value">${valStr}</div>
@@ -1851,11 +1891,6 @@ function renderOdds(){
     return;
   }
 
-  // mocked previous season base ratings out of 100
-  const HISTORICAL_RATING = {
-    csk: 88, mi: 85, gt: 82, rcb: 76, rr: 80, kkr: 78, lsg: 74, dc: 70, pbks: 68, srh: 72
-  };
-
   const standardOdds = [
      {v: 1.0, s: '1/1'}, {v: 1.1, s: '11/10'}, {v: 1.2, s: '6/5'}, {v: 1.25, s: '5/4'},
      {v: 1.33, s: '4/3'}, {v: 1.4, s: '7/5'}, {v: 1.5, s: '3/2'}, {v: 1.6, s: '8/5'},
@@ -1866,10 +1901,15 @@ function renderOdds(){
 
   const getTeamScore = (t) => {
     let s = window.currentStandings.find(x => x.team === t);
-    if(!s) return HISTORICAL_RATING[t]; 
+    let histPct = HISTORICAL_RATING[t] || 50;
+    
+    if(!s || s.p === 0) {
+      // No S5 data yet — lean entirely on S1-S3 history
+      return histPct;
+    }
 
     // current season win percentage (weight 40%)
-    let winPct = s.p > 0 ? (s.w / s.p) * 100 : 50;
+    let winPct = (s.w / s.p) * 100;
 
     // current form last 5 matches (weight 30%)
     let recent = s.form.filter(x => x.res !== 'NA');
@@ -1880,10 +1920,7 @@ function renderOdds(){
       formPct = ((w + (t_res*0.5)) / recent.length) * 100;
     }
 
-    // historical strength (weight 30%)
-    let histPct = HISTORICAL_RATING[t] || 50;
-
-    // slight nrr adjustment modifier (-2 to +2 pts)
+    // slight nrr adjustment modifier (-10 to +10 pts)
     let nrrBoost = Math.max(-10, Math.min(10, s.nrr * 2));
 
     return (winPct * 0.40) + (formPct * 0.30) + (histPct * 0.30) + nrrBoost;
