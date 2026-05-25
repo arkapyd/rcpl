@@ -1051,7 +1051,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 }
 .manager-card::before{
   content:'';
-  position:absolute; top:0; left:0; right:0;
+  position:absolute top:0; left:0; right:0;
   height:2px;
   background:var(--mgr-color, var(--accent));
   opacity:0;
@@ -1430,6 +1430,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
       <div class="stats-header" style="display:flex; gap:10px; margin-top:4px;">
         <button class="tab-btn active" onclick="window.switchStatsTab('boards')">Leaderboards</button>
         <button class="tab-btn" onclick="window.switchStatsTab('graphs')">Graphs</button>
+        <button class="tab-btn" onclick="window.switchStatsTab('exhaustive')">Exhaustive Stats</button>
       </div>
     </div>
     
@@ -1479,6 +1480,28 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
           <canvas id="chartWkts"></canvas>
         </div>
       </div>
+    </div>
+
+    <div id="stats_exhaustive" style="display:none; overflow-x:auto;" class="table-wrap">
+      <table style="width:100%; min-width:1050px; border-collapse:collapse; font-size:.85rem;">
+        <thead>
+          <tr>
+            <th>Team</th>
+            <th class="num">NRR</th>
+            <th class="num">Average</th>
+            <th class="num">Strike Rate</th>
+            <th class="num">Run Rate</th>
+            <th class="num" style="color:var(--accent);">BASRA</th>
+            <th class="num">HS</th>
+            <th class="num">Wickets Taken</th>
+            <th class="num">Economy</th>
+            <th class="num">Wickets/Match</th>
+            <th class="num" style="color:var(--accent);">BEWM</th>
+            <th class="num" style="color:var(--win);">Value (V$)</th>
+          </tr>
+        </thead>
+        <tbody id="exhaustive_body"></tbody>
+      </table>
     </div>
   </section>
 
@@ -1816,6 +1839,7 @@ window.setFilter = function(f){
 window.switchStatsTab = function(tab) {
   document.getElementById('stats_boards').style.display = tab === 'boards' ? 'grid' : 'none';
   document.getElementById('stats_graphs').style.display = tab === 'graphs' ? 'block' : 'none';
+  document.getElementById('stats_exhaustive').style.display = tab === 'exhaustive' ? 'block' : 'none';
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelector(`.tab-btn[onclick="window.switchStatsTab('${tab}')"]`).classList.add('active');
 };
@@ -1891,6 +1915,7 @@ function blankStats(team){
   return {
     team, p:0, w:0, l:0, t:0, pts:0,
     rf:0, of_balls:0, ra:0, oa_balls:0,
+    wkts_taken:0, wkts_lost:0, hs:0,
     form:[]
   };
 }
@@ -1919,16 +1944,22 @@ function computeStandings(){
 
     s1.rf += r.r1||0; s1.of_balls += b1Faced;
     s1.ra += r.r2||0; s1.oa_balls += b2Faced;
+    s1.wkts_taken += r.w2||0; s1.wkts_lost += r.w1||0;
+    
     s2.rf += r.r2||0; s2.of_balls += b2Faced;
     s2.ra += r.r1||0; s2.oa_balls += b1Faced;
+    s2.wkts_taken += r.w1||0; s2.wkts_lost += r.w2||0;
+
+    if((r.r1||0) > s1.hs) s1.hs = r.r1||0;
+    if((r.r2||0) > s2.hs) s2.hs = r.r2||0;
 
     const winner = getWinner(r);
     if(winner === r.t1){
       s1.w++; s1.pts += 2; s1.form.push({ res:'W', detail:`def. ${r.t2.toUpperCase()} (${fixture.id})`, ts:r.ts, mid:fixture.id });
-      s2.l++;             s2.form.push({ res:'L', detail:`lost to ${r.t1.toUpperCase()} (${fixture.id})`, ts:r.ts, mid:fixture.id });
+      s2.l++;              s2.form.push({ res:'L', detail:`lost to ${r.t1.toUpperCase()} (${fixture.id})`, ts:r.ts, mid:fixture.id });
     } else if(winner === r.t2){
       s2.w++; s2.pts += 2; s2.form.push({ res:'W', detail:`def. ${r.t1.toUpperCase()} (${fixture.id})`, ts:r.ts, mid:fixture.id });
-      s1.l++;             s1.form.push({ res:'L', detail:`lost to ${r.t2.toUpperCase()} (${fixture.id})`, ts:r.ts, mid:fixture.id });
+      s1.l++;              s1.form.push({ res:'L', detail:`lost to ${r.t2.toUpperCase()} (${fixture.id})`, ts:r.ts, mid:fixture.id });
     } else {
       s1.t++; s1.pts += 1; s1.form.push({ res:'T', detail:`tied vs ${r.t2.toUpperCase()} (${fixture.id})`, ts:r.ts, mid:fixture.id });
       s2.t++; s2.pts += 1; s2.form.push({ res:'T', detail:`tied vs ${r.t1.toUpperCase()} (${fixture.id})`, ts:r.ts, mid:fixture.id });
@@ -2416,6 +2447,56 @@ function renderCharts() {
   drawChart('chartWkts', 'wickets taken', buildDatasets('wkts'), false);
 }
 
+function renderExhaustiveStats(){
+  const tbody = document.getElementById('exhaustive_body');
+  if(!tbody) return;
+  if(!window.currentStandings || window.currentStandings.length === 0){
+    tbody.innerHTML = '<tr><td colspan="12" class="feed-empty">first match pending. data crunching on standby.</td></tr>';
+    return;
+  }
+  
+  let html = '';
+  window.currentStandings.forEach(s => {
+    let m = s.p;
+    let nrr = s.nrr;
+    
+    let avg = m > 0 ? (s.rf / m) : 0;
+    let sr = s.of_balls > 0 ? (s.rf / s.of_balls) * 100 : 0;
+    let rr = s.of_balls > 0 ? (s.rf / (s.of_balls / 6)) : 0;
+    let basra = avg + sr;
+    
+    let wkts = s.wkts_taken;
+    let econ = s.oa_balls > 0 ? (s.ra / (s.oa_balls / 6)) : 0;
+    let wpm = m > 0 ? (wkts / m) : 0;
+    let bewm = m > 0 ? (10 + (0.3 * wpm) - (0.7 * econ)) : 0;
+    
+    let baseValue = HISTORICAL_RATING[s.team] || 50;
+    let value = baseValue + (s.pts * 2.5) + (nrr * 12) + (bewm > 0 ? bewm * 1.5 : 0);
+
+    const isHighlighted = (selectedTeamFilter && s.team === selectedTeamFilter) ? ' highlight-row' : '';
+    const nrrCls = nrr > 0 ? 'pos-nrr' : (nrr < 0 ? 'neg-nrr' : '');
+
+    html += `
+      <tr class="${isHighlighted}">
+        <td style="text-align:left; padding-left:18px;">
+           <span class="team-cell" style="--team-glow:${TEAM_COLORS[s.team]};" onclick="window.takeoverTeam('${s.team}')">${s.team.toUpperCase()}</span>
+        </td>
+        <td class="num col-nrr ${nrrCls}">${m === 0 ? '—' : nrr.toFixed(3)}</td>
+        <td class="num">${avg.toFixed(2)}</td>
+        <td class="num">${sr.toFixed(2)}</td>
+        <td class="num">${rr.toFixed(2)}</td>
+        <td class="num" style="font-weight:700; color:var(--text);">${basra.toFixed(2)}</td>
+        <td class="num">${s.hs}</td>
+        <td class="num">${wkts}</td>
+        <td class="num">${econ.toFixed(2)}</td>
+        <td class="num">${wpm.toFixed(2)}</td>
+        <td class="num" style="font-weight:700; color:var(--text);">${m === 0 ? '—' : bewm.toFixed(2)}</td>
+        <td class="num" style="color:var(--win); font-weight:800; font-size:1rem;">${value.toFixed(2)}</td>
+      </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
 // ============================== PREDICTIVE ODDS ==============================
 function renderOdds(){
   const upcoming = SCHEDULE.filter(f => !results[f.id]).slice(0, 3);
@@ -2505,6 +2586,7 @@ function updateUI(){
   renderStatBoards();
   renderCharts(); 
   renderOdds(); 
+  renderExhaustiveStats();
 
   const playedCount = Object.keys(results).length;
   document.getElementById('progress_bar').style.width = (playedCount / 70 * 100) + '%';
