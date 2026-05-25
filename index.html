@@ -905,36 +905,53 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 .form-res-pill.T{ background:rgba(250,204,21,.15); color:var(--tie); border:1px solid rgba(250,204,21,.4); }
 
 /* ============================================================
-   side watermarks — team logos with team-color splash
+   side watermarks — abstract tech design
    ============================================================ */
-.side-watermarks{
-  position:absolute;
-  top:0; left:0; right:0; bottom:0;
-  pointer-events:none;
-  overflow:hidden;
-  z-index:0;
+.side-watermarks {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
 }
-.gutter-logo-wrap{
-  position:absolute;
-  width:clamp(150px, 20vw, 350px);
-  height:clamp(150px, 20vw, 350px);
+.tech-grid {
+  position: fixed; top: 0; bottom: 0; width: 400px;
+  background-image: radial-gradient(rgba(var(--accent-rgb), 0.2) 1px, transparent 1px);
+  background-size: 30px 30px;
+  opacity: 0.3;
+  z-index: 0;
 }
-.gutter-logo{
-  position:relative;
-  width:100%;
-  height:auto;
-  opacity:0.3;
-  filter: brightness(1.4) saturate(1.05);
-  object-fit:contain;
+.left-grid { left: -100px; -webkit-mask-image: linear-gradient(to right, black 20%, transparent); mask-image: linear-gradient(to right, black 20%, transparent); }
+.right-grid { right: -100px; -webkit-mask-image: linear-gradient(to left, black 20%, transparent); mask-image: linear-gradient(to left, black 20%, transparent); }
+
+.giant-text {
+  position: fixed; top: 50%;
+  font-family: 'Anton', sans-serif;
+  font-size: 25vh;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 2px rgba(var(--accent-rgb), 0.08);
+  white-space: nowrap;
+  z-index: 0;
+}
+.left-text { left: -10vh; transform: translateY(-50%) rotate(-90deg); }
+.right-text { right: -10vh; transform: translateY(-50%) rotate(90deg); }
+
+.glow-line {
+  position: fixed; top: 0; bottom: 0; width: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(var(--accent-rgb), 0.4), transparent);
+  z-index: 0;
+}
+.left-line { left: 4vw; }
+.right-line { right: 4vw; }
+
+@media (max-width:1500px){
+  .side-watermarks{ display:none; }
 }
 
 /* push content above the watermark layer */
 .ribbon, .hero, .groups, .container, .foot{ position:relative; z-index:1; }
 .ribbon{ z-index:1000; }
-
-@media (max-width:1500px){
-  .side-watermarks{ display:none; }
-}
 
 /* ============================================================
    season statistics
@@ -1268,16 +1285,12 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 <div id="toast-container"></div>
 
 <div class="side-watermarks" aria-hidden="true">
-  <div class="gutter-logo-wrap" style="top:100px; left:-5%; --logo-color:#fbbf24;"><img src="csk.png" alt="csk logo" class="gutter-logo"></div>
-  <div class="gutter-logo-wrap" style="top:300px; right:-5%; --logo-color:#3b82f6;"><img src="mi.png" alt="mi logo" class="gutter-logo"></div>
-  <div class="gutter-logo-wrap" style="top:700px; left:-5%; --logo-color:#a855f7;"><img src="kkr.png" alt="kkr logo" class="gutter-logo"></div>
-  <div class="gutter-logo-wrap" style="top:900px; right:-5%; --logo-color:#ef4444;"><img src="rcb.png" alt="rcb logo" class="gutter-logo"></div>
-  <div class="gutter-logo-wrap" style="top:1300px; left:-5%; --logo-color:#84cc16;"><img src="gt.png" alt="gt logo" class="gutter-logo"></div>
-  <div class="gutter-logo-wrap" style="top:1500px; right:-5%; --logo-color:#dc2626;"><img src="pbks.png" alt="pbks logo" class="gutter-logo"></div>
-  <div class="gutter-logo-wrap" style="top:1900px; left:-5%; --logo-color:#ec4899;"><img src="rr.png" alt="rr logo" class="gutter-logo"></div>
-  <div class="gutter-logo-wrap" style="top:2100px; right:-5%; --logo-color:#2563eb;"><img src="dc.png" alt="dc logo" class="gutter-logo"></div>
-  <div class="gutter-logo-wrap" style="top:2500px; left:-5%; --logo-color:#06b6d4;"><img src="lsg.png" alt="lsg logo" class="gutter-logo"></div>
-  <div class="gutter-logo-wrap" style="top:2700px; right:-5%; --logo-color:#f97316;"><img src="srh.png" alt="srh logo" class="gutter-logo"></div>
+  <div class="tech-grid left-grid"></div>
+  <div class="tech-grid right-grid"></div>
+  <div class="glow-line left-line"></div>
+  <div class="glow-line right-line"></div>
+  <div class="giant-text left-text">S05</div>
+  <div class="giant-text right-text">RCPL</div>
 </div>
 
 <div class="ribbon">
