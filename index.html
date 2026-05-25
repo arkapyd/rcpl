@@ -1038,7 +1038,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 }
 .manager-card::before{
   content:'';
-  position:absolute; top:0; left:0; right:0;
+  position:absolute top:0; left:0; right:0;
   height:2px;
   background:var(--mgr-color, var(--accent));
   opacity:0;
@@ -1090,6 +1090,133 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   text-transform:uppercase;
   color:var(--mgr-color, var(--accent));
 }
+
+/* ============================================================
+   MANAGER MODAL — career performance breakdown
+   ============================================================ */
+.modal-content.mgr-modal{
+  max-width:620px;
+}
+.mgr-modal-team-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.72rem;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--text-dim);
+  margin-bottom:18px;
+}
+.mgr-modal-team-tag .accent{ color:var(--mgr-color, var(--accent)); font-weight:700; }
+.mgr-modal-index-row{
+  display:grid;
+  grid-template-columns:1.7fr 1fr 1fr 1fr;
+  gap:10px;
+  margin-bottom:14px;
+}
+.mgr-stat-block{
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:12px 14px;
+}
+.mgr-stat-block .label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.62rem;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--text-dim);
+  margin-bottom:6px;
+}
+.mgr-stat-block .value{
+  font-family:'Anton',sans-serif;
+  font-size:1.9rem;
+  line-height:1;
+  letter-spacing:.02em;
+  color:var(--text);
+}
+.mgr-stat-block.headline .value{
+  color:var(--mgr-color, var(--accent));
+  font-size:2.4rem;
+}
+.mgr-stat-block.headline .label{ color:var(--mgr-color, var(--accent)); }
+.mgr-modal-meta{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.78rem;
+  color:var(--text-muted);
+  padding:10px 0 18px;
+  border-bottom:1px dashed var(--border-bright);
+  margin-bottom:18px;
+}
+.mgr-modal-career-head{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.7rem;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--mgr-color, var(--accent));
+  margin-bottom:10px;
+}
+.mgr-modal-career-list{
+  display:flex;
+  flex-direction:column;
+}
+.mgr-career-row{
+  display:grid;
+  grid-template-columns:48px 60px 1fr auto;
+  gap:14px;
+  align-items:center;
+  padding:11px 4px;
+  border-bottom:1px dashed var(--border-bright);
+}
+.mgr-career-row:last-child{ border-bottom:none; }
+.mgr-career-season{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.72rem;
+  letter-spacing:.18em;
+  color:var(--text-dim);
+}
+.mgr-career-team{
+  font-family:'Anton',sans-serif;
+  font-size:1.1rem;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.mgr-career-record{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.82rem;
+  color:var(--text-muted);
+  letter-spacing:.02em;
+}
+.mgr-career-outcome{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.7rem;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  text-align:right;
+  white-space:nowrap;
+}
+.mgr-career-outcome.champion{ color:var(--win); font-weight:700; }
+.mgr-career-outcome.finalist{ color:var(--accent); }
+.mgr-career-outcome.qualifier{ color:var(--tie); opacity:.85; }
+.mgr-career-outcome.eliminator{ color:var(--tie); opacity:.65; }
+.mgr-career-outcome.group{ color:var(--text-dim); }
+.mgr-career-outcome.pending_final{ color:var(--accent); animation:pulse-soft 2.4s ease-in-out infinite; font-weight:700; }
+.mgr-modal-empty{
+  padding:24px 0;
+  text-align:center;
+  color:var(--text-dim);
+  font-style:italic;
+  font-size:.9rem;
+}
+.mgr-modal-foot{
+  margin-top:18px;
+  padding-top:14px;
+  border-top:1px dashed var(--border-bright);
+  font-family:'JetBrains Mono',monospace;
+  font-size:.7rem;
+  letter-spacing:.04em;
+  color:var(--text-dim);
+  line-height:1.6;
+}
+.mgr-modal-foot strong{ color:var(--accent); font-weight:700; }
 
 /* footer */
 .foot{
@@ -1151,17 +1278,17 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
       <div class="champ-list">
         <div class="champ-row" style="--champ-color:#3b82f6;">
           <div class="champ-season">S01</div>
-          <div class="champ-team" onclick="window.takeoverTeam('mi')">Indians</div>
+          <div class="champ-team" onclick="window.takeoverTeam('mi')">Mumbai Indians</div>
           <div class="champ-trophy">★ champion</div>
         </div>
         <div class="champ-row" style="--champ-color:#ef4444;">
           <div class="champ-season">S02</div>
-          <div class="champ-team" onclick="window.takeoverTeam('rcb')">Royal Challengers</div>
+          <div class="champ-team" onclick="window.takeoverTeam('rcb')">RC Bengaluru</div>
           <div class="champ-trophy">★ champion</div>
         </div>
         <div class="champ-row" style="--champ-color:#a855f7;">
           <div class="champ-season">S03</div>
-          <div class="champ-team" onclick="window.takeoverTeam('kkr')">Knight Riders</div>
+          <div class="champ-team" onclick="window.takeoverTeam('kkr')">Kolkata Knight Riders</div>
           <div class="champ-trophy">★ champion</div>
         </div>
         <div class="champ-row is-pending">
@@ -1326,7 +1453,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   <section class="section">
     <div class="section-head">
       <h2 class="section-title"><span class="num-pre">07</span>Predictive Odds</h2>
-      <div class="section-meta">upcoming fixtures · weighted by form & S1-S4 history</div>
+      <div class="section-meta">upcoming fixtures · weighted by form & S1-S3 history</div>
     </div>
     <div class="odds-grid" id="odds_feed"></div>
   </section>
@@ -1411,6 +1538,14 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   </div>
 </div>
 
+<div id="mgr_modal" class="modal-overlay">
+  <div class="modal-content mgr-modal" id="mgr_modal_content">
+    <span class="modal-close" onclick="document.getElementById('mgr_modal').classList.remove('show')">&times;</span>
+    <h2 class="modal-title" id="mgr_modal_name">—</h2>
+    <div id="mgr_modal_body"></div>
+  </div>
+</div>
+
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyC_q2XGkzgWGVSX4_RSckQnQVrKNdVc6ek",
@@ -1454,6 +1589,86 @@ const MANAGERS = {
   lsg:        'Tuhinangshu',
   srh:        'Adi'
 };
+
+// ============================== MANAGER CAREER HISTORY ==============================
+// Per-season records. outcome ∈ {champion, finalist, qualifier (Q2 loss),
+// eliminator (eliminator loss), group (missed playoffs), pending-final (S4 final today)}.
+// Some w/m left null where the exact group-stage record isn't on hand.
+const SEASON_OUTCOMES = {
+  arka: [ // PBKS S1-S4 — three finals as runner-up, then eliminator exit
+    { season: 1, team: 'pbks', w: 13, m: 14, outcome: 'finalist' },
+    { season: 2, team: 'pbks', w: 14, m: 14, outcome: 'finalist' },
+    { season: 3, team: 'pbks', w: 12, m: 14, outcome: 'finalist' },
+    { season: 4, team: 'pbks', w: 6,  m: 11, outcome: 'eliminator' }
+  ],
+  arkaparno: [ // KKR S1, S2, S4
+    { season: 1, team: 'kkr', w: 11, m: 14, outcome: 'qualifier' },
+    { season: 2, team: 'kkr', w: 9,  m: 14, outcome: 'eliminator' },
+    { season: 4, team: 'kkr', w: 7,  m: 14, outcome: 'group' }
+  ],
+  tuhinangshu: [ // RCB S1-2, KKR S3, LSG S4 — two-time champion
+    { season: 1, team: 'rcb', w: 8,  m: 14, outcome: 'qualifier' },
+    { season: 2, team: 'rcb', w: 11, m: 14, outcome: 'champion' },
+    { season: 3, team: 'kkr', w: 12, m: 14, outcome: 'champion' },
+    { season: 4, team: 'lsg', w: null, m: null, outcome: 'pending-final' } // Lost Q1, Won Q2
+  ],
+  deeptayan: [ // MI S1, S2, S4 — S1 champion
+    { season: 1, team: 'mi', w: 8, m: 14, outcome: 'champion' },
+    { season: 2, team: 'mi', w: 8, m: 14, outcome: 'qualifier' },
+    { season: 4, team: 'mi', w: 8, m: 11, outcome: 'qualifier' } // Won Eliminator, Lost Q2
+  ],
+  rio: [ // RCB S3, S4 
+    { season: 3, team: 'rcb', w: 11, m: 14, outcome: 'qualifier' },
+    { season: 4, team: 'rcb', w: 8,  m: 12, outcome: 'pending-final' } // Won Q1
+  ],
+  adarsh: [ // DC S3, S4
+    { season: 3, team: 'dc',  w: 6,  m: 14, outcome: 'group' },
+    { season: 4, team: 'dc',  w: null, m: null, outcome: 'group' }
+  ],
+  prajyot: [ // CSK S3, S4
+    { season: 3, team: 'csk', w: 1,  m: 14, outcome: 'group' },
+    { season: 4, team: 'csk', w: null, m: null, outcome: 'group' }
+  ],
+  rishit: [ // SRH S3, RR S4
+    { season: 3, team: 'srh', w: 6,  m: 14, outcome: 'group' },
+    { season: 4, team: 'rr',  w: null, m: null, outcome: 'group' }
+  ],
+  neil: [ // RR S3, GT S4
+    { season: 3, team: 'rr',  w: 6,  m: 14, outcome: 'eliminator' },
+    { season: 4, team: 'gt',  w: null, m: null, outcome: 'group' }
+  ],
+  adi: [ // SRH S4 debut
+    { season: 4, team: 'srh', w: null, m: null, outcome: 'group' }
+  ]
+};
+
+function computeManagerIndex(history){
+  let total_w = 0, total_m = 0;
+  let champs = 0, finalists = 0, qualifiers = 0, eliminators = 0, groups = 0, pending = 0;
+  history.forEach(s => {
+    if(s.w !== null) total_w += s.w;
+    if(s.m !== null) total_m += s.m;
+    if(s.outcome === 'champion') champs++;
+    else if(s.outcome === 'finalist') finalists++;
+    else if(s.outcome === 'qualifier') qualifiers++;
+    else if(s.outcome === 'eliminator') eliminators++;
+    else if(s.outcome === 'group') groups++;
+    else if(s.outcome === 'pending-final') pending++;
+  });
+  const finals_appearances = champs + finalists + pending;
+  const playoff_appearances = finals_appearances + qualifiers + eliminators;
+  const win_rate = total_m > 0 ? total_w/total_m : 0;
+  // Index: 25 per title + 10 per non-winning final + 5 per playoff-only + 30 × career win rate.
+  // Pending finals (S4 today) count as a final appearance, not yet a championship.
+  const non_winning_finals = finalists + pending;
+  const playoff_only = qualifiers + eliminators;
+  const index = Math.round(champs*25 + non_winning_finals*10 + playoff_only*5 + win_rate*30);
+  return {
+    seasons: history.length, total_w, total_m, win_rate,
+    champs, finalists, qualifiers, eliminators, groups, pending,
+    finals_appearances, playoff_appearances, index
+  };
+}
 
 // ============================== HISTORICAL BASELINE (S1–S3) ==============================
 // Derived from career statistics across 42 matches for the 8 original teams.
@@ -1726,8 +1941,9 @@ function initUI(){
     mgEl.innerHTML = orderedTeams.map(t => {
       const name = MANAGERS[t] || '—';
       const color = TEAM_COLORS[t];
+      const managerId = (MANAGERS[t] || '').toLowerCase();
       return `
-        <div class="manager-card" style="--mgr-color:${color};" onclick="window.takeoverTeam('${t}')">
+        <div class="manager-card" style="--mgr-color:${color};" onclick="window.openManagerModal('${managerId}', '${t}')">
           <div class="mgr-eyebrow">// manager</div>
           <h3 class="mgr-name">${name}</h3>
           <div class="mgr-team-row">
@@ -2273,6 +2489,93 @@ window.openFormModal = function(team){
   }
   document.getElementById('form_modal_body').innerHTML = html;
   document.getElementById('form_modal').classList.add('show');
+};
+
+// ============================== MANAGER PERFORMANCE MODAL ==============================
+window.openManagerModal = function(managerId, currentTeam){
+  const history = SEASON_OUTCOMES[managerId] || [];
+  const stats = computeManagerIndex(history);
+  const managerName = MANAGERS[currentTeam] || managerId;
+  const accent = TEAM_COLORS[currentTeam] || 'var(--accent)';
+
+  // Tint the entire modal with the manager's current S5 team colour.
+  document.getElementById('mgr_modal_content').style.setProperty('--mgr-color', accent);
+
+  // Headline: S5 team + season count
+  const seasonCountLabel = stats.seasons === 0
+    ? 's5 debut'
+    : `${stats.seasons} tracked season${stats.seasons === 1 ? '' : 's'}`;
+
+  let html = `
+    <div class="mgr-modal-team-tag">// s5 team: <span class="accent">${currentTeam.toUpperCase()}</span> · ${seasonCountLabel}</div>
+
+    <div class="mgr-modal-index-row">
+      <div class="mgr-stat-block headline">
+        <div class="label">performance index</div>
+        <div class="value">${stats.seasons === 0 ? '—' : stats.index}</div>
+      </div>
+      <div class="mgr-stat-block">
+        <div class="label">titles</div>
+        <div class="value">${stats.champs}</div>
+      </div>
+      <div class="mgr-stat-block">
+        <div class="label">finals</div>
+        <div class="value">${stats.finals_appearances}</div>
+      </div>
+      <div class="mgr-stat-block">
+        <div class="label">playoffs</div>
+        <div class="value">${stats.playoff_appearances}</div>
+      </div>
+    </div>
+  `;
+
+  if(stats.total_m > 0){
+    html += `<div class="mgr-modal-meta">${stats.total_w}W / ${stats.total_m}M · ${(stats.win_rate*100).toFixed(1)}% career win rate</div>`;
+  } else {
+    html += `<div class="mgr-modal-meta">debut season — career stats begin from s5.</div>`;
+  }
+
+  html += `<div class="mgr-modal-career-head">// career path</div>`;
+
+  if(history.length === 0){
+    html += `<div class="mgr-modal-empty">no prior seasons recorded. starting fresh in s5.</div>`;
+  } else {
+    const outcomeLabels = {
+      champion: '★ champion',
+      finalist: 'finalist · runner-up',
+      qualifier: 'playoffs · q2 loss',
+      eliminator: 'playoffs · eliminator',
+      group: 'missed playoffs',
+      'pending-final': '● in final · live'
+    };
+    html += `<div class="mgr-modal-career-list">`;
+    history.forEach(s => {
+      const recordStr = (s.w !== null && s.m !== null) ? `${s.w}W / ${s.m}M` : '<span style="opacity:.6;">in progress</span>';
+      const outcomeClass = s.outcome.replace('-', '_');
+      const teamColor = TEAM_COLORS[s.team] || 'var(--text)';
+      html += `
+        <div class="mgr-career-row">
+          <div class="mgr-career-season">S${String(s.season).padStart(2,'0')}</div>
+          <div class="mgr-career-team" style="color:${teamColor};">${s.team.toUpperCase()}</div>
+          <div class="mgr-career-record">${recordStr}</div>
+          <div class="mgr-career-outcome ${outcomeClass}">${outcomeLabels[s.outcome] || s.outcome}</div>
+        </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Footnote: explain the formula and flag S4 pending state
+  const hasPending = stats.pending > 0;
+  html += `
+    <div class="mgr-modal-foot">
+      index = 25 × titles + 10 × finals + 5 × playoff appearances + 30 × career win rate.
+      ${hasPending ? '<br><strong>S4 final is today</strong> — index may move once the result is in.' : ''}
+    </div>
+  `;
+
+  document.getElementById('mgr_modal_name').innerText = managerName;
+  document.getElementById('mgr_modal_body').innerHTML = html;
+  document.getElementById('mgr_modal').classList.add('show');
 };
 
 // ============================== ADMIN: FIXTURE LOAD / SAVE / RESET ==============================
