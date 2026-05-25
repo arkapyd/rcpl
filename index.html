@@ -1286,6 +1286,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     <div class="ribbon-title">REAL CRICKET <span class="accent">PREMIER</span> LEAGUE</div>
   </div>
   <div class="ribbon-right">
+    <div id="s5_countdown" style="font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--accent); background:rgba(var(--accent-rgb),0.1); border:1px solid rgba(var(--accent-rgb),0.3); padding:6px 12px; border-radius:4px; letter-spacing:.5px; display:none;"></div>
     <div id="live_clock">— — —</div>
   </div>
 </div>
@@ -1310,22 +1311,34 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
       <div class="champ-list">
         <div class="champ-row" style="--champ-color:#3b82f6;">
           <div class="champ-season">S01</div>
-          <div class="champ-team" onclick="window.takeoverTeam('mi')">Indians</div>
+          <div>
+            <div class="champ-team" onclick="window.takeoverTeam('mi')">Indians</div>
+            <div class="champ-mgr" style="font-family:'JetBrains Mono',monospace; font-size:0.55rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.15em; margin-top:-2px;">mgr: deeptayan</div>
+          </div>
           <div class="champ-trophy">★ champion</div>
         </div>
         <div class="champ-row" style="--champ-color:#ef4444;">
           <div class="champ-season">S02</div>
-          <div class="champ-team" onclick="window.takeoverTeam('rcb')">Royal Challengers</div>
+          <div>
+            <div class="champ-team" onclick="window.takeoverTeam('rcb')">Royal Challengers</div>
+            <div class="champ-mgr" style="font-family:'JetBrains Mono',monospace; font-size:0.55rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.15em; margin-top:-2px;">mgr: tuhinangshu</div>
+          </div>
           <div class="champ-trophy">★ champion</div>
         </div>
         <div class="champ-row" style="--champ-color:#a855f7;">
           <div class="champ-season">S03</div>
-          <div class="champ-team" onclick="window.takeoverTeam('kkr')">Knight Riders</div>
+          <div>
+            <div class="champ-team" onclick="window.takeoverTeam('kkr')">Knight Riders</div>
+            <div class="champ-mgr" style="font-family:'JetBrains Mono',monospace; font-size:0.55rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.15em; margin-top:-2px;">mgr: tuhinangshu</div>
+          </div>
           <div class="champ-trophy">★ champion</div>
         </div>
         <div class="champ-row is-pending">
           <div class="champ-season">S04</div>
-          <div class="champ-team">Finals today</div>
+          <div>
+            <div class="champ-team">Finals today</div>
+            <div class="champ-mgr" style="font-family:'JetBrains Mono',monospace; font-size:0.55rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.15em; margin-top:-2px;">lsg vs rcb</div>
+          </div>
           <div class="champ-trophy">● live</div>
         </div>
       </div>
@@ -2871,12 +2884,31 @@ window.unlockAdmin = function(){
 };
 
 // ============================== LIVE CLOCK ==============================
+const targetDate = new Date("June 10, 2026 00:00:00").getTime();
+
 setInterval(() => {
+  const now = new Date().getTime();
+  
   const el = document.getElementById('live_clock');
   if(el) el.innerText = new Date().toLocaleString('en-GB', {
     weekday:'short', day:'2-digit', month:'short',
     hour:'2-digit', minute:'2-digit', second:'2-digit'
   });
+
+  const distance = targetDate - now;
+  const countEl = document.getElementById('s5_countdown');
+  if(countEl) {
+    if(distance > 0) {
+      countEl.style.display = 'block';
+      const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((distance % (1000 * 60)) / 1000);
+      countEl.innerText = `S5 STARTS IN: ${d}D ${h}H ${m}M ${s}S`;
+    } else {
+      countEl.style.display = 'none';
+    }
+  }
 }, 1000);
 </script>
 </body>
