@@ -1038,7 +1038,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 }
 .manager-card::before{
   content:'';
-  position:absolute top:0; left:0; right:0;
+  position:absolute; top:0; left:0; right:0;
   height:2px;
   background:var(--mgr-color, var(--accent));
   opacity:0;
@@ -1599,46 +1599,46 @@ const SEASON_OUTCOMES = {
     { season: 1, team: 'pbks', w: 13, m: 14, outcome: 'finalist' },
     { season: 2, team: 'pbks', w: 14, m: 14, outcome: 'finalist' },
     { season: 3, team: 'pbks', w: 12, m: 14, outcome: 'finalist' },
-    { season: 4, team: 'pbks', w: 6,  m: 11, outcome: 'eliminator' }
+    { season: 4, team: 'pbks', w: 8,  m: 14, outcome: 'eliminator' }
   ],
   arkaparno: [ // KKR S1, S2, S4
     { season: 1, team: 'kkr', w: 11, m: 14, outcome: 'qualifier' },
     { season: 2, team: 'kkr', w: 9,  m: 14, outcome: 'eliminator' },
-    { season: 4, team: 'kkr', w: 7,  m: 14, outcome: 'group' }
+    { season: 4, team: 'kkr', w: 8,  m: 14, outcome: 'group' }
   ],
   tuhinangshu: [ // RCB S1-2, KKR S3, LSG S4 — two-time champion
     { season: 1, team: 'rcb', w: 8,  m: 14, outcome: 'qualifier' },
     { season: 2, team: 'rcb', w: 11, m: 14, outcome: 'champion' },
     { season: 3, team: 'kkr', w: 12, m: 14, outcome: 'champion' },
-    { season: 4, team: 'lsg', w: null, m: null, outcome: 'pending-final' } // Lost Q1, Won Q2
+    { season: 4, team: 'lsg', w: 10, m: 14, outcome: 'pending-final' } // Lost Q1, Won Q2
   ],
   deeptayan: [ // MI S1, S2, S4 — S1 champion
-    { season: 1, team: 'mi', w: 8, m: 14, outcome: 'champion' },
-    { season: 2, team: 'mi', w: 8, m: 14, outcome: 'qualifier' },
-    { season: 4, team: 'mi', w: 8, m: 11, outcome: 'qualifier' } // Won Eliminator, Lost Q2
+    { season: 1, team: 'mi', w: 8,  m: 14, outcome: 'champion' },
+    { season: 2, team: 'mi', w: 8,  m: 14, outcome: 'qualifier' },
+    { season: 4, team: 'mi', w: 10, m: 14, outcome: 'qualifier' } // Won Eliminator, Lost Q2
   ],
   rio: [ // RCB S3, S4 
     { season: 3, team: 'rcb', w: 11, m: 14, outcome: 'qualifier' },
-    { season: 4, team: 'rcb', w: 8,  m: 12, outcome: 'pending-final' } // Won Q1
+    { season: 4, team: 'rcb', w: 10, m: 14, outcome: 'pending-final' } // Won Q1
   ],
   adarsh: [ // DC S3, S4
     { season: 3, team: 'dc',  w: 6,  m: 14, outcome: 'group' },
-    { season: 4, team: 'dc',  w: null, m: null, outcome: 'group' }
+    { season: 4, team: 'dc',  w: 7,  m: 14, outcome: 'group' }
   ],
   prajyot: [ // CSK S3, S4
     { season: 3, team: 'csk', w: 1,  m: 14, outcome: 'group' },
-    { season: 4, team: 'csk', w: null, m: null, outcome: 'group' }
+    { season: 4, team: 'csk', w: 1,  m: 14, outcome: 'group' }
   ],
   rishit: [ // SRH S3, RR S4
     { season: 3, team: 'srh', w: 6,  m: 14, outcome: 'group' },
-    { season: 4, team: 'rr',  w: null, m: null, outcome: 'group' }
+    { season: 4, team: 'rr',  w: 7,  m: 14, outcome: 'group' }
   ],
   neil: [ // RR S3, GT S4
     { season: 3, team: 'rr',  w: 6,  m: 14, outcome: 'eliminator' },
-    { season: 4, team: 'gt',  w: null, m: null, outcome: 'group' }
+    { season: 4, team: 'gt',  w: 4,  m: 14, outcome: 'group' }
   ],
   adi: [ // SRH S4 debut
-    { season: 4, team: 'srh', w: null, m: null, outcome: 'group' }
+    { season: 4, team: 'srh', w: 5,  m: 14, outcome: 'group' }
   ]
 };
 
@@ -1655,14 +1655,18 @@ function computeManagerIndex(history){
     else if(s.outcome === 'group') groups++;
     else if(s.outcome === 'pending-final') pending++;
   });
+  
   const finals_appearances = champs + finalists + pending;
   const playoff_appearances = finals_appearances + qualifiers + eliminators;
   const win_rate = total_m > 0 ? total_w/total_m : 0;
-  // Index: 25 per title + 10 per non-winning final + 5 per playoff-only + 30 × career win rate.
-  // Pending finals (S4 today) count as a final appearance, not yet a championship.
+  
   const non_winning_finals = finalists + pending;
   const playoff_only = qualifiers + eliminators;
-  const index = Math.round(champs*25 + non_winning_finals*10 + playoff_only*5 + win_rate*30);
+  
+  // Normalized Index: 60 x Win Rate + (40 per title + 20 per final + 10 per playoff appearance) averaged per season played
+  const seasons = Math.max(1, history.length);
+  const index = Math.round( (win_rate * 60) + ((champs * 40 + non_winning_finals * 20 + playoff_only * 10) / seasons) );
+  
   return {
     seasons: history.length, total_w, total_m, win_rate,
     champs, finalists, qualifiers, eliminators, groups, pending,
@@ -2568,7 +2572,7 @@ window.openManagerModal = function(managerId, currentTeam){
   const hasPending = stats.pending > 0;
   html += `
     <div class="mgr-modal-foot">
-      index = 25 × titles + 10 × finals + 5 × playoff appearances + 30 × career win rate.
+      index = 60 × win rate + (40 × titles + 20 × finals + 10 × playoffs) / seasons.
       ${hasPending ? '<br><strong>S4 final is today</strong> — index may move once the result is in.' : ''}
     </div>
   `;
