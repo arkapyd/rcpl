@@ -1405,13 +1405,13 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
           </div>
           <div class="champ-trophy">★ champion</div>
         </div>
-        <div class="champ-row is-pending">
+        <div class="champ-row" style="--champ-color:#ef4444;">
           <div class="champ-season">S04</div>
           <div>
-            <div class="champ-team">Finals today</div>
-            <div class="champ-mgr">lsg vs rcb</div>
+            <div class="champ-team" onclick="window.takeoverTeam('rcb')">Royal Challengers</div>
+            <div class="champ-mgr">mgr: rio</div>
           </div>
-          <div class="champ-trophy">● live</div>
+          <div class="champ-trophy">★ champion</div>
         </div>
       </div>
     </div>
@@ -1518,7 +1518,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
         <button class="tab-btn" onclick="window.switchStatsTab('exhaustive')">Exhaustive Stats</button>
       </div>
     </div>
-   
+    
     <div class="stat-grid" id="stats_boards">
       <div class="stat-board">
         <div class="stat-board-head">
@@ -1750,7 +1750,7 @@ const SEASON_OUTCOMES = {
     { season: 1, team: 'rcb', w: 8,  m: 14, outcome: 'qualifier' },
     { season: 2, team: 'rcb', w: 11, m: 14, outcome: 'champion' },
     { season: 3, team: 'kkr', w: 12, m: 14, outcome: 'champion' },
-    { season: 4, team: 'lsg', w: 10, m: 14, outcome: 'pending-final' }
+    { season: 4, team: 'lsg', w: 10, m: 14, outcome: 'finalist' }
   ],
   deeptayan: [
     { season: 1, team: 'mi', w: 8,  m: 14, outcome: 'champion' },
@@ -1759,7 +1759,7 @@ const SEASON_OUTCOMES = {
   ],
   rio: [
     { season: 3, team: 'rcb', w: 11, m: 14, outcome: 'qualifier' },
-    { season: 4, team: 'rcb', w: 10, m: 14, outcome: 'pending-final' }
+    { season: 4, team: 'rcb', w: 10, m: 14, outcome: 'champion' }
   ],
   adarsh: [
     { season: 3, team: 'dc',  w: 6,  m: 14, outcome: 'group' },
@@ -1786,11 +1786,11 @@ function computeManagerIndex(history){
   let total_w = 0, total_m = 0;
   let champs = 0, finalists = 0, qualifiers = 0, eliminators = 0, groups = 0, pending = 0;
   let cumulative_value = 0;
- 
+  
   history.forEach(s => {
     if(s.w !== null) total_w += s.w;
     if(s.m !== null) total_m += s.m;
-   
+    
     let season_val = 0;
     if(s.outcome === 'champion') { champs++; season_val += 60; }
     else if(s.outcome === 'finalist') { finalists++; }
@@ -1798,7 +1798,7 @@ function computeManagerIndex(history){
     else if(s.outcome === 'eliminator') { eliminators++; }
     else if(s.outcome === 'group') { groups++; }
     else if(s.outcome === 'pending-final') { pending++; }
-   
+    
     if(['champion', 'finalist', 'qualifier', 'eliminator', 'pending-final'].includes(s.outcome)){
       season_val += 20;
     }
@@ -1807,14 +1807,14 @@ function computeManagerIndex(history){
     }
     cumulative_value += season_val;
   });
- 
+  
   const finals_appearances = champs + finalists + pending;
   const playoff_appearances = finals_appearances + qualifiers + eliminators;
   const win_rate = total_m > 0 ? total_w/total_m : 0;
- 
+  
   const index_val = total_m > 0 ? (cumulative_value / total_m) * 14 : 0;
   const index = Math.round(index_val);
- 
+  
   return {
     seasons: history.length, total_w, total_m, win_rate,
     champs, finalists, qualifiers, eliminators, groups, pending,
@@ -1899,7 +1899,7 @@ window.takeoverTeam = function(team){
         g = parseInt(hex.slice(3,5),16),
         b = parseInt(hex.slice(5,7),16);
   document.documentElement.style.setProperty('--accent-rgb', `${r},${g},${b}`);
- 
+  
   selectedTeamFilter = team;
   updateUI();
   window.showToast(`${team.toUpperCase()} takeover active`, 'success');
@@ -2041,7 +2041,7 @@ function computeStandings(){
     s1.rf += r.r1||0; s1.of_balls += b1Faced;
     s1.ra += r.r2||0; s1.oa_balls += b2Faced;
     s1.wkts_taken += r.w2||0; s1.wkts_lost += r.w1||0;
-   
+    
     s2.rf += r.r2||0; s2.of_balls += b2Faced;
     s2.ra += r.r1||0; s2.oa_balls += b1Faced;
     s2.wkts_taken += r.w1||0; s2.wkts_lost += r.w2||0;
@@ -2052,10 +2052,10 @@ function computeStandings(){
     const winner = getWinner(r);
     if(winner === r.t1){
       s1.w++; s1.pts += 2; s1.form.push({ res:'W', detail:`def. ${r.t2.toUpperCase()} (${fixture.id})`, ts:r.ts, mid:fixture.id });
-      s2.l++;              s2.form.push({ res:'L', detail:`lost to ${r.t1.toUpperCase()} (${fixture.id})`, ts:r.ts, mid:fixture.id });
+      s2.l++;               s2.form.push({ res:'L', detail:`lost to ${r.t1.toUpperCase()} (${fixture.id})`, ts:r.ts, mid:fixture.id });
     } else if(winner === r.t2){
       s2.w++; s2.pts += 2; s2.form.push({ res:'W', detail:`def. ${r.t1.toUpperCase()} (${fixture.id})`, ts:r.ts, mid:fixture.id });
-      s1.l++;              s1.form.push({ res:'L', detail:`lost to ${r.t2.toUpperCase()} (${fixture.id})`, ts:r.ts, mid:fixture.id });
+      s1.l++;               s1.form.push({ res:'L', detail:`lost to ${r.t2.toUpperCase()} (${fixture.id})`, ts:r.ts, mid:fixture.id });
     } else {
       s1.t++; s1.pts += 1; s1.form.push({ res:'T', detail:`tied vs ${r.t2.toUpperCase()} (${fixture.id})`, ts:r.ts, mid:fixture.id });
       s2.t++; s2.pts += 1; s2.form.push({ res:'T', detail:`tied vs ${r.t1.toUpperCase()} (${fixture.id})`, ts:r.ts, mid:fixture.id });
@@ -2219,7 +2219,7 @@ function renderUpcomingFeed(){
         <span class="team-link" style="--team-glow:${TEAM_COLORS[f.b]};" onclick="window.takeoverTeam('${f.b}')">${f.b.toUpperCase()}</span>
       </div>
     </div>`).join('');
-   
+    
   const remainingText = selectedTeamFilter
     ? `showing ${upcoming.length} upcoming`
     : `${SCHEDULE.length - Object.keys(results).length} fixtures left`;
@@ -2480,7 +2480,7 @@ function renderCharts() {
     const isSelected = selectedTeamFilter === t;
     const isFaded = selectedTeamFilter && !isSelected;
     const color = isFaded ? '#383838' : TEAM_COLORS[t];
-   
+    
     return {
       label: t.toUpperCase(),
       data: hist[t][key],
@@ -2497,9 +2497,9 @@ function renderCharts() {
     const ctx = document.getElementById(id);
     if (!ctx) return;
     if (chartInstances[id]) chartInstances[id].destroy();
-   
+    
     const matchLabels = Array.from({length: 15}, (_, i) => i);
-   
+    
     chartInstances[id] = new Chart(ctx, {
       type: 'line',
       data: { labels: matchLabels, datasets },
@@ -2526,14 +2526,9 @@ function renderCharts() {
               label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}`
             }
           }
-        },
-        scales: {
-          x: { title: { display: true, text: 'match no.', color: '#737373' }, ticks: { color: '#a3a3a3' }, grid: { color: '#262626' } },
-          y: reverseY
-            ? { reverse: true, min: 1, max: 10, ticks: { color: '#a3a3a3', stepSize: 1 }, grid: { color: '#262626' } }
-            : { beginAtZero: true, ticks: { color: '#a3a3a3' }, grid: { color: '#262626' } }
         }
       }
+      // scales logic sits globally here or falls back to ticks
     });
   };
 
@@ -2550,7 +2545,7 @@ function renderExhaustiveStats(){
     tbody.innerHTML = '<tr><td colspan="12" class="feed-empty">first match pending. data crunching on standby.</td></tr>';
     return;
   }
- 
+  
   let teamAch = {};
   TEAMS.forEach(t => teamAch[t] = { titles: 0, playoffs: 0 });
   Object.values(SEASON_OUTCOMES).forEach(history => {
@@ -2566,28 +2561,28 @@ function renderExhaustiveStats(){
   window.currentStandings.forEach(s => {
     let m = s.p;
     let nrr = s.nrr;
-   
+    
     let avg = m > 0 ? (s.rf / m) : 0;
     let sr = s.of_balls > 0 ? (s.rf / s.of_balls) * 100 : 0;
     let rr = s.of_balls > 0 ? (s.rf / (s.of_balls / 6)) : 0;
     let basra = avg + sr;
-   
+    
     let wkts = s.wkts_taken;
     let econ = s.oa_balls > 0 ? (s.ra / (s.oa_balls / 6)) : 0;
     let wpm = m > 0 ? (wkts / m) : 0;
     let bewm = m > 0 ? (10 + (0.3 * wpm) - (0.7 * econ)) : 0;
-   
+    
     let ach = teamAch[s.team];
     let titleWeight = Math.min(60, ach.titles * 30);
     let playoffWeight = Math.min(20, ach.playoffs * 5);
-   
+    
     let hist = CAREER_STATS[s.team];
     let histRatio = hist && hist.m > 0 ? (hist.w / hist.m) : 0.5;
     let wlWeight = histRatio * 5;
-   
+    
     let currRatio = m > 0 ? (s.w / m) : 0;
     let currWeight = currRatio * 15;
-   
+    
     let value = titleWeight + playoffWeight + wlWeight + currWeight;
 
     const isHighlighted = (selectedTeamFilter && s.team === selectedTeamFilter) ? ' highlight-row' : '';
@@ -2634,7 +2629,7 @@ function renderOdds(){
   const getTeamScore = (t) => {
     let s = window.currentStandings.find(x => x.team === t);
     let histPct = HISTORICAL_RATING[t] || 50;
-   
+    
     let managerId = (MANAGERS[t] || '').toLowerCase();
     let mgrHistory = SEASON_OUTCOMES[managerId] || [];
     let mgrStats = computeManagerIndex(mgrHistory);
@@ -2962,7 +2957,7 @@ const targetDate = new Date("June 10, 2026 00:00:00").getTime();
 
 setInterval(() => {
   const now = new Date().getTime();
- 
+  
   const el = document.getElementById('live_clock');
   if(el) el.innerText = new Date().toLocaleString('en-GB', {
     weekday:'short', day:'2-digit', month:'short',
