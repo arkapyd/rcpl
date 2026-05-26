@@ -1672,53 +1672,50 @@ const MANAGERS = {
 };
 
 // ============================== MANAGER CAREER HISTORY ==============================
-// Per-season records. outcome ∈ {champion, finalist, qualifier (Q2 loss),
-// eliminator (eliminator loss), group (missed playoffs), pending-final (S4 final today)}.
-// Some w/m left null where the exact group-stage record isn't on hand.
 const SEASON_OUTCOMES = {
-  arka: [ // PBKS S1-S4 — three finals as runner-up, then eliminator exit
+  arka: [ 
     { season: 1, team: 'pbks', w: 13, m: 14, outcome: 'finalist' },
     { season: 2, team: 'pbks', w: 14, m: 14, outcome: 'finalist' },
     { season: 3, team: 'pbks', w: 12, m: 14, outcome: 'finalist' },
     { season: 4, team: 'pbks', w: 8,  m: 14, outcome: 'eliminator' }
   ],
-  arkaparno: [ // KKR S1, S2, S4
+  arkaparno: [ 
     { season: 1, team: 'kkr', w: 11, m: 14, outcome: 'qualifier' },
     { season: 2, team: 'kkr', w: 9,  m: 14, outcome: 'eliminator' },
     { season: 4, team: 'kkr', w: 8,  m: 14, outcome: 'group' }
   ],
-  tuhinangshu: [ // RCB S1-2, KKR S3, LSG S4 — two-time champion
+  tuhinangshu: [ 
     { season: 1, team: 'rcb', w: 8,  m: 14, outcome: 'qualifier' },
     { season: 2, team: 'rcb', w: 11, m: 14, outcome: 'champion' },
     { season: 3, team: 'kkr', w: 12, m: 14, outcome: 'champion' },
-    { season: 4, team: 'lsg', w: 10, m: 14, outcome: 'pending-final' } // Lost Q1, Won Q2
+    { season: 4, team: 'lsg', w: 10, m: 14, outcome: 'pending-final' } 
   ],
-  deeptayan: [ // MI S1, S2, S4 — S1 champion
+  deeptayan: [ 
     { season: 1, team: 'mi', w: 8,  m: 14, outcome: 'champion' },
     { season: 2, team: 'mi', w: 8,  m: 14, outcome: 'qualifier' },
-    { season: 4, team: 'mi', w: 10, m: 14, outcome: 'qualifier' } // Won Eliminator, Lost Q2
+    { season: 4, team: 'mi', w: 10, m: 14, outcome: 'qualifier' } 
   ],
-  rio: [ // RCB S3, S4 
+  rio: [ 
     { season: 3, team: 'rcb', w: 11, m: 14, outcome: 'qualifier' },
-    { season: 4, team: 'rcb', w: 10, m: 14, outcome: 'pending-final' } // Won Q1
+    { season: 4, team: 'rcb', w: 10, m: 14, outcome: 'pending-final' } 
   ],
-  adarsh: [ // DC S3, S4
+  adarsh: [ 
     { season: 3, team: 'dc',  w: 6,  m: 14, outcome: 'group' },
     { season: 4, team: 'dc',  w: 7,  m: 14, outcome: 'group' }
   ],
-  prajyot: [ // CSK S3, S4
+  prajyot: [ 
     { season: 3, team: 'csk', w: 1,  m: 14, outcome: 'group' },
     { season: 4, team: 'csk', w: 1,  m: 14, outcome: 'group' }
   ],
-  rishit: [ // SRH S3, RR S4
+  rishit: [ 
     { season: 3, team: 'srh', w: 6,  m: 14, outcome: 'group' },
     { season: 4, team: 'rr',  w: 7,  m: 14, outcome: 'group' }
   ],
-  neil: [ // RR S3, GT S4
+  neil: [ 
     { season: 3, team: 'rr',  w: 6,  m: 14, outcome: 'eliminator' },
     { season: 4, team: 'gt',  w: 4,  m: 14, outcome: 'group' }
   ],
-  adi: [ // SRH S4 debut
+  adi: [ 
     { season: 4, team: 'srh', w: 5,  m: 14, outcome: 'group' }
   ]
 };
@@ -1753,7 +1750,6 @@ function computeManagerIndex(history){
   const playoff_appearances = finals_appearances + qualifiers + eliminators;
   const win_rate = total_m > 0 ? total_w/total_m : 0;
   
-  // Index based on value added per match, scaled back up to a typical 14-match season block (0-100 scale)
   const index_val = total_m > 0 ? (cumulative_value / total_m) * 14 : 0;
   const index = Math.round(index_val);
   
@@ -1766,16 +1762,7 @@ function computeManagerIndex(history){
 
 // ============================== HISTORICAL BASELINE (S1–S3) ==============================
 const HISTORICAL_RATING = {
-  pbks: 94,  // dominant: 39W/42 across S1-S3, +0.820 avg NRR, 7.64 economy
-  kkr:  77,  // strong: 32W/42, +0.291 avg NRR, 8.01 economy
-  rcb:  75,  // strong: 30W/42, +0.296 avg NRR, 8.01 economy
-  lsg:  62,  // new entrant, but excellent economy (7.98) + 103 wkts in 14 matches
-  mi:   54,  // mid-pack: 18W/42 across the three seasons
-  gt:   51,  // new entrant, neutral baseline + 9.67 economy
-  dc:   44,  // 20W/42, -0.400 avg NRR
-  rr:   44,  // 14W/42, -0.268 avg NRR
-  csk:  42,  // 11W/42 — historical underperformer
-  srh:  23   // weakest: 9W/42, -0.644 avg NRR, 10.63 economy
+  pbks: 94,  kkr:  77,  rcb:  75,  lsg:  62,  mi:   54,  gt:   51,  dc:   44,  rr:   44,  csk:  42,  srh:  23
 };
 
 const CAREER_STATS = {
