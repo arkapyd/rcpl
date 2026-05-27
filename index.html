@@ -1682,7 +1682,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   <div class="modal-content">
     <span class="modal-close" onclick="document.getElementById('form_modal').classList.remove('show')">&times;</span>
     <h2 class="modal-title" id="form_modal_team">—</h2>
-    <div class="modal-subtitle">// last 5 matches</div>
+    <div class="modal-subtitle" id="form_modal_subtitle">// team drill-down</div>
     <div id="form_modal_body"></div>
   </div>
 </div>
@@ -2813,28 +2813,149 @@ function updateUI(){
   }
 }
 
-// ============================== TEAM FORM MODAL ==============================
+// ============================== TEAM FORM MODAL (DRILL-DOWN) ==============================
 window.openFormModal = function(team){
   const s = window.currentStandings.find(x => x.team === team);
   if(!s) return;
+
+  const teamColor = TEAM_COLORS[team] || 'var(--accent)';
   document.getElementById('form_modal_team').innerText = team.toUpperCase();
-  const recent = s.form.slice().reverse().slice(0, 5);
-  let html = '';
-  if(recent.length === 0){
-    html = `<p style="color:var(--text-dim);font-style:italic;">no matches yet for ${team.toUpperCase()}.</p>`;
-  } else {
-    recent.forEach(f => {
-      const dateStr = f.ts ? new Date(f.ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) : '';
+  document.getElementById('form_modal_team').style.color = teamColor;
+  
+  const subEl = document.querySelector('#form_modal .modal-subtitle');
+  if(subEl) subEl.innerText = '// team drill-down';
+
+  let playedMatches = SCHEDULE.filter(f => results[f.id] && (f.a === team || f.b === team)).map(f => ({ id: f.id, r: results[f.id] }));
+
+  let h2h = {};
+  TEAMS.forEach(t => { if(t !== team) h2h[t] = { w:0, l:0, t:0 }; });
+
+  let batFirst = { m:0, w:0, l:0, t:0, runs:0, balls:0 };
+  let chasing = { m:0, w:0, l:0, t:0, runs:0, balls:0 };
+
+  let wins = [];
+  let losses = [];
+
+  playedMatches.forEach(m => {
+    let r = m.r;
+    let isT1 = r.t1 === team;
+    let opp = isT1 ? r.t2 : r.t1;
+    let winner = getWinner(r);
+
+    if(winner === team) h2h[opp].w++;
+    else if(winner === opp) h2h[opp].l++;
+    else h2h[opp].t++;
+
+    let b1Faced = (r.w1 >= 10) ? OVERS_PER_INNINGS*6 : (r.b1 || OVERS_PER_INNINGS*6);
+    let b2Faced = (r.w2 >= 10) ? OVERS_PER_INNINGS*6 : (r.b2 || OVERS_PER_INNINGS*6);
+
+    if(isT1) {
+      batFirst.m++; batFirst.runs += (r.r1||0); batFirst.balls += b1Faced;
+      if(winner === team) batFirst.w++; else if(winner === opp) batFirst.l++; else batFirst.t++;
+    } else {
+      chasing.m++; chasing.runs += (r.r2||0); chasing.balls += b2Faced;
+      if(winner === team) chasing.w++; else if(winner === opp) chasing.l++; else chasing.t++;
+    }
+
+    let margin = 0; let type = '';
+    if(r.super_over) { margin = 0; type = 'SO'; }
+    else if(r.r1 > r.r2) { margin = r.r1 - r.r2; type = 'runs'; }
+    else if(r.r2 > r.r1) { margin = 10 - (r.w2||0); type = 'wkts'; }
+
+    let descStr = `vs ${opp.toUpperCase()} (by ${margin} ${type})`;
+    if(r.super_over) descStr = `vs ${opp.toUpperCase()} (via Super Over)`;
+    else if(margin === 0 && !r.super_over) descStr = `vs ${opp.toUpperCase()} (Tied)`;
+
+    let score = type === 'SO' ? 0 : (type === 'wkts' ? margin * 3 : margin);
+    let matchRec = { descStr, score };
+
+    if(winner === team) wins.push(matchRec);
+    else if(winner === opp) losses.push(matchRec);
+  });
+
+  wins.sort((a,b) => b.score - a.score);
+  losses.sort((a,b) => a.score - b.score);
+
+  let biggestWin = wins.length > 0 ? wins[0].descStr : null;
+  let narrowestLoss = losses.length > 0 ? losses[0].descStr : null;
+
+  let batFirstRR = batFirst.balls > 0 ? (batFirst.runs / (batFirst.balls/6)) : 0;
+  let chasingRR = chasing.balls > 0 ? (chasing.runs / (chasing.balls/6)) : 0;
+
+  let html = `<div style="display:grid; grid-template-columns: 1fr; gap:20px;">`;
+
+  html += `
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div style="background:var(--surface-2); padding:12px; border-radius:4px; border:1px solid var(--border);">
+        <div style="font-family:'JetBrains Mono'; font-size:0.65rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px;">Batting First</div>
+        <div style="font-size:1.1rem; font-weight:700;">${batFirst.w}W - ${batFirst.l}L <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(${batFirst.t}T)</span></div>
+        <div style="font-family:'JetBrains Mono'; font-size:0.8rem; color:${teamColor}; margin-top:4px;">RR: ${batFirstRR.toFixed(2)}</div>
+      </div>
+      <div style="background:var(--surface-2); padding:12px; border-radius:4px; border:1px solid var(--border);">
+        <div style="font-family:'JetBrains Mono'; font-size:0.65rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px;">Chasing</div>
+        <div style="font-size:1.1rem; font-weight:700;">${chasing.w}W - ${chasing.l}L <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(${chasing.t}T)</span></div>
+        <div style="font-family:'JetBrains Mono'; font-size:0.8rem; color:${teamColor}; margin-top:4px;">RR: ${chasingRR.toFixed(2)}</div>
+      </div>
+    </div>
+  `;
+
+  html += `<div>
+    <div style="font-family:'JetBrains Mono'; font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.15em; margin-bottom:8px;">Head-to-Head</div>
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px;">
+  `;
+  Object.keys(h2h).forEach(opp => {
+      let rec = h2h[opp];
+      let color = rec.w > rec.l ? 'var(--win)' : (rec.l > rec.w ? 'var(--loss)' : 'var(--text-muted)');
+      if(rec.w===0 && rec.l===0 && rec.t===0) color = 'var(--text-dim)';
       html += `
-        <div class="form-match-row">
-          <div style="display:flex; align-items:center; gap:14px;">
-            <div class="form-res-pill ${f.res}">${f.res}</div>
-            <div style="font-size:.95rem;">${f.detail}</div>
-          </div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--text-dim);">${dateStr}</div>
-        </div>`;
-    });
+        <div style="background:var(--surface-2); padding:6px 8px; border-radius:3px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+           <span style="font-weight:700; font-size:0.85rem; color: ${TEAM_COLORS[opp]}">${opp.toUpperCase()}</span>
+           <span style="font-family:'JetBrains Mono'; font-size:0.75rem; color:${color};">${rec.w}-${rec.l}</span>
+        </div>
+      `;
+  });
+  html += `</div></div>`;
+
+  html += `
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+       <div style="background:var(--surface-2); padding:10px; border-radius:4px; border-left:2px solid var(--win);">
+         <div style="font-family:'JetBrains Mono'; font-size:0.65rem; color:var(--text-dim); text-transform:uppercase;">Biggest Win</div>
+         <div style="font-size:0.85rem; margin-top:4px;">${biggestWin || '—'}</div>
+       </div>
+       <div style="background:var(--surface-2); padding:10px; border-radius:4px; border-left:2px solid var(--loss);">
+         <div style="font-family:'JetBrains Mono'; font-size:0.65rem; color:var(--text-dim); text-transform:uppercase;">Narrowest Loss</div>
+         <div style="font-size:0.85rem; margin-top:4px;">${narrowestLoss || '—'}</div>
+       </div>
+    </div>
+  `;
+
+  const recent = s.form.slice().reverse().filter(x => x.res !== 'NA').slice(0, 5);
+  if(recent.length > 0) {
+      html += `<div>
+        <div style="font-family:'JetBrains Mono'; font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.15em; margin-bottom:8px; padding-top:10px; border-top:1px dashed var(--border-bright);">Recent Form</div>
+        <div style="display:flex; flex-direction:column; gap:4px;">
+      `;
+      recent.forEach(f => {
+        const dateStr = f.ts ? new Date(f.ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) : '';
+        html += `
+          <div class="form-match-row" style="padding:6px 0; border-bottom:none;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div class="form-res-pill ${f.res}" style="width:22px; height:22px; font-size:0.75rem;">${f.res}</div>
+              <div style="font-size:.85rem;">${f.detail}</div>
+            </div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text-dim);">${dateStr}</div>
+          </div>`;
+      });
+      html += `</div></div>`;
+  } else {
+      html += `<div>
+         <div style="font-family:'JetBrains Mono'; font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.15em; margin-bottom:8px; padding-top:10px; border-top:1px dashed var(--border-bright);">Recent Form</div>
+         <div style="font-size:0.85rem; color:var(--text-dim); font-style:italic;">no matches played yet.</div>
+      </div>`;
   }
+
+  html += `</div>`;
+
   document.getElementById('form_modal_body').innerHTML = html;
   document.getElementById('form_modal').classList.add('show');
 };
