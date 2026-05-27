@@ -1514,8 +1514,8 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
       </div>
       <div class="stats-header" style="display:flex; gap:10px; margin-top:4px;">
         <button class="tab-btn active" onclick="window.switchStatsTab('boards')">Leaderboards</button>
-        <button class="tab-btn" onclick="window.switchStatsTab('graphs')">Graphs</button>
         <button class="tab-btn" onclick="window.switchStatsTab('exhaustive')">Exhaustive Stats</button>
+        <button class="tab-btn modal-trigger" onclick="window.openGraphsModal()" style="color:var(--accent); border-color:rgba(var(--accent-rgb), 0.5); background:rgba(var(--accent-rgb), 0.1);">View Graphs</button>
       </div>
     </div>
     
@@ -1547,23 +1547,6 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
           <div class="stat-board-sub">Runs scored ÷ wickets lost</div>
         </div>
         <div class="stat-board-body" id="board_average"></div>
-      </div>
-    </div>
-
-    <div id="stats_graphs" style="display:none;">
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-        <div style="background:var(--surface); border:1px solid var(--border); padding:15px; border-radius:6px;">
-          <canvas id="chartPos"></canvas>
-        </div>
-        <div style="background:var(--surface); border:1px solid var(--border); padding:15px; border-radius:6px;">
-          <canvas id="chartPts"></canvas>
-        </div>
-        <div style="background:var(--surface); border:1px solid var(--border); padding:15px; border-radius:6px;">
-          <canvas id="chartRuns"></canvas>
-        </div>
-        <div style="background:var(--surface); border:1px solid var(--border); padding:15px; border-radius:6px;">
-          <canvas id="chartWkts"></canvas>
-        </div>
       </div>
     </div>
 
@@ -1692,6 +1675,30 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     <span class="modal-close" onclick="document.getElementById('mgr_modal').classList.remove('show')">&times;</span>
     <h2 class="modal-title" id="mgr_modal_name">—</h2>
     <div id="mgr_modal_body"></div>
+  </div>
+</div>
+
+<div id="graphs_modal" class="modal-overlay">
+  <div class="modal-content" style="max-width:800px; width:95%;">
+    <span class="modal-close" onclick="document.getElementById('graphs_modal').classList.remove('show')">&times;</span>
+    <h2 class="modal-title">Season Graphs</h2>
+    <div class="modal-subtitle">// visual performance tracking</div>
+    <div id="stats_graphs">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        <div style="background:var(--bg); border:1px solid var(--border); padding:15px; border-radius:6px;">
+          <canvas id="chartPos"></canvas>
+        </div>
+        <div style="background:var(--bg); border:1px solid var(--border); padding:15px; border-radius:6px;">
+          <canvas id="chartPts"></canvas>
+        </div>
+        <div style="background:var(--bg); border:1px solid var(--border); padding:15px; border-radius:6px;">
+          <canvas id="chartRuns"></canvas>
+        </div>
+        <div style="background:var(--bg); border:1px solid var(--border); padding:15px; border-radius:6px;">
+          <canvas id="chartWkts"></canvas>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1946,10 +1953,15 @@ window.setFilter = function(f){
 
 window.switchStatsTab = function(tab) {
   document.getElementById('stats_boards').style.display = tab === 'boards' ? 'grid' : 'none';
-  document.getElementById('stats_graphs').style.display = tab === 'graphs' ? 'block' : 'none';
   document.getElementById('stats_exhaustive').style.display = tab === 'exhaustive' ? 'block' : 'none';
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector(`.tab-btn[onclick="window.switchStatsTab('${tab}')"]`).classList.add('active');
+  document.querySelectorAll('.tab-btn:not(.modal-trigger)').forEach(b => b.classList.remove('active'));
+  const activeBtn = document.querySelector(`.tab-btn[onclick="window.switchStatsTab('${tab}')"]`);
+  if(activeBtn) activeBtn.classList.add('active');
+};
+
+window.openGraphsModal = function() {
+  document.getElementById('graphs_modal').classList.add('show');
+  setTimeout(renderCharts, 50);
 };
 
 window.toggleFullScreen = function() {
