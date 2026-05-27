@@ -1515,6 +1515,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
       <div class="stats-header" style="display:flex; gap:10px; margin-top:4px;">
         <button class="tab-btn active" onclick="window.switchStatsTab('boards')">Leaderboards</button>
         <button class="tab-btn" onclick="window.switchStatsTab('exhaustive')">Exhaustive Stats</button>
+        <button class="tab-btn" onclick="window.switchStatsTab('career')">Career Stats</button>
         <button class="tab-btn modal-trigger" onclick="window.openGraphsModal()" style="color:var(--accent); border-color:rgba(var(--accent-rgb), 0.5); background:rgba(var(--accent-rgb), 0.1);">View Graphs</button>
       </div>
     </div>
@@ -1571,6 +1572,25 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
         <tbody id="exhaustive_body"></tbody>
       </table>
     </div>
+
+    <div id="stats_career" style="display:none; overflow-x:auto;" class="table-wrap">
+      <table style="width:100%; min-width:800px; border-collapse:collapse; font-size:.85rem;">
+        <thead>
+          <tr>
+            <th>Team</th>
+            <th class="num">M</th>
+            <th class="num">W</th>
+            <th class="num">L</th>
+            <th class="num" style="color:var(--accent);">Win %</th>
+            <th class="num">Runs</th>
+            <th class="num">Wickets</th>
+            <th class="num">Economy</th>
+            <th class="num">NRR</th>
+          </tr>
+        </thead>
+        <tbody id="career_body"></tbody>
+      </table>
+    </div>
   </section>
 
   <section class="section">
@@ -1594,7 +1614,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     <div class="managers-grid" id="managers_grid"></div>
   </section>
 
-  <section class="admin-wrap" id="admin_panel">    
+  <section class="admin-wrap" id="admin_panel">  
     <div class="admin-section">
       <h3>Match Result Entry</h3>
       <div class="row">
@@ -1954,6 +1974,7 @@ window.setFilter = function(f){
 window.switchStatsTab = function(tab) {
   document.getElementById('stats_boards').style.display = tab === 'boards' ? 'grid' : 'none';
   document.getElementById('stats_exhaustive').style.display = tab === 'exhaustive' ? 'block' : 'none';
+  if(document.getElementById('stats_career')) document.getElementById('stats_career').style.display = tab === 'career' ? 'block' : 'none';
   document.querySelectorAll('.tab-btn:not(.modal-trigger)').forEach(b => b.classList.remove('active'));
   const activeBtn = document.querySelector(`.tab-btn[onclick="window.switchStatsTab('${tab}')"]`);
   if(activeBtn) activeBtn.classList.add('active');
@@ -2661,6 +2682,45 @@ function renderExhaustiveStats(){
   tbody.innerHTML = html;
 }
 
+function renderCareerStats(){
+  const tbody = document.getElementById('career_body');
+  if(!tbody) return;
+  
+  let html = '';
+  let sortedTeams = [...TEAMS].sort((a,b) => {
+    let sa = CAREER_STATS[a], sb = CAREER_STATS[b];
+    let winPctA = sa && sa.m ? (sa.w / sa.m) : 0;
+    let winPctB = sb && sb.m ? (sb.w / sb.m) : 0;
+    return winPctB - winPctA || (sb ? sb.w : 0) - (sa ? sa.w : 0);
+  });
+
+  sortedTeams.forEach(t => {
+    let s = CAREER_STATS[t];
+    if(!s) return;
+    let losses = s.m - s.w;
+    let winPct = s.m > 0 ? ((s.w / s.m) * 100).toFixed(1) + '%' : '0.0%';
+    let nrrCls = s.nrr > 0 ? 'pos-nrr' : (s.nrr < 0 ? 'neg-nrr' : '');
+    let nrrStr = (s.nrr > 0 ? '+' : '') + s.nrr.toFixed(3);
+    const isHighlighted = (selectedTeamFilter && t === selectedTeamFilter) ? ' highlight-row' : '';
+
+    html += `
+      <tr class="${isHighlighted}">
+        <td style="text-align:left; padding-left:18px;">
+           <span class="team-cell" style="--team-glow:${TEAM_COLORS[t]};" onclick="window.takeoverTeam('${t}')">${t.toUpperCase()}</span>
+        </td>
+        <td class="num">${s.m}</td>
+        <td class="num">${s.w}</td>
+        <td class="num">${losses}</td>
+        <td class="num" style="font-weight:700; color:var(--text);">${winPct}</td>
+        <td class="num">${s.runs}</td>
+        <td class="num">${s.wkts}</td>
+        <td class="num">${s.eco.toFixed(2)}</td>
+        <td class="num col-nrr ${nrrCls}">${nrrStr}</td>
+      </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
 // ============================== PREDICTIVE ODDS ==============================
 window.calcBet = function(input, odds, teamA, teamB, fav, isEvens) {
   const resultsDiv = input.parentElement.nextElementSibling;
@@ -2809,6 +2869,7 @@ function updateUI(){
   renderCharts();
   renderOdds();
   renderExhaustiveStats();
+  renderCareerStats();
 
   const playedCount = Object.keys(results).length;
   document.getElementById('progress_bar').style.width = (playedCount / 70 * 100) + '%';
