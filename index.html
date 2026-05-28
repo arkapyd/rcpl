@@ -234,7 +234,7 @@ table th.num,
   grid-template-columns:48px 1fr auto;
   gap:14px;
   align-items:center;
-  padding:11px 4px;
+  padding:9px 4px;
   border-bottom:1px dashed var(--border-bright);
   position:relative;
   transition:transform .2s ease;
@@ -249,7 +249,7 @@ table th.num,
 }
 .champ-team{
   font-family:'Anton',sans-serif;
-  font-size:1.6rem;
+  font-size:1.45rem;
   letter-spacing:.08em;
   color:#fff;
   text-transform:uppercase;
@@ -275,6 +275,24 @@ table th.num,
   opacity:.85;
   transition:color .2s ease;
 }
+
+/* defending champion — gold base, wider & in focus */
+.champ-row.is-defending{
+  padding:16px 4px;
+}
+.champ-row.is-defending .champ-season,
+.champ-row.is-defending .champ-team,
+.champ-row.is-defending .champ-mgr,
+.champ-row.is-defending .champ-trophy{
+  color:#fbbf24;
+}
+.champ-row.is-defending .champ-team{
+  font-size:1.85rem;
+}
+.champ-row.is-defending .champ-trophy{
+  opacity:1;
+}
+
 .champ-row:hover .champ-team,
 .champ-row:hover .champ-mgr,
 .champ-row:hover .champ-trophy {
@@ -1405,13 +1423,13 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
           </div>
           <div class="champ-trophy">★ champion</div>
         </div>
-        <div class="champ-row" style="--champ-color:#ef4444;">
+        <div class="champ-row is-defending" style="--champ-color:#ef4444;">
           <div class="champ-season">S04</div>
           <div>
             <div class="champ-team" onclick="window.takeoverTeam('rcb')">Royal Challengers</div>
             <div class="champ-mgr">mgr: rio</div>
           </div>
-          <div class="champ-trophy">★ champion</div>
+          <div class="champ-trophy">★ defending champion</div>
         </div>
       </div>
     </div>
