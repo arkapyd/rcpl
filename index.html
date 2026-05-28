@@ -478,6 +478,12 @@ thead th{
   border-bottom:1px solid var(--border);
   font-weight:500;
 }
+
+/* sortable column headers */
+thead th, .schedule-table th{ cursor:pointer; user-select:none; -webkit-user-select:none; }
+thead th:hover, .schedule-table th:hover{ color:var(--text); }
+.sort-ind{ color:var(--accent); font-size:.72em; letter-spacing:0; }
+
 thead th:first-child,
 tbody td:first-child{ text-align:left; padding-left:18px; }
 thead th:last-child,
@@ -1986,6 +1992,7 @@ window.setFilter = function(f){
     el.classList.toggle('active', el.dataset.filter === f);
   });
   renderSchedule();
+  reapplySorts();
 };
 
 window.switchStatsTab = function(tab) {
@@ -2190,6 +2197,8 @@ function initUI(){
         </div>`;
     }).join('');
   }
+
+  initSortableTables();
 }
 
 // ============================== RENDER ==============================
@@ -2871,6 +2880,86 @@ function renderOdds(){
   }).join('');
 }
 
+// ============================== GENERIC TABLE SORTING ==============================
+const _tableSortState = {};
+
+function tableKey(table){
+  const tb = table.tBodies[0];
+  return (tb && tb.id) || table.id || '';
+}
+
+function makeTableSortable(table){
+  const thead = table.tHead;
+  if(!thead || !thead.rows[0]) return;
+  Array.from(thead.rows[0].cells).forEach((th, colIndex) => {
+    if(th.dataset.sortBound) return;
+    th.dataset.sortBound = '1';
+    th.addEventListener('click', () => {
+      const key = tableKey(table);
+      const cur = _tableSortState[key];
+      const dir = (cur && cur.colIndex === colIndex && cur.dir === 'asc') ? 'desc' : 'asc';
+      _tableSortState[key] = { colIndex, dir };
+      applySort(table, colIndex, dir);
+    });
+  });
+}
+
+function applySort(table, colIndex, dir){
+  const tbody = table.tBodies[0];
+  if(!tbody) return;
+  const rows = Array.from(tbody.rows).filter(r => r.cells.length > colIndex);
+  if(rows.length < 2){ updateSortIndicators(table, colIndex, dir); return; }
+
+  const raw = row => (row.cells[colIndex] ? row.cells[colIndex].textContent.trim() : '');
+  const toNum = s => {
+    const c = s.replace(/[^0-9.\-]/g, '');
+    if(c === '' || c === '-' || c === '.') return null;
+    const n = parseFloat(c);
+    return isNaN(n) ? null : n;
+  };
+  const isBlank = s => s === '' || s === '—' || s === '-';
+  const numericCol = rows.every(r => { const v = raw(r); return isBlank(v) || toNum(v) !== null; });
+
+  rows.sort((a, b) => {
+    const va = raw(a), vb = raw(b);
+    if(numericCol){
+      let na = toNum(va), nb = toNum(vb);
+      if(na === null) na = (dir === 'asc' ? Infinity : -Infinity);
+      if(nb === null) nb = (dir === 'asc' ? Infinity : -Infinity);
+      return dir === 'asc' ? na - nb : nb - na;
+    }
+    return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+  });
+
+  rows.forEach(r => tbody.appendChild(r));
+  updateSortIndicators(table, colIndex, dir);
+}
+
+function updateSortIndicators(table, colIndex, dir){
+  const thead = table.tHead;
+  if(!thead || !thead.rows[0]) return;
+  Array.from(thead.rows[0].cells).forEach((th, i) => {
+    let ind = th.querySelector('.sort-ind');
+    if(!ind){
+      ind = document.createElement('span');
+      ind.className = 'sort-ind';
+      th.appendChild(ind);
+    }
+    ind.textContent = (i === colIndex) ? (dir === 'asc' ? ' ▲' : ' ▼') : '';
+  });
+}
+
+function initSortableTables(){
+  document.querySelectorAll('table').forEach(makeTableSortable);
+}
+
+function reapplySorts(){
+  document.querySelectorAll('table').forEach(table => {
+    const st = _tableSortState[tableKey(table)];
+    if(st) applySort(table, st.colIndex, st.dir);
+  });
+}
+
 function updateUI(){
   const standings = computeStandings();
   window.currentStandings = standings;
@@ -2884,6 +2973,7 @@ function updateUI(){
   renderOdds();
   renderExhaustiveStats();
   renderCareerStats();
+  reapplySorts();
 
   const playedCount = Object.keys(results).length;
   document.getElementById('progress_bar').style.width = (playedCount / 70 * 100) + '%';
