@@ -1516,7 +1516,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
         <button class="tab-btn active" onclick="window.switchStatsTab('boards')">Leaderboards</button>
         <button class="tab-btn" onclick="window.switchStatsTab('exhaustive')">Exhaustive Stats</button>
         <button class="tab-btn" onclick="window.switchStatsTab('career')">Career Stats</button>
-        <button class="tab-btn modal-trigger" onclick="window.openGraphsModal()" style="color:var(--accent); border-color:rgba(var(--accent-rgb), 0.5); background:rgba(var(--accent-rgb), 0.1);">View Graphs</button>
+        <button class="tab-btn modal-trigger" onclick="window.openGraphsModal()">View Graphs</button>
       </div>
     </div>
     
@@ -1585,7 +1585,6 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
             <th class="num">Runs</th>
             <th class="num">Wickets</th>
             <th class="num">Economy</th>
-            <th class="num">NRR</th>
           </tr>
         </thead>
         <tbody id="career_body"></tbody>
@@ -2699,8 +2698,6 @@ function renderCareerStats(){
     if(!s) return;
     let losses = s.m - s.w;
     let winPct = s.m > 0 ? ((s.w / s.m) * 100).toFixed(1) + '%' : '0.0%';
-    let nrrCls = s.nrr > 0 ? 'pos-nrr' : (s.nrr < 0 ? 'neg-nrr' : '');
-    let nrrStr = (s.nrr > 0 ? '+' : '') + s.nrr.toFixed(3);
     const isHighlighted = (selectedTeamFilter && t === selectedTeamFilter) ? ' highlight-row' : '';
 
     html += `
@@ -2715,7 +2712,6 @@ function renderCareerStats(){
         <td class="num">${s.runs}</td>
         <td class="num">${s.wkts}</td>
         <td class="num">${s.eco.toFixed(2)}</td>
-        <td class="num col-nrr ${nrrCls}">${nrrStr}</td>
       </tr>`;
   });
   tbody.innerHTML = html;
