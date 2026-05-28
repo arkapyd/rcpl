@@ -1688,6 +1688,16 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     </div>
 
     <div class="admin-section">
+      <h3>Data &amp; Backups</h3>
+      <div class="admin-status">// download a JSON snapshot of every result — keep it as your archival dataset for future seasons.</div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button onclick="window.exportData()">Export Backup (JSON)</button>
+        <button class="ghost" onclick="document.getElementById('import_file').click()">Import Backup</button>
+        <input type="file" id="import_file" accept="application/json,.json" style="display:none;" onchange="window.importData(event)">
+      </div>
+    </div>
+
+    <div class="admin-section">
       <h3>UI Theme</h3>
       <button class="ghost" onclick="window.resetTakeover()">Reset to Default Emerald</button>
     </div>
@@ -2055,6 +2065,12 @@ function sanitize(o){ return JSON.parse(JSON.stringify(o, (k,v) => v === undefin
 function pushToCloud(){
   saveLocal();
   if(!dbRef){ return; }
+  // safety net: never silently overwrite the cloud with an empty dataset
+  // (e.g. after a failed read fell back to empty local storage)
+  if(Object.keys(results).length === 0 && !window._allowEmptyWrite){
+    window.showToast('blocked empty cloud write — reload the page before saving.', 'error');
+    return;
+  }
   try {
     const p = dbRef.set(sanitize({ results }));
     if(p && p.catch) p.catch(e => {
@@ -3374,6 +3390,51 @@ window.resetMatch = function(){
     window.loadFixture();
     window.showToast(`${id} reset to upcoming.`, 'success');
   }
+};
+
+// ============================== DATA BACKUP / RESTORE ==============================
+window.exportData = function(){
+  const payload = {
+    league: 'rcpl',
+    ref: 'rcpl_s5_v2',
+    exportedAt: new Date().toISOString(),
+    results
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `rcpl_s5_backup_${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  window.showToast(`exported ${Object.keys(results).length} matches.`, 'success');
+};
+
+window.importData = function(ev){
+  const file = ev.target.files && ev.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      const incoming = (data && data.results) ? data.results : data;
+      const count = Object.keys(incoming).length;
+      if(confirm(`Import ${count} matches? They will be MERGED into the current data and synced to the cloud (same-ID matches get overwritten; nothing else is deleted).`)){
+        Object.keys(incoming).forEach(k => { if(incoming[k]) results[k] = incoming[k]; });
+        pushToCloud();
+        updateUI();
+        window.showToast(`imported ${count} matches.`, 'success');
+      }
+    } catch(err){
+      console.error('import failed:', err);
+      window.showToast('import failed — invalid JSON file.', 'error');
+    }
+    ev.target.value = '';
+  };
+  reader.readAsText(file);
 };
 
 window.unlockAdmin = function(){
