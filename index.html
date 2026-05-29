@@ -1541,6 +1541,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
         <button class="tab-btn" onclick="window.switchStatsTab('exhaustive')">Exhaustive Stats</button>
         <button class="tab-btn" onclick="window.switchStatsTab('career')">Career Stats</button>
         <button class="tab-btn modal-trigger" onclick="window.openGraphsModal()">View Graphs</button>
+        <button class="tab-btn" onclick="window.switchStatsTab('h2h')">Head-to-Head</button>
       </div>
     </div>
     
@@ -1611,8 +1612,12 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
             <th class="num">Economy</th>
           </tr>
         </thead>
-        <tbody id="career_body"></tbody>
+       <tbody id="career_body"></tbody>
       </table>
+    </div>
+
+    <div id="stats_h2h" style="display:none; overflow-x:auto;" class="table-wrap">
+      <table id="h2h_table" data-no-sort="1" style="width:100%; min-width:780px; border-collapse:collapse; font-size:.82rem;"></table>
     </div>
   </section>
 
@@ -2027,6 +2032,7 @@ window.switchStatsTab = function(tab) {
   document.getElementById('stats_boards').style.display = tab === 'boards' ? 'grid' : 'none';
   document.getElementById('stats_exhaustive').style.display = tab === 'exhaustive' ? 'block' : 'none';
   if(document.getElementById('stats_career')) document.getElementById('stats_career').style.display = tab === 'career' ? 'block' : 'none';
+  if(document.getElementById('stats_h2h')) document.getElementById('stats_h2h').style.display = tab === 'h2h' ? 'block' : 'none';
   document.querySelectorAll('.tab-btn:not(.modal-trigger)').forEach(b => b.classList.remove('active'));
   const activeBtn = document.querySelector(`.tab-btn[onclick="window.switchStatsTab('${tab}')"]`);
   if(activeBtn) activeBtn.classList.add('active');
@@ -2795,6 +2801,31 @@ function renderCareerStats(){
   tbody.innerHTML = html;
 }
 
+// ============================== HEAD-TO-HEAD MATRIX ==============================
+function renderH2HMatrix(){
+  const table = document.getElementById('h2h_table');
+  if(!table) return;
+  const order = TEAMS;
+  const head = '<thead>'
+    + `<tr><th colspan="${order.length+1}" style="text-align:left; font-weight:500; color:var(--text-dim); text-transform:none; letter-spacing:.04em; cursor:default;">row team's wins–losses vs column team · S1–S4 history + live S5</th></tr>`
+    + '<tr><th style="text-align:left; cursor:default;">Team</th>'
+    + order.map(t => `<th class="num" style="cursor:default;">${t.toUpperCase()}</th>`).join('')
+    + '</tr></thead>';
+  const body = '<tbody>' + order.map(rt => {
+    const cells = order.map(ct => {
+      if(rt === ct) return `<td class="num" style="color:var(--text-dim);">—</td>`;
+      const h = getH2H(rt, ct);
+      const total = h.aWins + h.bWins;
+      if(total === 0) return `<td class="num" style="color:var(--text-dim);">·</td>`;
+      const cls = h.aWins > h.bWins ? 'pos-nrr' : (h.aWins < h.bWins ? 'neg-nrr' : '');
+      return `<td class="num col-nrr ${cls}">${h.aWins}–${h.bWins}</td>`;
+    }).join('');
+    const isHi = (selectedTeamFilter && rt === selectedTeamFilter) ? ' highlight-row' : '';
+    return `<tr class="${isHi}"><td style="text-align:left;"><span class="team-cell" style="--team-glow:${TEAM_COLORS[rt]};" onclick="window.takeoverTeam('${rt}')">${rt.toUpperCase()}</span></td>${cells}</tr>`;
+  }).join('') + '</tbody>';
+  table.innerHTML = head + body;
+}
+
 // ============================== PREDICTIVE ODDS ==============================
 window.calcBet = function(input, odds, teamA, teamB, fav, isEvens) {
   const resultsDiv = input.parentElement.nextElementSibling;
@@ -2945,6 +2976,7 @@ function tableKey(table){
 }
 
 function makeTableSortable(table){
+  if(table.dataset.noSort) return;
   const thead = table.tHead;
   if(!thead || !thead.rows[0]) return;
   Array.from(thead.rows[0].cells).forEach((th, colIndex) => {
@@ -3027,8 +3059,9 @@ function updateUI(){
   renderStatBoards();
   renderCharts();
   renderOdds();
-  renderExhaustiveStats();
+ renderExhaustiveStats();
   renderCareerStats();
+  renderH2HMatrix();
   reapplySorts();
 
   const playedCount = Object.keys(results).length;
