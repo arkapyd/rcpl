@@ -16,11 +16,11 @@
    rcpl season 5 — design tokens
    ============================================================ */
 :root{
-  /* THEME — "Leather & Linen": cricket whites + red leather ball.
+  /* THEME — "Floodlight": cool steel-blue under the lights + red leather ball.
      Two brand colours, both independent of every team colour. */
-  --accent: #e8dcc3;          /* linen / cricket-whites — primary */
-  --accent-rgb: 232, 220, 195;
-  --accent-deep: #cdb98f;     /* aged willow — gradient depth */
+  --accent: #86acd8;          /* floodlight steel-blue — primary */
+  --accent-rgb: 134, 172, 216;
+  --accent-deep: #5a82b6;     /* deeper steel — gradient depth */
   --accent-2: #c01f33;        /* cherry leather — the ball (secondary) */
   --accent-2-rgb: 192, 31, 51;
   --bg: #0a0a0a;
@@ -2022,7 +2022,7 @@ window.showToast = function(msg, type = 'default'){
 };
 
 window.takeoverTeam = function(team){
-  const hex = TEAM_COLORS[team] || '#e8dcc3';
+  const hex = TEAM_COLORS[team] || '#86acd8';
   document.documentElement.style.setProperty('--accent', hex);
   const r = parseInt(hex.slice(1,3),16),
         g = parseInt(hex.slice(3,5),16),
@@ -2034,8 +2034,8 @@ window.takeoverTeam = function(team){
   window.showToast(`${team.toUpperCase()} takeover active`, 'success');
 };
 window.resetTakeover = function(){
-  document.documentElement.style.setProperty('--accent', '#e8dcc3');
-  document.documentElement.style.setProperty('--accent-rgb', '232, 220, 195');
+  document.documentElement.style.setProperty('--accent', '#86acd8');
+  document.documentElement.style.setProperty('--accent-rgb', '134, 172, 216');
   selectedTeamFilter = null;
   updateUI();
   window.showToast('theme reset', 'success');
