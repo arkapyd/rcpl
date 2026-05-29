@@ -1691,9 +1691,23 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
           <div><label>Balls</label><input type="number" id="so_b2" min="0" max="12" value="12"></div>
         </div>
       </div>
-      <div style="display:flex; gap:10px; margin-top:14px;">
+     <div style="display:flex; gap:10px; margin-top:14px;">
         <button onclick="window.saveMatch()">Save Match</button>
         <button class="danger" onclick="window.resetMatch()">Reset Selected Match</button>
+      </div>
+    </div>
+
+    <div class="admin-section">
+      <h3>Managers &amp; Roster</h3>
+      <div class="admin-status" id="roster_status">// set each team's S5 manager. choose <span class="accent">＋ add new…</span> and type a name to add a debutant (starts at zero, tracked from S5).</div>
+      <div id="roster_editor"></div>
+      <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+        <button onclick="window.saveRoster()">Save Roster</button>
+        <button class="ghost" onclick="window.renderRosterAdmin()">Reload</button>
+      </div>
+      <div style="margin-top:18px;">
+        <div class="admin-status" style="margin-bottom:8px;">// archived vault — managers with banked history not playing this season. their record is kept safe; reassign one above to bring them back where they left off.</div>
+        <div id="roster_archived" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
       </div>
     </div>
 
@@ -1813,8 +1827,9 @@ const TEAM_COLORS = {
 };
 const OVERS_PER_INNINGS = 5;
 
-// Team Managers — name → team. Capitalisation handled at render time.
-const MANAGERS = {
+// Team Managers — team → manager display name. Editable from the admin panel and
+// persisted (Firebase `roster` + localStorage). DEFAULT_MANAGERS is the fallback seed.
+let MANAGERS = {
   pbks:       'Arka',
   dc:         'Adarsh',
   gt:         'Neil',
@@ -1826,7 +1841,7 @@ const MANAGERS = {
   lsg:        'Tuhinangshu',
   srh:        'Adi'
 };
-
+const DEFAULT_MANAGERS = { ...MANAGERS };
 // ============================== MANAGER CAREER HISTORY ==============================
 const SEASON_OUTCOMES = {
   arka: [
@@ -1988,10 +2003,12 @@ let isUiInitialized = false;
 window.currentStandings = [];
 
 const LS_KEY = 'rcpl_s5_cache_v2';
+const LS_ROSTER = 'rcpl_s5_roster_v1';
 let _bootDone = false, _cloudConnected = false;
 const saveLocal = () => { try { localStorage.setItem(LS_KEY, JSON.stringify(results)); } catch(e){} };
 const loadLocal = () => { try { const r = localStorage.getItem(LS_KEY); return r ? JSON.parse(r) : null; } catch(e){ return null; } };
-
+const saveLocalRoster = () => { try { localStorage.setItem(LS_ROSTER, JSON.stringify(MANAGERS)); } catch(e){} };
+const loadLocalRoster = () => { try { const r = localStorage.getItem(LS_ROSTER); return r ? JSON.parse(r) : null; } catch(e){ return null; } };
 // ============================== UTILS ==============================
 const fmtOvers = b => Math.floor(b/6) + '.' + (b%6);
 
@@ -2085,7 +2102,7 @@ function pushToCloud(){
     return;
   }
   try {
-    const p = dbRef.set(sanitize({ results }));
+    const p = dbRef.update(sanitize({ results }));
     if(p && p.catch) p.catch(e => {
       console.error('cloud write failed:', e);
       window.showToast('cloud write blocked — saved locally only.', 'error');
@@ -2096,6 +2113,38 @@ function pushToCloud(){
     window.showToast('cloud write error — saved locally only.', 'error');
   }
 }
+// ============================== MANAGER ROSTER (editable + persisted) ==============================
+function titleCase(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+
+// id -> display name, across the historical vault (SEASON_OUTCOMES) and the live roster
+function getKnownManagers(){
+  const known = {};
+  Object.keys(SEASON_OUTCOMES).forEach(id => { known[id] = titleCase(id); });
+  Object.keys(MANAGERS).forEach(t => { const n = MANAGERS[t]; if(n) known[n.toLowerCase()] = n; });
+  return known;
+}
+
+function applyRoster(r){
+  if(r && typeof r === 'object'){
+    const merged = { ...DEFAULT_MANAGERS };
+    Object.keys(r).forEach(t => { if(TEAMS.includes(t) && r[t]) merged[t] = r[t]; });
+    MANAGERS = merged;
+    saveLocalRoster();
+  }
+  renderManagersGrid();
+  const panel = document.getElementById('admin_panel');
+  if(document.getElementById('roster_editor') && panel && panel.style.display === 'block') renderRosterAdmin();
+}
+
+function cloudSaveRoster(){
+  saveLocalRoster();
+  if(!dbRef) return;
+  try {
+    const p = dbRef.update(sanitize({ roster: MANAGERS }));
+    if(p && p.catch) p.catch(e => { console.error('roster write failed:', e); window.showToast('roster saved locally only.', 'error'); });
+  } catch(e){ console.error('roster write threw:', e); window.showToast('roster save error — local only.', 'error'); }
+}
+
 function ingest(raw){
   results = (raw && typeof raw === 'object') ? raw : {};
   Object.keys(results).forEach(k => { if(!results[k]) delete results[k]; });
@@ -2108,6 +2157,7 @@ const _fbTimeout = setTimeout(() => {
   if(_bootDone) return;
   setConnBanner('offline');
   window.showToast('cloud slow — loaded local data.', 'error');
+  applyRoster(loadLocalRoster());
   ingest(loadLocal());
 }, 5000);
 
@@ -2117,6 +2167,7 @@ if(dbRef){
     _cloudConnected = true;
     setConnBanner('online');
     const d = snap.val();
+    applyRoster(d && d.roster);
     ingest(d && d.results);
   }, err => {
     clearTimeout(_fbTimeout);
@@ -2124,11 +2175,13 @@ if(dbRef){
     console.error('firebase read failed:', err);
     setConnBanner('offline');
     window.showToast('cloud read failed — using local data.', 'error');
+    applyRoster(loadLocalRoster());
     ingest(loadLocal());
   });
 } else {
   clearTimeout(_fbTimeout);
   setConnBanner('offline');
+  applyRoster(loadLocalRoster());
   ingest(loadLocal());
 }
 
@@ -2240,28 +2293,107 @@ function initUI(){
     SCHEDULE.map(f => `<option value="${f.id}">${f.id} · ${f.a.toUpperCase()} vs ${f.b.toUpperCase()}</option>`).join('');
   fs.addEventListener('change', window.loadFixture);
 
-  // managers grid — render once, ordered by group (A first, then B) so flow mirrors the rest of the page
-  const mgEl = document.getElementById('managers_grid');
-  if(mgEl){
-    const orderedTeams = [...GROUP_A, ...GROUP_B];
-    mgEl.innerHTML = orderedTeams.map(t => {
-      const name = MANAGERS[t] || '—';
-      const color = TEAM_COLORS[t];
-      const managerId = (MANAGERS[t] || '').toLowerCase();
-      return `
-        <div class="manager-card" style="--mgr-color:${color};" onclick="window.openManagerModal('${managerId}', '${t}')">
-          <div class="mgr-eyebrow">// manager</div>
-          <h3 class="mgr-name">${name}</h3>
-          <div class="mgr-team-row">
-            <span class="mgr-team-tag">team</span>
-            <span class="mgr-team-name">${t.toUpperCase()}</span>
-          </div>
-        </div>`;
-    }).join('');
-  }
+ // managers grid — rendered from the live (editable) roster
+  renderManagersGrid();
 
   initSortableTables();
 }
+
+// ============================== MANAGERS GRID + ROSTER ADMIN ==============================
+function renderManagersGrid(){
+  const mgEl = document.getElementById('managers_grid');
+  if(!mgEl) return;
+  const orderedTeams = [...GROUP_A, ...GROUP_B];
+  mgEl.innerHTML = orderedTeams.map(t => {
+    const name = MANAGERS[t] || '—';
+    const color = TEAM_COLORS[t];
+    const managerId = (MANAGERS[t] || '').toLowerCase();
+    return `
+      <div class="manager-card" style="--mgr-color:${color};" onclick="window.openManagerModal('${managerId}', '${t}')">
+        <div class="mgr-eyebrow">// manager</div>
+        <h3 class="mgr-name">${name}</h3>
+        <div class="mgr-team-row">
+          <span class="mgr-team-tag">team</span>
+          <span class="mgr-team-name">${t.toUpperCase()}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+window.renderRosterAdmin = function(){
+  const ed = document.getElementById('roster_editor');
+  if(!ed) return;
+  const known = getKnownManagers();
+  const ids = Object.keys(known).sort();
+  const ordered = [...GROUP_A, ...GROUP_B];
+
+  ed.innerHTML = ordered.map(t => {
+    const curId = (MANAGERS[t] || '').toLowerCase();
+    const opts = ids.map(id => `<option value="${id}" ${id === curId ? 'selected' : ''}>${known[id]}</option>`).join('')
+      + `<option value="__new__">＋ add new…</option>`;
+    return `
+      <div class="row" style="align-items:flex-end;">
+        <div style="max-width:74px;"><label>Team</label>
+          <div style="font-family:'Anton',sans-serif; font-size:1.15rem; letter-spacing:.06em; color:${TEAM_COLORS[t]};">${t.toUpperCase()}</div>
+        </div>
+        <div><label>Manager</label>
+          <select id="mgrsel_${t}" onchange="window._rosterSelChange('${t}')">${opts}</select>
+        </div>
+        <div><label>New manager name</label>
+          <input id="mgrnew_${t}" placeholder="type new name…" style="display:none;">
+        </div>
+      </div>`;
+  }).join('');
+
+  const activeIds = new Set(ordered.map(t => (MANAGERS[t] || '').toLowerCase()));
+  const archived = Object.keys(known).filter(id => !activeIds.has(id)).sort();
+  const arEl = document.getElementById('roster_archived');
+  if(arEl){
+    arEl.innerHTML = archived.length
+      ? archived.map(id => {
+          const hist = SEASON_OUTCOMES[id] || [];
+          const st = computeManagerIndex(hist);
+          const last = hist.length ? hist[hist.length - 1].team : '';
+          return `<span onclick="window.openManagerModal('${id}','${last}','${known[id]}',true)" style="cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:.72rem; padding:6px 10px; border:1px solid var(--border-bright); border-radius:4px; background:var(--bg); color:var(--text-muted); transition:color .2s, border-color .2s;" onmouseover="this.style.color='var(--accent)';this.style.borderColor='var(--accent)';" onmouseout="this.style.color='var(--text-muted)';this.style.borderColor='var(--border-bright)';">${known[id]} · idx ${st.seasons ? st.index : '—'}</span>`;
+        }).join('')
+      : `<span style="color:var(--text-dim); font-style:italic; font-size:.8rem;">none — everyone with banked history is assigned to a team.</span>`;
+  }
+};
+
+window._rosterSelChange = function(t){
+  const sel = document.getElementById('mgrsel_' + t);
+  const inp = document.getElementById('mgrnew_' + t);
+  if(sel && inp) inp.style.display = (sel.value === '__new__') ? 'block' : 'none';
+};
+
+window.saveRoster = function(){
+  const ordered = [...GROUP_A, ...GROUP_B];
+  const newRoster = {};
+  const bad = [];
+  ordered.forEach(t => {
+    const sel = document.getElementById('mgrsel_' + t);
+    if(!sel) return;
+    let name;
+    if(sel.value === '__new__'){
+      name = (document.getElementById('mgrnew_' + t).value || '').trim();
+    } else {
+      name = sel.options[sel.selectedIndex].text.trim();
+    }
+    if(!name) bad.push(t.toUpperCase());
+    newRoster[t] = name;
+  });
+  if(bad.length){ window.showToast('missing manager name for: ' + bad.join(', '), 'error'); return; }
+  const lc = Object.values(newRoster).map(n => n.toLowerCase());
+  const dup = lc.find((v, i) => lc.indexOf(v) !== i);
+  if(dup){ window.showToast('duplicate manager: ' + titleCase(dup) + ' — one team each.', 'error'); return; }
+
+  MANAGERS = newRoster;
+  cloudSaveRoster();
+  renderManagersGrid();
+  renderRosterAdmin();
+  updateUI();
+  window.showToast('roster saved & synced.', 'success');
+};
 
 // ============================== RENDER ==============================
 function renderStandings(standings){
@@ -3232,23 +3364,26 @@ window.openFormModal = function(team){
 };
 
 // ============================== MANAGER PERFORMANCE MODAL ==============================
-window.openManagerModal = function(managerId, currentTeam){
+window.openManagerModal = function(managerId, currentTeam, displayName, archived){
   const history = SEASON_OUTCOMES[managerId] || [];
   const stats = computeManagerIndex(history);
-  const managerName = MANAGERS[currentTeam] || managerId;
+  const managerName = displayName || MANAGERS[currentTeam] || (managerId ? managerId.charAt(0).toUpperCase() + managerId.slice(1) : managerId);
   const accent = TEAM_COLORS[currentTeam] || 'var(--accent)';
 
-  // Tint the entire modal with the manager's current S5 team colour.
+  // Tint the entire modal with the relevant team colour.
   document.getElementById('mgr_modal_content').style.setProperty('--mgr-color', accent);
 
-  // Headline: S5 team + season count
+  // Headline: S5 team (or archived vault) + season count
   const seasonCountLabel = stats.seasons === 0
     ? 's5 debut'
     : `${stats.seasons} tracked season${stats.seasons === 1 ? '' : 's'}`;
 
-  let html = `
-    <div class="mgr-modal-team-tag">// s5 team: <span class="accent" style="--team-glow:${accent};">${currentTeam.toUpperCase()}</span> · ${seasonCountLabel}</div>
+  const teamTag = archived
+    ? `// archived vault · last team <span class="accent" style="--team-glow:${accent};">${(currentTeam || '—').toUpperCase()}</span> · ${stats.seasons} banked season${stats.seasons === 1 ? '' : 's'}`
+    : `// s5 team: <span class="accent" style="--team-glow:${accent};">${(currentTeam || '—').toUpperCase()}</span> · ${seasonCountLabel}`;
 
+  let html = `
+    <div class="mgr-modal-team-tag">${teamTag}</div>
     <div class="mgr-modal-index-row">
       <div class="mgr-stat-block headline">
         <div class="label">performance index</div>
@@ -3438,6 +3573,7 @@ window.exportData = function(){
     league: 'rcpl',
     ref: 'rcpl_s5_v2',
     exportedAt: new Date().toISOString(),
+    roster: MANAGERS,
     results
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -3464,6 +3600,7 @@ window.importData = function(ev){
       const count = Object.keys(incoming).length;
       if(confirm(`Import ${count} matches? They will be MERGED into the current data and synced to the cloud (same-ID matches get overwritten; nothing else is deleted).`)){
         Object.keys(incoming).forEach(k => { if(incoming[k]) results[k] = incoming[k]; });
+        if(data.roster){ applyRoster(data.roster); cloudSaveRoster(); }
         pushToCloud();
         updateUI();
         window.showToast(`imported ${count} matches.`, 'success');
@@ -3480,6 +3617,7 @@ window.importData = function(ev){
 window.unlockAdmin = function(){
   if(prompt('admin password:') === 'rcpl2026'){
     document.getElementById('admin_panel').style.display = 'block';
+    renderRosterAdmin();
     window.showToast('admin access granted.', 'success');
     document.getElementById('admin_panel').scrollIntoView({ behavior:'smooth' });
   }
