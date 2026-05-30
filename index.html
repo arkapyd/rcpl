@@ -1423,10 +1423,10 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     <h1 class="hero-title">The Premier<br><span class="stroke">Fantasy</span> League<br>Returns.</h1>
     <p class="hero-sub">Every fixture hot. Every result electric. Every team out to claim bragging rights.</p>
     <div class="hero-stats">
-      <div class="hero-stat"><strong>10</strong>Teams</div>
-      <div class="hero-stat"><strong>02</strong>Groups</div>
-      <div class="hero-stat"><strong>70</strong>Fixtures</div>
-      <div class="hero-stat"><strong>01</strong>Champion</div>
+      <div class="hero-stat"><strong class="count-up" data-target="10">00</strong>Teams</div>
+      <div class="hero-stat"><strong class="count-up" data-target="2">00</strong>Groups</div>
+      <div class="hero-stat"><strong class="count-up" data-target="70">00</strong>Fixtures</div>
+      <div class="hero-stat"><strong class="count-up" data-target="1">00</strong>Champion</div>
     </div>
   </div>
   <div class="hero-right">
@@ -1745,6 +1745,13 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     </div>
 
     <div class="admin-section">
+      <h3>Season Rollover</h3>
+      <div class="admin-status">// at season's end, generate the S5 entries to paste into the career vault (SEASON_OUTCOMES). league W/M is pulled from the final table; set each playoff team's true outcome before committing.</div>
+      <button onclick="window.bankSeason5()">Generate S5 Vault Entries</button>
+      <pre id="bank_output" style="display:none; margin-top:14px; padding:14px; background:var(--bg); border:1px solid var(--border-bright); border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:.72rem; line-height:1.5; color:var(--text); white-space:pre-wrap; overflow:auto; max-height:340px;"></pre>
+    </div>
+
+    <div class="admin-section">
       <h3>UI Theme</h3>
       <button class="ghost" onclick="window.resetTakeover()">Reset to Default Theme</button>
     </div>
@@ -1767,6 +1774,15 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     <h2 class="modal-title" id="form_modal_team">—</h2>
     <div class="modal-subtitle" id="form_modal_subtitle">// team drill-down</div>
     <div id="form_modal_body"></div>
+  </div>
+</div>
+
+<div id="scorecard_modal" class="modal-overlay">
+  <div class="modal-content">
+    <span class="modal-close" onclick="document.getElementById('scorecard_modal').classList.remove('show')">&times;</span>
+    <h2 class="modal-title" id="scorecard_title">—</h2>
+    <div class="modal-subtitle" id="scorecard_sub">// match scorecard</div>
+    <div id="scorecard_body"></div>
   </div>
 </div>
 
@@ -2609,13 +2625,13 @@ function renderSchedule(){
         else if(r.r2 > r.r1) winTag = `${r.t2.toUpperCase()} +${10-(r.w2||0)}w`;
         else winTag = 'tied';
         return `
-          <tr class="is-played">
+          <tr class="is-played" onclick="window.openScorecard('${f.id}')" style="cursor:pointer;">
             <td><span class="sched-id">${f.id}</span></td>
             <td>
               <span class="sched-teams">
-                <span class="team-link" style="--team-glow:${TEAM_COLORS[r.t1]};" onclick="window.takeoverTeam('${r.t1}')">${r.t1.toUpperCase()}</span>
+                <span class="team-link" style="--team-glow:${TEAM_COLORS[r.t1]};" onclick="event.stopPropagation(); window.takeoverTeam('${r.t1}')">${r.t1.toUpperCase()}</span>
                 <span class="vs">vs</span>
-                <span class="team-link" style="--team-glow:${TEAM_COLORS[r.t2]};" onclick="window.takeoverTeam('${r.t2}')">${r.t2.toUpperCase()}</span>
+                <span class="team-link" style="--team-glow:${TEAM_COLORS[r.t2]};" onclick="event.stopPropagation(); window.takeoverTeam('${r.t2}')">${r.t2.toUpperCase()}</span>
               </span>
             </td>
             <td>
@@ -2907,9 +2923,27 @@ function renderCharts() {
               label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}`
             }
           }
+        },
+        scales: {
+          y: {
+            reverse: reverseY,
+            beginAtZero: !reverseY,
+            min: reverseY ? 1 : undefined,
+            max: reverseY ? 10 : undefined,
+            ticks: {
+              color: '#a3a3a3',
+              font: { family: 'JetBrains Mono', size: 10 },
+              stepSize: reverseY ? 1 : undefined,
+              precision: 0
+            },
+            grid: { color: 'rgba(56,56,56,.35)' }
+          },
+          x: {
+            ticks: { color: '#737373', font: { family: 'JetBrains Mono', size: 10 } },
+            grid: { color: 'rgba(56,56,56,.2)' }
+          }
         }
       }
-      // scales logic sits globally here or falls back to ticks
     });
   };
 
@@ -3245,6 +3279,11 @@ function applySort(table, colIndex, dir){
   });
 
   rows.forEach(r => tbody.appendChild(r));
+  // keep a rank/position column (standings) in step with the visible order
+  Array.from(tbody.rows).forEach((tr, i) => {
+    const posCell = tr.querySelector('.pos');
+    if(posCell) posCell.textContent = String(i+1).padStart(2,'0');
+  });
   updateSortIndicators(table, colIndex, dir);
 }
 
@@ -3449,6 +3488,51 @@ window.openFormModal = function(team){
 
   document.getElementById('form_modal_body').innerHTML = html;
   document.getElementById('form_modal').classList.add('show');
+};
+
+// ============================== MATCH SCORECARD MODAL ==============================
+window.openScorecard = function(matchId){
+  const r = results[matchId];
+  if(!r) return;
+  const f = SCHEDULE.find(x => x.id === matchId);
+  const winner = getWinner(r);
+  const c1 = TEAM_COLORS[r.t1] || 'var(--accent)';
+  const c2 = TEAM_COLORS[r.t2] || 'var(--accent)';
+  const dateStr = r.ts ? new Date(r.ts).toLocaleDateString('en-GB',{ day:'2-digit', month:'short', year:'numeric' }) : '';
+
+  const inningsRow = (team, runs, wkts, balls, color, isWinner) => `
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 16px; background:var(--surface-2); border:1px solid var(--border); border-left:3px solid ${color}; border-radius:4px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-family:'Anton',sans-serif; font-size:1.3rem; letter-spacing:.06em; color:${color};">${team.toUpperCase()}</span>
+        ${isWinner ? `<span style="font-family:'JetBrains Mono',monospace; font-size:.58rem; letter-spacing:.14em; text-transform:uppercase; color:var(--win); border:1px solid rgba(132,204,22,.4); background:rgba(132,204,22,.08); padding:2px 6px; border-radius:3px;">winner</span>` : ''}
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace; font-size:1.05rem; font-weight:700; color:var(--text);">
+        ${runs}/${wkts} <span style="color:var(--text-dim); font-size:.8rem; font-weight:400;">(${fmtOvers(balls)} ov)</span>
+      </div>
+    </div>`;
+
+  let html = `<div style="display:flex; flex-direction:column; gap:10px;">`;
+  html += inningsRow(r.t1, r.r1, r.w1, r.b1, c1, winner === r.t1);
+  html += inningsRow(r.t2, r.r2, r.w2, r.b2, c2, winner === r.t2);
+
+  if(r.super_over){
+    const so = r.super_over;
+    const soWin = (so.r1 > so.r2) ? r.t1 : (so.r2 > so.r1 ? r.t2 : null);
+    html += `<div style="margin-top:4px; font-family:'JetBrains Mono',monospace; font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:var(--accent);">super over</div>`;
+    html += inningsRow(r.t1, so.r1, so.w1, so.b1, c1, soWin === r.t1);
+    html += inningsRow(r.t2, so.r2, so.w2, so.b2, c2, soWin === r.t2);
+  }
+
+  html += `<div style="text-align:center; margin-top:6px; font-family:'JetBrains Mono',monospace; font-size:.9rem; font-weight:700; color:var(--win);">${buildResultLine(f, r)}</div>`;
+  if(r.desc){
+    html += `<div style="text-align:center; font-size:.85rem; font-style:italic; color:var(--text-dim);">${r.desc}</div>`;
+  }
+  html += `</div>`;
+
+  document.getElementById('scorecard_title').innerText = `${r.t1.toUpperCase()} vs ${r.t2.toUpperCase()}`;
+  document.getElementById('scorecard_sub').innerText = `// ${matchId}${dateStr ? ' · ' + dateStr : ''}`;
+  document.getElementById('scorecard_body').innerHTML = html;
+  document.getElementById('scorecard_modal').classList.add('show');
 };
 
 // ============================== MANAGER PERFORMANCE MODAL ==============================
@@ -3702,6 +3786,25 @@ window.importData = function(ev){
   reader.readAsText(file);
 };
 
+// ============================== SEASON ROLLOVER: BANK S5 → VAULT ==============================
+window.bankSeason5 = function(){
+  const standings = window.currentStandings || [];
+  if(standings.length === 0){ window.showToast('no standings yet — play some matches first.', 'error'); return; }
+  const lines = standings.map((s, i) => {
+    const id = (MANAGERS[s.team] || '').toLowerCase();
+    const outcome = i < 4 ? 'qualifier' : 'group';
+    return `  // ${id || s.team} — finished #${i+1} in the table\n  { season: 5, team: '${s.team}', w: ${s.w}, m: ${s.p}, outcome: '${outcome}' },`;
+  });
+  const out = '// ===== S5 CAREER-VAULT ENTRIES — generated ' + new Date().toISOString().slice(0,10) + ' =====\n'
+    + '// drop each line into the matching manager array inside SEASON_OUTCOMES.\n'
+    + '// league W / M is final; change the outcome for playoff teams before committing:\n'
+    + '//   champion · finalist · qualifier · eliminator · group\n\n'
+    + lines.join('\n');
+  const el = document.getElementById('bank_output');
+  if(el){ el.style.display = 'block'; el.textContent = out; }
+  window.showToast('S5 vault entries generated — copy from the box below.', 'success');
+};
+
 window.unlockAdmin = function(){
   if(prompt('admin password:') === 'rcpl2026'){
     document.getElementById('admin_panel').style.display = 'block';
@@ -3711,9 +3814,29 @@ window.unlockAdmin = function(){
   }
 };
 
+// ============================== HERO COUNT-UP ==============================
+function runCountUps(){
+  const els = document.querySelectorAll('.count-up');
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const pad = v => String(v).padStart(2, '0');
+  els.forEach(el => {
+    const target = parseInt(el.dataset.target, 10) || 0;
+    if(reduce){ el.textContent = pad(target); return; }
+    const dur = 1100, start = performance.now();
+    const tick = now => {
+      const p = Math.min(1, (now - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = pad(Math.round(eased * target));
+      if(p < 1) requestAnimationFrame(tick);
+      else el.textContent = pad(target);
+    };
+    requestAnimationFrame(tick);
+  });
+}
+runCountUps();
+
 // ============================== LIVE CLOCK ==============================
 const targetDate = new Date("June 10, 2026 00:00:00").getTime();
-
 setInterval(() => {
   const now = new Date().getTime();
   
