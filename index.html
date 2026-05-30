@@ -366,29 +366,21 @@ table th.num,
   color:var(--text); margin:0 0 12px;
 }
 .team-pill{
-  position:relative;
   display:inline-block;
-  padding:8px 13px 10px 14px; margin:4px 7px 4px 0;
-  background:var(--surface-2);
-  border:1px solid var(--border-bright);
-  border-left:4px solid var(--team-color, var(--accent));
-  border-radius:4px;
-  font-size:.82rem; font-weight:800;
+  padding:6px 12px; margin:3px 6px 3px 0;
+  background:transparent;
+  border:none;
+  font-size:.85rem; font-weight:700;
   letter-spacing:.12em;
   color:var(--text);
   cursor:pointer;
   text-transform:uppercase;
-  transition:transform .2s, background .2s, border-color .2s;
+  transition:color .2s, transform .2s;
   font-family:'Manrope',sans-serif;
 }
-.team-pill::after{
-  content:''; position:absolute; left:14px; right:10px; bottom:3px; height:2px;
-  background:var(--team-2, var(--accent-2));
-  border-radius:2px; opacity:.85;
-}
 .team-pill:hover{
-  transform:translateY(-2px);
-  background:var(--surface-3);
+  color:var(--team-color, var(--accent));
+  transform:translateY(-1px);
 }
 
 /* ============================================================
@@ -1173,8 +1165,8 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   content:'';
   position:absolute; top:0; left:0; right:0;
   height:2px;
-  background:linear-gradient(90deg, var(--mgr-color, var(--accent)), var(--mgr-2, var(--mgr-color, var(--accent))));
-  opacity:.5;
+  background:var(--mgr-color, var(--accent));
+  opacity:0;
   transition:opacity .25s;
 }
 .manager-card:hover{
@@ -1225,7 +1217,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   transition:color .2s ease;
 }
 .manager-card:hover .mgr-team-name {
-  color: var(--mgr-color, var(--accent));
+  color: var(--mgr-2, var(--accent-2));
 }
 
 /* ============================================================
@@ -2317,10 +2309,10 @@ function fillTeamSelect(id){
 function initUI(){
   ['t1','t2'].forEach(fillTeamSelect);
 document.getElementById('group_a_teams').innerHTML = GROUP_A.map(t =>
-    `<span class="team-pill" style="--team-color:${TEAM_COLORS[t]}; --team-2:${TEAM_COLORS_2[t]};" onclick="window.takeoverTeam('${t}')">${t.toUpperCase()}</span>`
+    `<span class="team-pill" style="--team-color:${TEAM_COLORS[t]};" onclick="window.takeoverTeam('${t}')">${t.toUpperCase()}</span>`
   ).join('');
   document.getElementById('group_b_teams').innerHTML = GROUP_B.map(t =>
-    `<span class="team-pill" style="--team-color:${TEAM_COLORS[t]}; --team-2:${TEAM_COLORS_2[t]};" onclick="window.takeoverTeam('${t}')">${t.toUpperCase()}</span>`
+    `<span class="team-pill" style="--team-color:${TEAM_COLORS[t]};" onclick="window.takeoverTeam('${t}')">${t.toUpperCase()}</span>`
   ).join('');
 
   const fs = document.getElementById('fixture_select');
@@ -2391,7 +2383,11 @@ function renderManagersGrid(){
   mgEl.innerHTML = orderedTeams.map(t => {
   const name = MANAGERS[t] || '—';
     const color = TEAM_COLORS[t];
-    const color2 = TEAM_COLORS_2[t] || color;
+   let color2 = TEAM_COLORS_2[t] || color;
+    // rcb/gt/srh have near-black secondaries that would vanish on the dark card —
+    // fall back to the primary on hover so the team tag stays readable
+    const _l = color2.replace('#','');
+    if((0.299*parseInt(_l.slice(0,2),16) + 0.587*parseInt(_l.slice(2,4),16) + 0.114*parseInt(_l.slice(4,6),16)) < 40) color2 = color;
     const managerId = (MANAGERS[t] || '').toLowerCase();
     return `
       <div class="manager-card" style="--mgr-color:${color}; --mgr-2:${color2};" onclick="window.openManagerModal('${managerId}', '${t}')">
