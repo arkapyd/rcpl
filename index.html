@@ -1170,11 +1170,12 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   transition:opacity .25s;
 }
 .manager-card:hover{
-  border-color:var(--border-bright);
+  border-color:var(--mgr-color, var(--accent));
+  background:var(--mgr-color, var(--accent));
   transform:translateY(-2px);
 }
 .manager-card:hover::before{ opacity:1; }
-.manager-card:hover .mgr-name{ color:var(--mgr-color, var(--accent)); }
+.manager-card:hover .mgr-name{ color:var(--mgr-2, var(--accent-2)); }
 .mgr-eyebrow{
   font-family:'JetBrains Mono',monospace;
   font-size:.6rem;
@@ -1201,6 +1202,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   gap:10px;
   padding-top:12px;
   border-top:1px dashed var(--border-bright);
+  transition:border-color .25s ease;
 }
 .mgr-team-tag{
   font-family:'JetBrains Mono',monospace;
@@ -1219,11 +1221,14 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   transition:color .2s ease;
 }
 .manager-card:hover .mgr-team-name {
-  color: var(--mgr-color, var(--accent));
+  color: var(--mgr-2, var(--accent-2));
 }
 .manager-card:hover .mgr-eyebrow,
 .manager-card:hover .mgr-team-tag{
   color: var(--mgr-2, var(--accent-2));
+}
+.manager-card:hover .mgr-team-row{
+  border-top-color: var(--mgr-2, var(--accent-2));
 }
 
 /* ============================================================
@@ -2389,11 +2394,7 @@ function renderManagersGrid(){
   mgEl.innerHTML = orderedTeams.map(t => {
   const name = MANAGERS[t] || '—';
     const color = TEAM_COLORS[t];
-   let color2 = TEAM_COLORS_2[t] || color;
-    // rcb/gt/srh have near-black secondaries that would vanish on the dark card —
-    // fall back to the primary on hover so the team tag stays readable
-    const _l = color2.replace('#','');
-    if((0.299*parseInt(_l.slice(0,2),16) + 0.587*parseInt(_l.slice(2,4),16) + 0.114*parseInt(_l.slice(4,6),16)) < 40) color2 = color;
+   const color2 = TEAM_COLORS_2[t] || color;
     const managerId = (MANAGERS[t] || '').toLowerCase();
     return `
       <div class="manager-card" style="--mgr-color:${color}; --mgr-2:${color2};" onclick="window.openManagerModal('${managerId}', '${t}')">
