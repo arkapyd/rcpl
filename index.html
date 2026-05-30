@@ -1182,6 +1182,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   color:var(--text-dim);
   text-transform:uppercase;
   margin-bottom:6px;
+  transition:color .2s ease;
 }
 .mgr-name{
   font-family:'Anton',sans-serif;
@@ -1207,6 +1208,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   letter-spacing:.18em;
   color:var(--text-dim);
   text-transform:uppercase;
+  transition:color .2s ease;
 }
 .mgr-team-name{
   font-family:'Anton',sans-serif;
@@ -1217,6 +1219,10 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   transition:color .2s ease;
 }
 .manager-card:hover .mgr-team-name {
+  color: var(--mgr-color, var(--accent));
+}
+.manager-card:hover .mgr-eyebrow,
+.manager-card:hover .mgr-team-tag{
   color: var(--mgr-2, var(--accent-2));
 }
 
