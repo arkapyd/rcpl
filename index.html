@@ -883,6 +883,28 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 }
 .control-trigger:hover{ color:var(--accent); }
 
+/* clear-takeover chip — appears bottom-left while a team takeover is active */
+#clear_takeover{
+  position:fixed; bottom:14px; left:14px;
+  z-index:2000;
+  display:flex; align-items:center; gap:8px;
+  padding:8px 13px;
+  background:var(--surface);
+  border:1px solid var(--accent);
+  border-radius:999px;
+  color:var(--accent);
+  font-family:'JetBrains Mono',monospace;
+  font-size:.72rem; font-weight:700;
+  letter-spacing:.14em; text-transform:uppercase;
+  cursor:pointer;
+  box-shadow:0 6px 20px rgba(0,0,0,.4);
+  transition:transform .15s, box-shadow .15s, border-color .2s, color .2s;
+}
+#clear_takeover:hover{
+  transform:translateY(-2px);
+  box-shadow:0 10px 26px rgba(var(--accent-rgb),.3);
+}
+
 /* toasts */
 #toast-container{
   position:fixed; bottom:24px; right:24px;
@@ -1766,6 +1788,11 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 <div class="floating-controls">
   <div class="control-trigger" onclick="window.toggleFullScreen()">// fullscreen</div>
   <div class="control-trigger" onclick="window.unlockAdmin()">// admin</div>
+</div>
+
+<div id="clear_takeover" onclick="window.resetTakeover()" title="clear team takeover" style="display:none;">
+  <span id="clear_takeover_label">team</span>
+  <span style="font-size:1rem; line-height:1;">&times;</span>
 </div>
 
 <div id="form_modal" class="modal-overlay">
@@ -3331,6 +3358,17 @@ function updateUI(){
   const playedCount = Object.keys(results).length;
   document.getElementById('progress_bar').style.width = (playedCount / 70 * 100) + '%';
 
+  const clearEl = document.getElementById('clear_takeover');
+  if(clearEl){
+    if(selectedTeamFilter){
+      clearEl.style.display = 'flex';
+      const lbl = document.getElementById('clear_takeover_label');
+      if(lbl) lbl.textContent = selectedTeamFilter.toUpperCase() + ' takeover';
+    } else {
+      clearEl.style.display = 'none';
+    }
+  }
+
   const fs = document.getElementById('fixture_select');
   if(fs){
     const cur = fs.value;
@@ -3430,17 +3468,18 @@ window.openFormModal = function(team){
   `;
 
   html += `<div>
-    <div style="font-family:'JetBrains Mono'; font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.15em; margin-bottom:8px;">Head-to-Head</div>
+    <div style="font-family:'JetBrains Mono'; font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.15em; margin-bottom:8px;">Head-to-Head <span style="color:var(--text-dim);">· all-time</span></div>
     <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px;">
   `;
   Object.keys(h2h).forEach(opp => {
-      let rec = h2h[opp];
-      let color = rec.w > rec.l ? 'var(--win)' : (rec.l > rec.w ? 'var(--loss)' : 'var(--text-muted)');
-      if(rec.w===0 && rec.l===0 && rec.t===0) color = 'var(--text-dim)';
+      const rec = getH2H(team, opp);
+      const w = rec.aWins, l = rec.bWins;
+      let color = w > l ? 'var(--win)' : (l > w ? 'var(--loss)' : 'var(--text-muted)');
+      if(w === 0 && l === 0) color = 'var(--text-dim)';
       html += `
         <div style="background:var(--surface-2); padding:6px 8px; border-radius:3px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
            <span style="font-weight:700; font-size:0.85rem; color: ${TEAM_COLORS[opp]}">${opp.toUpperCase()}</span>
-           <span style="font-family:'JetBrains Mono'; font-size:0.75rem; color:${color};">${rec.w}-${rec.l}</span>
+           <span style="font-family:'JetBrains Mono'; font-size:0.75rem; color:${color};">${w}-${l}</span>
         </div>
       `;
   });
@@ -3834,6 +3873,18 @@ function runCountUps(){
   });
 }
 runCountUps();
+
+// ============================== MODAL DISMISS (esc / click-outside) ==============================
+document.addEventListener('click', e => {
+  if(e.target.classList && e.target.classList.contains('modal-overlay')){
+    e.target.classList.remove('show');
+  }
+});
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape'){
+    document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove('show'));
+  }
+});
 
 // ============================== LIVE CLOCK ==============================
 const targetDate = new Date("June 10, 2026 00:00:00").getTime();
