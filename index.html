@@ -731,6 +731,7 @@ tbody tr.highlight-row {
   background:rgba(var(--accent-rgb),.1);
   border-color:rgba(var(--accent-rgb),.5);
 }
+.group-tab{ padding:7px 16px; font-size:.74rem; font-weight:700; }
 
 /* odds grid */
 .odds-grid{
@@ -1586,12 +1587,20 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
         <h2 class="section-title"><span class="num-pre">06</span>Season Statistics</h2>
         <div class="section-meta" id="stats_meta">team-level · across played matches</div>
       </div>
-      <div class="stats-header" style="display:flex; gap:10px; margin-top:4px;">
-        <button class="tab-btn active" onclick="window.switchStatsTab('boards')">Leaderboards</button>
-        <button class="tab-btn" onclick="window.switchStatsTab('exhaustive')">Exhaustive Stats</button>
-        <button class="tab-btn" onclick="window.switchStatsTab('career')">Career Stats</button>
-        <button class="tab-btn modal-trigger" onclick="window.openGraphsModal()">View Graphs</button>
-        <button class="tab-btn" onclick="window.switchStatsTab('h2h')">Head-to-Head</button>
+      <div class="stats-header" style="display:flex; flex-direction:column; gap:8px; margin-top:6px;">
+        <div style="display:flex; gap:10px;">
+          <button class="tab-btn group-tab active" onclick="window.switchStatsGroup('seasonal')">Seasonal Stats</button>
+          <button class="tab-btn group-tab" onclick="window.switchStatsGroup('career')">Career Stats</button>
+        </div>
+        <div id="subtabs_seasonal" style="display:flex; gap:10px;">
+          <button class="tab-btn active" onclick="window.switchStatsTab('boards')">Leaderboards</button>
+          <button class="tab-btn" onclick="window.switchStatsTab('exhaustive')">Exhaustive Stats</button>
+          <button class="tab-btn modal-trigger" onclick="window.openGraphsModal()">View Graphs</button>
+        </div>
+        <div id="subtabs_career" style="display:none; gap:10px;">
+          <button class="tab-btn" onclick="window.switchStatsTab('career')">Exhaustive Stats</button>
+          <button class="tab-btn" onclick="window.switchStatsTab('h2h')">Head-to-Head</button>
+        </div>
       </div>
     </div>
     
@@ -1771,8 +1780,8 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 
     <div class="admin-section">
       <h3>Season Rollover</h3>
-      <div class="admin-status">// at season's end, generate the S5 entries to paste into the career vault (SEASON_OUTCOMES). league W/M is pulled from the final table; set each playoff team's true outcome before committing.</div>
-      <button onclick="window.bankSeason5()">Generate S5 Vault Entries</button>
+      <div class="admin-status">// at season's end, generate the full S5 rollover: career-vault (SEASON_OUTCOMES) entries plus an updated HISTORICAL_H2H with S5 folded in. league W/M is final; set each playoff team's true outcome before committing.</div>
+      <button onclick="window.bankSeason5()">Generate S5 Rollover Data</button>
       <pre id="bank_output" style="display:none; margin-top:14px; padding:14px; background:var(--bg); border:1px solid var(--border-bright); border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:.72rem; line-height:1.5; color:var(--text); white-space:pre-wrap; overflow:auto; max-height:340px;"></pre>
     </div>
 
@@ -2139,9 +2148,19 @@ window.switchStatsTab = function(tab) {
   document.getElementById('stats_exhaustive').style.display = tab === 'exhaustive' ? 'block' : 'none';
   if(document.getElementById('stats_career')) document.getElementById('stats_career').style.display = tab === 'career' ? 'block' : 'none';
   if(document.getElementById('stats_h2h')) document.getElementById('stats_h2h').style.display = tab === 'h2h' ? 'block' : 'none';
-  document.querySelectorAll('.tab-btn:not(.modal-trigger)').forEach(b => b.classList.remove('active'));
-  const activeBtn = document.querySelector(`.tab-btn[onclick="window.switchStatsTab('${tab}')"]`);
+  document.querySelectorAll('.tab-btn:not(.modal-trigger):not(.group-tab)').forEach(b => b.classList.remove('active'));
+ const activeBtn = document.querySelector(`.tab-btn[onclick="window.switchStatsTab('${tab}')"]`);
   if(activeBtn) activeBtn.classList.add('active');
+};
+
+window.switchStatsGroup = function(group){
+  const seasonal = group === 'seasonal';
+  document.getElementById('subtabs_seasonal').style.display = seasonal ? 'flex' : 'none';
+  document.getElementById('subtabs_career').style.display = seasonal ? 'none' : 'flex';
+  document.querySelectorAll('.group-tab').forEach(b => b.classList.remove('active'));
+  const gb = document.querySelector(`.group-tab[onclick="window.switchStatsGroup('${group}')"]`);
+  if(gb) gb.classList.add('active');
+  window.switchStatsTab(seasonal ? 'boards' : 'career');
 };
 
 window.openGraphsModal = function() {
@@ -3868,19 +3887,44 @@ window.importData = function(ev){
 window.bankSeason5 = function(){
   const standings = window.currentStandings || [];
   if(standings.length === 0){ window.showToast('no standings yet — play some matches first.', 'error'); return; }
+
+  // ----- part 1 · career-vault (SEASON_OUTCOMES) entries -----
   const lines = standings.map((s, i) => {
     const id = (MANAGERS[s.team] || '').toLowerCase();
     const outcome = i < 4 ? 'qualifier' : 'group';
     return `  // ${id || s.team} — finished #${i+1} in the table\n  { season: 5, team: '${s.team}', w: ${s.w}, m: ${s.p}, outcome: '${outcome}' },`;
   });
-  const out = '// ===== S5 CAREER-VAULT ENTRIES — generated ' + new Date().toISOString().slice(0,10) + ' =====\n'
+  const vault = '// ===== S5 CAREER-VAULT ENTRIES — generated ' + new Date().toISOString().slice(0,10) + ' =====\n'
     + '// drop each line into the matching manager array inside SEASON_OUTCOMES.\n'
     + '// league W / M is final; change the outcome for playoff teams before committing:\n'
     + '//   champion · finalist · qualifier · eliminator · group\n\n'
     + lines.join('\n');
+
+  // ----- part 2 · fold S5 head-to-head into HISTORICAL_H2H -----
+  const s5 = {};
+  TEAMS.forEach(a => { s5[a] = {}; TEAMS.forEach(b => { if(a !== b) s5[a][b] = 0; }); });
+  SCHEDULE.forEach(f => {
+    const r = results[f.id];
+    if(!r || !r.t1 || !r.t2) return;
+    const w = getWinner(r);
+    if(w === r.t1) s5[r.t1][r.t2]++;
+    else if(w === r.t2) s5[r.t2][r.t1]++;
+  });
+  const merged = TEAMS.map(a => {
+    const cols = TEAMS.filter(b => b !== a).map(b => {
+      const base = (HISTORICAL_H2H[a] && HISTORICAL_H2H[a][b]) || 0;
+      return `${b}:${base + s5[a][b]}`;
+    }).join(', ');
+    return `  ${a}: { ${cols} },`;
+  }).join('\n');
+  const h2h = '\n\n\n// ===== UPDATED HISTORICAL_H2H (S1–S4 + S5) =====\n'
+    + '// replace your entire HISTORICAL_H2H block with this so S5 rivalries carry forward permanently.\n'
+    + 'const HISTORICAL_H2H = {\n' + merged + '\n};';
+
+  const out = vault + h2h;
   const el = document.getElementById('bank_output');
   if(el){ el.style.display = 'block'; el.textContent = out; }
-  window.showToast('S5 vault entries generated — copy from the box below.', 'success');
+  window.showToast('S5 vault + head-to-head generated — copy from the box below.', 'success');
 };
 
 window.unlockAdmin = function(){
