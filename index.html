@@ -731,7 +731,19 @@ tbody tr.highlight-row {
   background:rgba(var(--accent-rgb),.1);
   border-color:rgba(var(--accent-rgb),.5);
 }
-.group-tab{ padding:7px 16px; font-size:.74rem; font-weight:700; }
+.stat-group-title{
+  cursor:pointer;
+  color:var(--text-dim);
+  border-bottom:2px solid transparent;
+  padding-bottom:3px;
+  transition:color .2s, border-color .2s;
+}
+.stat-group-title:hover{ color:var(--text-muted); }
+.stat-group-title.active{
+  color:var(--text);
+  border-bottom-color:var(--accent);
+  cursor:default;
+}
 
 /* odds grid */
 .odds-grid{
@@ -1583,15 +1595,15 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 
   <section class="section">
     <div class="section-head" style="flex-direction:column; align-items:flex-start; gap:8px;">
-      <div style="display:flex; justify-content:space-between; width:100%; align-items:baseline;">
-        <h2 class="section-title"><span class="num-pre">06</span>Season Statistics</h2>
+     <div style="display:flex; justify-content:space-between; width:100%; align-items:baseline; flex-wrap:wrap; gap:8px;">
+        <h2 class="section-title" style="display:flex; align-items:baseline; gap:18px; flex-wrap:wrap;">
+          <span class="num-pre">06</span>
+          <span class="stat-group-title active" onclick="window.switchStatsGroup('seasonal')">Season Statistics</span>
+          <span class="stat-group-title" onclick="window.switchStatsGroup('career')">Career Statistics</span>
+        </h2>
         <div class="section-meta" id="stats_meta">team-level · across played matches</div>
       </div>
       <div class="stats-header" style="display:flex; flex-direction:column; gap:8px; margin-top:6px;">
-        <div style="display:flex; gap:10px;">
-          <button class="tab-btn group-tab active" onclick="window.switchStatsGroup('seasonal')">Seasonal Stats</button>
-          <button class="tab-btn group-tab" onclick="window.switchStatsGroup('career')">Career Stats</button>
-        </div>
         <div id="subtabs_seasonal" style="display:flex; gap:10px;">
           <button class="tab-btn active" onclick="window.switchStatsTab('boards')">Leaderboards</button>
           <button class="tab-btn" onclick="window.switchStatsTab('exhaustive')">Exhaustive Stats</button>
@@ -2148,7 +2160,7 @@ window.switchStatsTab = function(tab) {
   document.getElementById('stats_exhaustive').style.display = tab === 'exhaustive' ? 'block' : 'none';
   if(document.getElementById('stats_career')) document.getElementById('stats_career').style.display = tab === 'career' ? 'block' : 'none';
   if(document.getElementById('stats_h2h')) document.getElementById('stats_h2h').style.display = tab === 'h2h' ? 'block' : 'none';
-  document.querySelectorAll('.tab-btn:not(.modal-trigger):not(.group-tab)').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-btn:not(.modal-trigger)').forEach(b => b.classList.remove('active'));
  const activeBtn = document.querySelector(`.tab-btn[onclick="window.switchStatsTab('${tab}')"]`);
   if(activeBtn) activeBtn.classList.add('active');
 };
@@ -2157,12 +2169,11 @@ window.switchStatsGroup = function(group){
   const seasonal = group === 'seasonal';
   document.getElementById('subtabs_seasonal').style.display = seasonal ? 'flex' : 'none';
   document.getElementById('subtabs_career').style.display = seasonal ? 'none' : 'flex';
-  document.querySelectorAll('.group-tab').forEach(b => b.classList.remove('active'));
-  const gb = document.querySelector(`.group-tab[onclick="window.switchStatsGroup('${group}')"]`);
-  if(gb) gb.classList.add('active');
+  document.querySelectorAll('.stat-group-title').forEach(t => t.classList.remove('active'));
+  const gt = document.querySelector(`.stat-group-title[onclick="window.switchStatsGroup('${group}')"]`);
+  if(gt) gt.classList.add('active');
   window.switchStatsTab(seasonal ? 'boards' : 'career');
 };
-
 window.openGraphsModal = function() {
   document.getElementById('graphs_modal').classList.add('show');
   setTimeout(renderCharts, 50);
