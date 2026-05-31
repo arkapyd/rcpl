@@ -239,14 +239,18 @@ table th.num,
   grid-template-columns:48px 1fr auto;
   gap:14px;
   align-items:center;
-  padding:9px 4px;
+  padding:9px 10px;
+  border-radius:4px;
   border-bottom:1px dashed var(--border-bright);
   position:relative;
-  transition:transform .2s ease;
+  transition:transform .2s ease, background .25s ease, border-color .25s ease;
 }
 .champ-row:last-child{ border-bottom:none; }
-.champ-row:not(.is-pending):hover{ transform:translateX(2px); }
-.champ-season{
+.champ-row:not(.is-pending):hover{
+  transform:translateX(2px);
+  background:var(--champ-color, var(--accent));
+  border-bottom-color:transparent;
+}.champ-season{
   font-family:'JetBrains Mono',monospace;
   font-size:.7rem;
   letter-spacing:.18em;
@@ -283,7 +287,7 @@ table th.num,
 
 /* defending champion — gold base, wider & in focus */
 .champ-row.is-defending{
-  padding:16px 4px;
+  padding:16px 10px;
 }
 .champ-row.is-defending .champ-season,
 .champ-row.is-defending .champ-team,
@@ -298,10 +302,11 @@ table th.num,
   opacity:1;
 }
 
+.champ-row:hover .champ-season,
 .champ-row:hover .champ-team,
 .champ-row:hover .champ-mgr,
 .champ-row:hover .champ-trophy {
-  color: var(--champ-color, var(--accent));
+  color: var(--champ-2, var(--accent-2));
 }
 .champ-row:hover .champ-team {
   transform:translateY(-1px);
