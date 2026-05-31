@@ -1666,8 +1666,11 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
       </table>
     </div>
 
-    <div id="stats_h2h" style="display:none; overflow-x:auto;" class="table-wrap">
-      <table id="h2h_table" data-no-sort="1" style="width:100%; min-width:780px; border-collapse:collapse; font-size:.82rem;"></table>
+  <div id="stats_h2h" style="display:none;" class="table-wrap">
+      <div style="padding:16px 18px 8px;">
+        <div id="h2h_selector" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;"></div>
+        <div id="h2h_panel"></div>
+      </div>
     </div>
   </section>
 
@@ -3087,29 +3090,65 @@ function renderCareerStats(){
   tbody.innerHTML = html;
 }
 
-// ============================== HEAD-TO-HEAD MATRIX ==============================
+// ============================== HEAD-TO-HEAD (rivalry view) ==============================
+let _h2hTeam = null;
+
+window.selectH2HTeam = function(t){
+  _h2hTeam = t;
+  renderH2HMatrix();
+};
+
 function renderH2HMatrix(){
-  const table = document.getElementById('h2h_table');
-  if(!table) return;
-  const order = TEAMS;
-  const head = '<thead>'
-    + `<tr><th colspan="${order.length+1}" style="text-align:left; font-weight:500; color:var(--text-dim); text-transform:none; letter-spacing:.04em; cursor:default;">row team's wins–losses vs column team · S1–S4 history + live S5</th></tr>`
-    + '<tr><th style="text-align:left; cursor:default;">Team</th>'
-    + order.map(t => `<th class="num" style="cursor:default;">${t.toUpperCase()}</th>`).join('')
-    + '</tr></thead>';
-  const body = '<tbody>' + order.map(rt => {
-    const cells = order.map(ct => {
-      if(rt === ct) return `<td class="num" style="color:var(--text-dim);">—</td>`;
-      const h = getH2H(rt, ct);
-      const total = h.aWins + h.bWins;
-      if(total === 0) return `<td class="num" style="color:var(--text-dim);">·</td>`;
-      const cls = h.aWins > h.bWins ? 'pos-nrr' : (h.aWins < h.bWins ? 'neg-nrr' : '');
-      return `<td class="num col-nrr ${cls}">${h.aWins}–${h.bWins}</td>`;
+  const sel = _h2hTeam || selectedTeamFilter || TEAMS[0];
+
+  const selEl = document.getElementById('h2h_selector');
+  if(selEl){
+    selEl.innerHTML = TEAMS.map(t => {
+      const on = t === sel;
+      return `<span onclick="window.selectH2HTeam('${t}')" style="cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:.72rem; font-weight:700; letter-spacing:.1em; padding:6px 11px; border-radius:4px; border:1px solid ${on ? TEAM_COLORS[t] : 'var(--border-bright)'}; background:${on ? 'var(--surface-3)' : 'var(--surface-2)'}; color:${TEAM_COLORS[t]}; opacity:${on ? 1 : .72}; transition:opacity .2s, border-color .2s, background .2s;">${t.toUpperCase()}</span>`;
     }).join('');
-    const isHi = (selectedTeamFilter && rt === selectedTeamFilter) ? ' highlight-row' : '';
-    return `<tr class="${isHi}"><td style="text-align:left;"><span class="team-cell" style="--team-glow:${TEAM_COLORS[rt]};" onclick="window.takeoverTeam('${rt}')">${rt.toUpperCase()}</span></td>${cells}</tr>`;
-  }).join('') + '</tbody>';
-  table.innerHTML = head + body;
+  }
+
+  const panel = document.getElementById('h2h_panel');
+  if(!panel) return;
+
+  let leads = 0, trails = 0, level = 0;
+  const recs = TEAMS.filter(t => t !== sel).map(opp => {
+    const h = getH2H(sel, opp);
+    const w = h.aWins, l = h.bWins, games = w + l;
+    if(games > 0){ if(w > l) leads++; else if(l > w) trails++; else level++; }
+    return { opp, w, l, games, margin: w - l };
+  });
+  recs.sort((a, b) => (b.margin - a.margin) || (b.games - a.games) || a.opp.localeCompare(b.opp));
+
+  const summary = `<div style="font-family:'JetBrains Mono',monospace; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dim); margin-bottom:14px;">`
+    + `how <span style="color:${TEAM_COLORS[sel]}; font-weight:700;">${sel.toUpperCase()}</span> stacks up · all-time · `
+    + `<span style="color:var(--win);">leads ${leads}</span> · <span style="color:#f87171;">trails ${trails}</span> · <span style="color:var(--text-muted);">level ${level}</span>`
+    + `</div>`;
+
+  const rows = recs.map(r => {
+    const total = r.games;
+    const wPct = total > 0 ? (r.w / total) * 100 : 0;
+    const lPct = total > 0 ? (r.l / total) * 100 : 0;
+    let verdict, vColor;
+    if(total === 0){ verdict = 'not met'; vColor = 'var(--text-dim)'; }
+    else if(r.w > r.l){ verdict = 'leads'; vColor = 'var(--win)'; }
+    else if(r.l > r.w){ verdict = 'trails'; vColor = '#f87171'; }
+    else { verdict = 'level'; vColor = 'var(--text-muted)'; }
+    const tally = total === 0 ? '—' : `${r.w}–${r.l}`;
+    return `
+      <div style="display:flex; align-items:center; gap:12px; padding:9px 2px; border-bottom:1px solid var(--border);">
+        <span style="width:48px; flex-shrink:0; font-family:'Anton',sans-serif; font-size:1.05rem; letter-spacing:.04em; color:${TEAM_COLORS[r.opp]};">${r.opp.toUpperCase()}</span>
+        <div style="flex:1; min-width:60px; height:12px; border-radius:6px; overflow:hidden; background:var(--surface-3); display:flex;">
+          <div style="width:${wPct}%; background:var(--win);"></div>
+          <div style="width:${lPct}%; background:var(--loss);"></div>
+        </div>
+        <span style="width:50px; flex-shrink:0; text-align:right; font-family:'JetBrains Mono',monospace; font-size:.82rem; font-weight:700; color:var(--text);">${tally}</span>
+        <span style="width:62px; flex-shrink:0; text-align:right; font-family:'JetBrains Mono',monospace; font-size:.6rem; letter-spacing:.08em; text-transform:uppercase; color:${vColor};">${verdict}</span>
+      </div>`;
+  }).join('');
+
+  panel.innerHTML = summary + rows;
 }
 
 // ============================== PREDICTIVE ODDS ==============================
