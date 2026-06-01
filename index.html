@@ -3042,66 +3042,14 @@ function renderCharts() {
 function renderExhaustiveStats(){
   const tbody = document.getElementById('exhaustive_body');
   if(!tbody) return;
-  if(!window.currentStandings || window.currentStandings.length === 0){
+  
+  // check actual match results instead of standings array length
+  if(Object.keys(results).length === 0){
     tbody.innerHTML = '<tr><td colspan="12" class="feed-empty">first match pending. data crunching on standby.</td></tr>';
     return;
   }
-function renderMvmStats() {
-  const tbody = document.getElementById('mvm_body');
-  if(!tbody) return;
-
-  // always grab a base array of teams to ensure it populates even before the first match finishes
-  let baseArray = (window.currentStandings && window.currentStandings.length > 0)
-    ? window.currentStandings
-    : TEAMS.map((t, index) => ({ team: t, p: 0, w: 0, l: 0, pos: index + 1 }));
-
-  let mvmData = baseArray.map((s, i) => {
-    let m = s.p || 0;
-    let currRatio = m > 0 ? (s.w / m) : 0;
-    let valueAdded = currRatio * 15;
-
-    return {
-      manager: MANAGERS[s.team] || '—',
-      team: s.team,
-      p: m,
-      w: s.w || 0,
-      l: s.l || 0,
-      pos: s.pos || (i + 1),
-      valueAdded: valueAdded
-    };
-  });
-
-  // sort by value added, tie-break by wins, then ladder position
-  mvmData.sort((a, b) => b.valueAdded - a.valueAdded || b.w - a.w || a.pos - b.pos);
-
-  let html = '';
-  mvmData.forEach((d) => {
-    const isHighlighted = (selectedTeamFilter && d.team === selectedTeamFilter) ? ' highlight-row' : '';
-    
-    // check if matches played is 0 to show default dashes
-    const pDisplay = d.p > 0 ? d.p : '—';
-    const wDisplay = d.p > 0 ? d.w : '—';
-    const lDisplay = d.p > 0 ? d.l : '—';
-    const vDisplay = d.p > 0 ? `+${d.valueAdded.toFixed(2)}` : '—';
-    const posDisplay = d.p > 0 ? String(d.pos).padStart(2,'0') : '—';
-
-    html += `
-      <tr class="${isHighlighted}">
-        <td style="text-align:left; padding-left:18px; font-weight:700; text-transform:uppercase; color:var(--text);">${d.manager}</td>
-        <td>
-           <span class="team-cell" style="--team-glow:${TEAM_COLORS[d.team]};" onclick="window.takeoverTeam('${d.team}')">${d.team.toUpperCase()}</span>
-        </td>
-        <td class="num">${pDisplay}</td>
-        <td class="num">${wDisplay}</td>
-        <td class="num">${lDisplay}</td>
-        <td class="num" style="color:var(--win); font-weight:800; font-size:1rem;">${vDisplay}</td>
-        <td class="num" style="color:var(--text-dim);">${posDisplay}</td>
-      </tr>`;
-  });
   
-  tbody.innerHTML = html;
-}
-   let teamAch = {};
+  let teamAch = {};
   TEAMS.forEach(t => teamAch[t] = { titles: 0, playoffs: 0 });
   Object.values(SEASON_OUTCOMES).forEach(history => {
       history.forEach(s => {
@@ -3164,6 +3112,61 @@ function renderMvmStats() {
   tbody.innerHTML = html;
 }
 
+function renderMvmStats() {
+  const tbody = document.getElementById('mvm_body');
+  if(!tbody) return;
+
+  // base array guarantees all 10 teams render even before matches are played
+  let baseArray = (window.currentStandings && window.currentStandings.length > 0)
+    ? window.currentStandings
+    : TEAMS.map((t, index) => ({ team: t, p: 0, w: 0, l: 0, pos: index + 1 }));
+
+  let mvmData = baseArray.map((s, i) => {
+    let m = s.p || 0;
+    let currRatio = m > 0 ? (s.w / m) : 0;
+    let valueAdded = currRatio * 15;
+
+    return {
+      manager: MANAGERS[s.team] || '—',
+      team: s.team,
+      p: m,
+      w: s.w || 0,
+      l: s.l || 0,
+      pos: s.pos || (i + 1),
+      valueAdded: valueAdded
+    };
+  });
+
+  // sort by value added, tie-break by wins, then ladder position
+  mvmData.sort((a, b) => b.valueAdded - a.valueAdded || b.w - a.w || a.pos - b.pos);
+
+  let html = '';
+  mvmData.forEach((d) => {
+    const isHighlighted = (selectedTeamFilter && d.team === selectedTeamFilter) ? ' highlight-row' : '';
+    
+    // check if matches played is 0 to default to dashes
+    const pDisplay = d.p > 0 ? d.p : '—';
+    const wDisplay = d.p > 0 ? d.w : '—';
+    const lDisplay = d.p > 0 ? d.l : '—';
+    const vDisplay = d.p > 0 ? `+${d.valueAdded.toFixed(2)}` : '—';
+    const posDisplay = d.p > 0 ? String(d.pos).padStart(2,'0') : '—';
+
+    html += `
+      <tr class="${isHighlighted}">
+        <td style="text-align:left; padding-left:18px; font-weight:700; text-transform:uppercase; color:var(--text);">${d.manager}</td>
+        <td>
+           <span class="team-cell" style="--team-glow:${TEAM_COLORS[d.team]};" onclick="window.takeoverTeam('${d.team}')">${d.team.toUpperCase()}</span>
+        </td>
+        <td class="num">${pDisplay}</td>
+        <td class="num">${wDisplay}</td>
+        <td class="num">${lDisplay}</td>
+        <td class="num" style="color:var(--win); font-weight:800; font-size:1rem;">${vDisplay}</td>
+        <td class="num" style="color:var(--text-dim);">${posDisplay}</td>
+      </tr>`;
+  });
+  
+  tbody.innerHTML = html;
+}
 function renderCareerStats(){
   const tbody = document.getElementById('career_body');
   if(!tbody) return;
