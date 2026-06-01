@@ -1929,16 +1929,16 @@ const OVERS_PER_INNINGS = 5;
 // Team Managers — team → manager display name. Editable from the admin panel and
 // persisted (Firebase `roster` + localStorage). DEFAULT_MANAGERS is the fallback seed.
 let MANAGERS = {
-  pbks:       'Arka',
-  dc:         'Adarsh',
-  gt:         'Neil',
-  rcb:        'Rio',
-  mi:         'Deeptayan',
-  csk:        'Prajyot',
-  rr:         'Rishit',
-  kkr:        'Arkaparno',
-  lsg:        'Tuhinangshu',
-  srh:        'Adi'
+  srh:  'Tuhinangshu',
+  kkr:  'Arka',
+  rr:   'Rio',
+  gt:   'Deeptayan',
+  rcb:  'Rishit',
+  pbks: 'Isho',
+  dc:   'Adarsh',
+  lsg:  'Neil',
+  mi:   'Adi',
+  csk:  'Prajyot'
 };
 const DEFAULT_MANAGERS = { ...MANAGERS };
 // ============================== MANAGER CAREER HISTORY ==============================
@@ -2021,7 +2021,12 @@ function computeManagerIndex(history){
   const win_rate = total_m > 0 ? total_w/total_m : 0;
   
   const index_val = total_m > 0 ? (cumulative_value / total_m) * 14 : 0;
-  const index = Math.round(index_val);
+  let index = Math.round(index_val);
+  
+  // Give new managers (like Isho) a starting index of 1
+  if (history.length === 0) {
+    index = 1;
+  }
   
   return {
     seasons: history.length, total_w, total_m, win_rate,
@@ -3669,10 +3674,10 @@ window.openManagerModal = function(managerId, currentTeam, displayName, archived
 
   let html = `
     <div class="mgr-modal-team-tag">${teamTag}</div>
-    <div class="mgr-modal-index-row">
+   <div class="mgr-modal-index-row">
       <div class="mgr-stat-block headline">
         <div class="label">performance index</div>
-        <div class="value">${stats.seasons === 0 ? '—' : stats.index}</div>
+        <div class="value">${stats.index}</div>
       </div>
       <div class="mgr-stat-block">
         <div class="label">titles</div>
