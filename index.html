@@ -1687,8 +1687,8 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
       </div>
       <div class="stat-board">
         <div class="stat-board-head">
-          <h3>Highest Average</h3>
-          <div class="stat-board-sub">Runs scored ÷ wickets lost</div>
+          <h3>Best RPW</h3>
+          <div class="stat-board-sub">Runs scored per wicket lost · RPW</div>
         </div>
         <div class="stat-board-body" id="board_average"></div>
       </div>
@@ -1700,7 +1700,8 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
           <tr>
             <th>Team</th>
             <th class="num">NRR</th>
-            <th class="num">Average</th>
+            <th class="num">Runs/Match</th>
+            <th class="num" style="color:var(--accent);">RPW</th>
             <th class="num">Strike Rate</th>
             <th class="num">Run Rate</th>
             <th class="num" style="color:var(--accent);">BASRA</th>
@@ -1743,6 +1744,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
             <th class="num">Runs</th>
             <th class="num">Wickets</th>
             <th class="num">Economy</th>
+            <th class="num" style="color:var(--accent);" title="runs scored ÷ wickets lost · S1–S4 (if recorded) + live S5">RPW</th>
           </tr>
         </thead>
        <tbody id="career_body"></tbody>
@@ -3187,7 +3189,7 @@ function renderExhaustiveStats(){
   
   // check actual match results instead of standings array length
   if(Object.keys(results).length === 0){
-    tbody.innerHTML = '<tr><td colspan="12" class="feed-empty">first match pending. data crunching on standby.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="13" class="feed-empty">first match pending. data crunching on standby.</td></tr>';
     return;
   }
   
@@ -3208,6 +3210,7 @@ function renderExhaustiveStats(){
     let nrr = s.nrr;
     
     let avg = m > 0 ? (s.rf / m) : 0;
+    let rpw = s.wkts_lost > 0 ? (s.rf / s.wkts_lost) : null;
     let sr = s.of_balls > 0 ? (s.rf / s.of_balls) * 100 : 0;
     let rr = s.of_balls > 0 ? (s.rf / (s.of_balls / 6)) : 0;
     let basra = avg + sr;
@@ -3240,6 +3243,7 @@ function renderExhaustiveStats(){
         </td>
         <td class="num col-nrr ${nrrCls}">${m === 0 ? '—' : nrr.toFixed(3)}</td>
         <td class="num">${avg.toFixed(2)}</td>
+        <td class="num" style="font-weight:700; color:var(--accent);">${rpw != null ? rpw.toFixed(2) : '—'}</td>
         <td class="num">${sr.toFixed(2)}</td>
         <td class="num">${rr.toFixed(2)}</td>
         <td class="num" style="font-weight:700; color:var(--text);">${basra.toFixed(2)}</td>
@@ -3328,6 +3332,15 @@ function renderCareerStats(){
     let winPct = s.m > 0 ? ((s.w / s.m) * 100).toFixed(1) + '%' : '0.0%';
     const isHighlighted = (selectedTeamFilter && t === selectedTeamFilter) ? ' highlight-row' : '';
 
+    // RPW — fold S1–S4 baseline + live S5 (uses CAREER_STATS.wktsLost if present, else S5-only)
+    const s5 = (window.currentStandings || []).find(x => x.team === t);
+    const s5Runs = s5 ? (s5.rf || 0) : 0;
+    const s5WL = s5 ? (s5.wkts_lost || 0) : 0;
+    let rpwRuns, rpwWL;
+    if(s.wktsLost != null){ rpwRuns = (s.runs || 0) + s5Runs; rpwWL = s.wktsLost + s5WL; }
+    else { rpwRuns = s5Runs; rpwWL = s5WL; }
+    const rpwStr = rpwWL > 0 ? (rpwRuns / rpwWL).toFixed(2) : '—';
+
     html += `
       <tr class="${isHighlighted}">
         <td style="text-align:left; padding-left:18px;">
@@ -3340,6 +3353,7 @@ function renderCareerStats(){
         <td class="num">${s.runs}</td>
         <td class="num">${s.wkts}</td>
         <td class="num">${s.eco.toFixed(2)}</td>
+        <td class="num" style="font-weight:700; color:var(--accent);">${rpwStr}</td>
       </tr>`;
   });
   tbody.innerHTML = html;
