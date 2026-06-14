@@ -1745,10 +1745,10 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
             <th class="num">Wickets</th>
            <th class="num">Economy</th>
             <th class="num" style="color:var(--accent);" title="runs scored ÷ wickets lost · S1–S4 (if recorded) + live S5">RPW</th>
-            <th class="num" style="color:var(--win);" title="Historical Legacy Franchise Value">Legacy V$</th>
+            <th class="num" style="color:var(--win);" title="All-Time Franchise Value (Base Legacy + Live S5 V$)">Total V$</th>
           </tr>
         </thead>
-       <tbody id="career_body"></tbody>
+      <tbody id="career_body"></tbody>
       </table>
     </div>
 
@@ -3366,10 +3366,10 @@ function renderCareerStats(){
     }
     const rpwStr = rpwWL > 0 ? (rpwRuns / rpwWL).toFixed(2) : '—';
     
-    // Fetch legacy value for the new column
-    let legacyValue = window.calcLegacyValue(t);
+    // Fetch total live franchise value
+    let totalValue = window.calcTotalCareerValue(t);
 
-    return { t, m, w, l, winPctNum, winPct, runs, wkts, eco, rpwStr, legacyValue };
+    return { t, m, w, l, winPctNum, winPct, runs, wkts, eco, rpwStr, totalValue };
   });
 
   // 2. Sort by combined Win % first, then combined Wins
@@ -3391,7 +3391,7 @@ function renderCareerStats(){
         <td class="num">${stat.wkts}</td>
         <td class="num">${stat.eco.toFixed(2)}</td>
         <td class="num" style="font-weight:700; color:var(--accent);">${stat.rpwStr}</td>
-        <td class="num" style="font-weight:800; color:var(--win);">${stat.legacyValue.toFixed(2)}</td>
+        <td class="num" style="font-weight:800; color:var(--win);">${stat.totalValue.toFixed(2)}</td>
       </tr>`;
   });
   
@@ -3589,8 +3589,9 @@ window.calcS5Value = function(team) {
   return currWeight + upsetBonus + marginBonus - upsetLossPenalty - marginPenalty;
 };
 
-// global helper to calculate historical franchise legacy
-window.calcLegacyValue = function(team) {
+// global helper to calculate the live Total Franchise Value
+window.calcTotalCareerValue = function(team) {
+  // 1. static historical hardware (titles & playoffs)
   let titles = 0, playoffs = 0;
   Object.values(SEASON_OUTCOMES).forEach(history => {
       history.forEach(season => {
@@ -3603,11 +3604,21 @@ window.calcLegacyValue = function(team) {
   let titleWeight = Math.min(60, titles * 30);
   let playoffWeight = Math.min(20, playoffs * 5);
 
-  let hist = CAREER_STATS[team];
-  let histRatio = hist && hist.m > 0 ? (hist.w / hist.m) : 0.5;
-  let wlWeight = histRatio * 5;
+  // 2. dynamic all-time win/loss weight (S1-S4 + S5 combined)
+  let hist = CAREER_STATS[team] || { m:0, w:0 };
+  let s5 = window.currentStandings ? window.currentStandings.find(x => x.team === team) : null;
+  let totalM = hist.m + (s5 ? s5.p : 0);
+  let totalW = hist.w + (s5 ? s5.w : 0);
+  
+  let liveRatio = totalM > 0 ? (totalW / totalM) : 0.5;
+  // scaled to 15 so career consistency matches the scale of a perfect S5 base run
+  let wlWeight = liveRatio * 15; 
 
-  return titleWeight + playoffWeight + wlWeight;
+  // 3. live value added/eroded by the current S5 manager
+  let s5ValueAdded = window.calcS5Value(team);
+
+  // combine for the true living franchise stock price
+  return titleWeight + playoffWeight + wlWeight + s5ValueAdded;
 };
 function renderOdds(){
   const upcoming = SCHEDULE.filter(f => !results[f.id]).slice(0, 3);
