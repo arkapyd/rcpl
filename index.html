@@ -2500,10 +2500,10 @@ function renderLiveBanner(){
   el.style.display = 'block';
   if(meta) meta.textContent = liveState.label || '';
 
-  const parent = location.hostname || 'arkapyd.github.io';
+  // AFTER
   const existing = wrap.querySelector('iframe');
   if(!existing || existing.dataset.ch !== liveState.channel){
-    wrap.innerHTML = `<iframe data-ch="${liveState.channel}" src="https://player.twitch.tv/?channel=${liveState.channel}&parent=${parent}&muted=false" title="RCPL live stream" allowfullscreen></iframe>`;
+    wrap.innerHTML = `<iframe data-ch="${liveState.channel}" src="https://player.twitch.tv/?channel=${liveState.channel}&parent=arkapyd.github.io&muted=false" title="RCPL live stream" allowfullscreen></iframe>`;
   }
 }
 
