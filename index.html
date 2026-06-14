@@ -655,11 +655,20 @@ tbody tr.highlight-row {
   color:var(--text-muted);
 }
 .feed-score .winner{ color:var(--win); font-weight:700; }
+.feed-item.has-desc {
+  cursor: pointer;
+}
 .feed-desc{
-  margin-top:8px;
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px dashed var(--border-bright);
   font-size:.85rem;
   font-style:italic;
   color:var(--text-dim);
+  display:none;
+}
+.feed-item.expanded .feed-desc {
+  display:block;
 }
 .feed-empty{
   padding:40px 20px;
@@ -2828,16 +2837,19 @@ function renderResultsFeed(){
   }
   el.innerHTML = played.map(({fixture, r}) => {
     const dateStr = r.ts ? new Date(r.ts).toLocaleDateString('en-GB',{ day:'2-digit',month:'short' }) : 'recent';
+    const hasDesc = r.desc ? 'has-desc' : '';
+    const clickAttr = r.desc ? `onclick="window.toggleFeedItem(this, event)"` : '';
+    
     return `
-      <div class="feed-item">
+      <div class="feed-item ${hasDesc}" ${clickAttr}>
         <div class="feed-meta">
           <span>${fixture.id} · ${dateStr}</span>
           <span class="tag-played">Played</span>
         </div>
         <div class="feed-fixture">
-          <span class="team-link" style="--team-glow:${TEAM_COLORS[r.t1]};" onclick="window.takeoverTeam('${r.t1}')">${r.t1.toUpperCase()}</span>
+          <span class="team-link" style="--team-glow:${TEAM_COLORS[r.t1]};" onclick="event.stopPropagation(); window.takeoverTeam('${r.t1}')">${r.t1.toUpperCase()}</span>
           <span class="vs">vs</span>
-          <span class="team-link" style="--team-glow:${TEAM_COLORS[r.t2]};" onclick="window.takeoverTeam('${r.t2}')">${r.t2.toUpperCase()}</span>
+          <span class="team-link" style="--team-glow:${TEAM_COLORS[r.t2]};" onclick="event.stopPropagation(); window.takeoverTeam('${r.t2}')">${r.t2.toUpperCase()}</span>
         </div>
         <div class="feed-score">
           ${r.t1.toUpperCase()} ${r.r1}/${r.w1} (${fmtOvers(r.b1)}) &nbsp;·&nbsp; ${r.t2.toUpperCase()} ${r.r2}/${r.w2} (${fmtOvers(r.b2)}) &nbsp;—&nbsp; ${buildResultLine(fixture, r)}
@@ -4754,12 +4766,30 @@ function runCountUps(){
 }
 runCountUps();
 
+// ============================== UI INTERACTION HANDLERS ==============================
+window.toggleFeedItem = function(element, event) {
+  event.stopPropagation(); // prevent document click from firing and immediately closing it
+  
+  // auto-close any other expanded items so only one is open at a time
+  document.querySelectorAll('.feed-item.expanded').forEach(el => {
+    if (el !== element) el.classList.remove('expanded');
+  });
+  
+  element.classList.toggle('expanded');
+};
+
 // ============================== MODAL DISMISS (esc / click-outside) ==============================
 document.addEventListener('click', e => {
   if(e.target.classList && e.target.classList.contains('modal-overlay')){
     e.target.classList.remove('show');
   }
+  
+  // close expanded match summaries if clicking outside of them
+  if (!e.target.closest('.feed-item')) {
+    document.querySelectorAll('.feed-item.expanded').forEach(el => el.classList.remove('expanded'));
+  }
 });
+
 document.addEventListener('keydown', e => {
   if(e.key === 'Escape'){
     document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove('show'));
