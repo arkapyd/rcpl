@@ -1814,7 +1814,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
           </label>
         </div>
       </div>
-      <div id="super_over_panel">
+     <div id="super_over_panel">
         <div class="row">
           <div><label>T1 Runs</label><input type="number" id="so_r1" min="0"></div>
           <div><label>Wkts</label><input type="number" id="so_w1" min="0" max="10"></div>
@@ -1827,6 +1827,24 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
      <div style="display:flex; gap:10px; margin-top:14px;">
         <button onclick="window.saveMatch()">Save Match</button>
         <button class="danger" onclick="window.resetMatch()">Reset Selected Match</button>
+      </div>
+    </div>
+
+    <div class="admin-section">
+      <h3>Match Swap</h3>
+      <div class="admin-status">// swap the complete logged results of two matches. this only affects the results log.</div>
+      <div class="row" style="align-items:flex-end;">
+        <div>
+          <label>Match 1 (e.g. M01)</label>
+          <input type="text" id="swap_m1" placeholder="MXX" style="text-transform:uppercase;">
+        </div>
+        <div>
+          <label>Match 2 (e.g. M02)</label>
+          <input type="text" id="swap_m2" placeholder="MXX" style="text-transform:uppercase;">
+        </div>
+        <div style="flex:0; min-width:auto;">
+          <button onclick="window.swapMatches()">Swap</button>
+        </div>
       </div>
     </div>
 
@@ -4433,6 +4451,40 @@ window.resetMatch = function(){
     updateUI();
     window.loadFixture();
     window.showToast(`${id} reset to upcoming.`, 'success');
+  }
+};
+
+window.swapMatches = function(){
+  const m1Input = document.getElementById('swap_m1');
+  const m2Input = document.getElementById('swap_m2');
+  if(!m1Input || !m2Input) return;
+
+  const m1 = m1Input.value.trim().toUpperCase();
+  const m2 = m2Input.value.trim().toUpperCase();
+
+  if(!m1 || !m2){ window.showToast('enter both match ids to swap.', 'error'); return; }
+  if(m1 === m2){ window.showToast('cannot swap a match with itself.', 'error'); return; }
+
+  const f1 = SCHEDULE.find(x => x.id === m1);
+  const f2 = SCHEDULE.find(x => x.id === m2);
+
+  if(!f1 || !f2){ window.showToast('invalid match ids. use format M01, M02.', 'error'); return; }
+
+  const r1 = results[m1] ? JSON.parse(JSON.stringify(results[m1])) : null;
+  const r2 = results[m2] ? JSON.parse(JSON.stringify(results[m2])) : null;
+
+  if(!r1 && !r2){ window.showToast('neither match has a result to swap.', 'error'); return; }
+
+  if(confirm(`swap complete logged results between ${m1} and ${m2}?`)){
+    if(r2) results[m1] = r2; else delete results[m1];
+    if(r1) results[m2] = r1; else delete results[m2];
+
+    pushToCloud();
+    updateUI();
+    m1Input.value = '';
+    m2Input.value = '';
+    window.loadFixture();
+    window.showToast(`swapped data between ${m1} and ${m2}.`, 'success');
   }
 };
 
