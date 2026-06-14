@@ -3523,16 +3523,16 @@ window.calcTeamStrength = function(t, opp) {
   return (normMgrIndex * 0.50) + (formPct * 0.20) + (h2hPct * 0.15) + (winPct * 0.05) + (histPct * 0.10) + nrrBoost;
 };
 
-// global helper to calculate strictly S5 Value (V$) incorporating form, odds upsets, and victory margins
+// global helper to calculate strictly S5 Value (V$) incorporating uniform form, odds upsets, and victory margins
 window.calcS5Value = function(team) {
   let s = window.currentStandings ? window.currentStandings.find(x => x.team === team) : null;
   let m = s ? s.p : 0;
   let w = s ? s.w : 0;
   let l = s ? s.l : 0;
 
-  // 1. current s5 form weight (baseline momentum)
-  let currRatio = m > 0 ? (w / m) : 0;
-  let currWeight = currRatio * 15;
+  // 1. uniform s5 form weight (baseline momentum: scales symmetrically from -15 to +15)
+  let netRatio = m > 0 ? (w - l) / m : 0;
+  let currWeight = netRatio * 15;
 
   // 2. modifiers
   let underdogWins = 0;
@@ -3581,12 +3581,12 @@ window.calcS5Value = function(team) {
     }
   });
   
+  // the underdog multipliers remain intact as requested
   let upsetBonus = underdogWins * 3.5;
-  let baseLossDrift = l * 0.75;
   let upsetLossPenalty = upsetLosses * 2.5;
 
-  // calculate final s5 value combining base weight, upsets, loss drift, and margin deltas
-  return currWeight + upsetBonus + marginBonus - baseLossDrift - upsetLossPenalty - marginPenalty;
+  // calculate final s5 value combining uniform base weight, upsets, and margin deltas
+  return currWeight + upsetBonus + marginBonus - upsetLossPenalty - marginPenalty;
 };
 
 // global helper to calculate historical franchise legacy
