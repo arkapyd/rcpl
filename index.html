@@ -1186,6 +1186,34 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   font-size:.88rem;
 }
 
+/* leaderboard hero row styling */
+.hero-stat-row {
+  padding: 16px 18px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.03), transparent);
+}
+.hero-stat-row .stat-row-rank {
+  color: var(--t1);
+  font-weight: 700;
+}
+.hero-stat-row .stat-row-team {
+  font-size: 1.25rem;
+  color: var(--t1);
+}
+.hero-stat-row .stat-row-value {
+  font-size: 1.15rem;
+  color: var(--t1);
+}
+.hero-stat-row .stat-row-value .unit {
+  color: var(--t1);
+  opacity: 0.85;
+}
+.hero-stat-row:hover .stat-row-rank,
+.hero-stat-row:hover .stat-row-team,
+.hero-stat-row:hover .stat-row-value,
+.hero-stat-row:hover .stat-row-value .unit {
+  color: var(--t2) !important;
+}
+
 /* ============================================================
    MANAGERS — roster grid
    ============================================================ */
@@ -2864,7 +2892,7 @@ function renderUpcomingFeed(){
   let upcoming = SCHEDULE
     .filter(f => !results[f.id])
     .filter(f => !selectedTeamFilter || f.a === selectedTeamFilter || f.b === selectedTeamFilter)
-    .slice(0, selectedTeamFilter ? 14 : 3);
+    .slice(0, selectedTeamFilter ? 14 : 4);
 
   const el = document.getElementById('upcoming_feed');
   if(upcoming.length === 0){
@@ -3065,38 +3093,42 @@ function renderStatBoards(){
   const stats = computeTeamStats();
   const rowHtml = (s, i, valStr) => {
     const isHighlighted = (selectedTeamFilter && s.team === selectedTeamFilter) ? ' highlight-row' : '';
+    const isHero = i === 0 ? ' hero-stat-row' : '';
+    const t1 = TEAM_COLORS[s.team] || 'var(--accent)';
+    const t2 = TEAM_COLORS_2[s.team] || t1;
+    
     return `
-      <div class="stat-row${isHighlighted}">
+      <div class="stat-row${isHighlighted}${isHero}" style="--t1:${t1}; --t2:${t2};">
         <div class="stat-row-rank">${String(i+1).padStart(2,'0')}</div>
-        <div class="stat-row-team" style="--team-glow:${TEAM_COLORS[s.team]};" onclick="window.takeoverTeam('${s.team}')">
+        <div class="stat-row-team" style="--team-glow:${t1};" onclick="window.takeoverTeam('${s.team}')">
           ${s.team.toUpperCase()}
         </div>
         <div class="stat-row-value">${valStr}</div>
       </div>`;
   };
 
-  const byRuns = stats.slice().sort((a,b) => b.runs - a.runs).slice(0, 5);
+  const byRuns = stats.slice().sort((a,b) => b.runs - a.runs).slice(0, 3);
   document.getElementById('board_runs').innerHTML =
     byRuns.map((s,i) => rowHtml(s, i, `${s.runs}<span class="unit">r</span>`)).join('');
 
-  const byWkts = stats.slice().sort((a,b) => b.wickets - a.wickets).slice(0, 5);
+  const byWkts = stats.slice().sort((a,b) => b.wickets - a.wickets).slice(0, 3);
   document.getElementById('board_wickets').innerHTML =
     byWkts.map((s,i) => rowHtml(s, i, `${s.wickets}<span class="unit">w</span>`)).join('');
 
-  const byEcon = stats.filter(s => s.economy !== null).sort((a,b) => a.economy - b.economy).slice(0, 5);
+  const byEcon = stats.filter(s => s.economy !== null).sort((a,b) => a.economy - b.economy).slice(0, 3);
   document.getElementById('board_economy').innerHTML = byEcon.length
     ? byEcon.map((s,i) => rowHtml(s, i, `${s.economy.toFixed(2)}<span class="unit">rpo</span>`)).join('')
     : emptyMsg;
 
-  const byAvg = stats.filter(s => s.average !== null).sort((a,b) => b.average - a.average).slice(0, 5);
+  const byAvg = stats.filter(s => s.average !== null).sort((a,b) => b.average - a.average).slice(0, 3);
   document.getElementById('board_average').innerHTML = byAvg.length
     ? byAvg.map((s,i) => rowHtml(s, i, `${s.average.toFixed(1)}`)).join('')
     : emptyMsg;
 
   const meta = document.getElementById('stats_meta');
-  if(meta) meta.innerText = `${totalPlayed}/70 matches · top 5 in each`;
+  if(meta) meta.innerText = `${totalPlayed}/70 matches · top 3 in each`;
 }
-
+   
 // ============================== GRAPHS RENDERING ==============================
 let chartInstances = {};
 function renderCharts() {
@@ -3635,7 +3667,7 @@ window.calcTotalCareerValue = function(team) {
   return legacyBaseValue + s5ValueAdded;
 };
   function renderOdds(){
-  const upcoming = SCHEDULE.filter(f => !results[f.id]).slice(0, 3);
+  const upcoming = SCHEDULE.filter(f => !results[f.id]).slice(0, 4);
   const el = document.getElementById('odds_feed');
   if(upcoming.length === 0){
     el.innerHTML = '<div class="feed-empty" style="grid-column:1/-1;">all fixtures completed. no upcoming odds available.</div>';
