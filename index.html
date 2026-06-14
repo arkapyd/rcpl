@@ -170,15 +170,15 @@ table th.num,
 #live_banner_close:hover{ color:var(--accent); }
 #live_player_wrap{
   position:relative; width:100%;
-  padding-top:56.25%; /* 16:9 */
+  max-width:480px; margin:0 auto;
+  aspect-ratio: 9 / 16;
   background:var(--surface);
   border:1px solid var(--border);
   border-radius:6px;
   overflow:hidden;
 }
 #live_player_wrap iframe{
-  position:absolute; inset:0;
-  width:100%; height:100%; border:0;
+  width:100%; height:100%; border:0; display:block;
 }
 /* ============================================================
    hero
