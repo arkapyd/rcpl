@@ -3518,11 +3518,12 @@ window.calcTeamStrength = function(t, opp) {
   return (normMgrIndex * 0.50) + (formPct * 0.20) + (h2hPct * 0.15) + (winPct * 0.05) + (histPct * 0.10) + nrrBoost;
 };
 
-// global helper to calculate unified Value (V$) incorporating odds upsets
+// global helper to calculate unified Value (V$) incorporating odds upsets and value erosion
 window.calcManagerValue = function(team) {
   let s = window.currentStandings ? window.currentStandings.find(x => x.team === team) : null;
   let m = s ? s.p : 0;
   let w = s ? s.w : 0;
+  let l = s ? s.l : 0;
 
   // 1. titles & playoffs weight
   let titles = 0, playoffs = 0;
@@ -3542,31 +3543,50 @@ window.calcManagerValue = function(team) {
   let histRatio = hist && hist.m > 0 ? (hist.w / hist.m) : 0.5;
   let wlWeight = histRatio * 5;
 
-  // 3. current s5 form weight
+  // 3. current s5 form weight (baseline momentum)
   let currRatio = m > 0 ? (w / m) : 0;
   let currWeight = currRatio * 15;
 
-  // 4. underdog upset bonus (powered by the odds calculator engine)
+  // 4. upset upside & value erosion (loss drift + upset penalties)
   let underdogWins = 0;
+  let upsetLosses = 0;
+
   SCHEDULE.forEach(f => {
     const r = results[f.id];
     if (!r) return;
+    
+    // check if the team is playing in this logged fixture
+    const isTeamA = f.a === team;
+    const isTeamB = f.b === team;
+    if (!isTeamA && !isTeamB) return;
+
     const winner = getWinner(r);
+    const opp = isTeamA ? f.b : f.a;
+    
+    // calculate pre-match strengths for odds context
+    const myScore = window.calcTeamStrength(team, opp);
+    const oppScore = window.calcTeamStrength(opp, team);
+
     if (winner === team) {
-      const opp = (r.t1 === team) ? r.t2 : r.t1;
-      const myScore = window.calcTeamStrength(team, opp);
-      const oppScore = window.calcTeamStrength(opp, team);
-      // ratio < 1 means the odds calculator considered this team the underdog
+      // team won. if my score was lower, it's an underdog upset win!
       if (myScore < oppScore) underdogWins++;
+    } else if (winner === opp) {
+      // team lost. if my score was higher, we choked as the favorite (upset loss)
+      if (myScore > oppScore) upsetLosses++;
     }
   });
   
-  // reward +3.5 V$ for every upset win
-  let upsetBonus = underdogWins * 2.5; 
+  // the multipliers (tweak these to make erosion more or less severe)
+  let upsetBonus = underdogWins * 3.5;          // +3.5 V$ per underdog win
+  let baseLossDrift = l * 0.75;                 // -0.75 V$ for every single loss
+  let upsetLossPenalty = upsetLosses * 2.5;     // -2.5 V$ EXTRA penalty for losing as the favorite
 
-  return titleWeight + playoffWeight + wlWeight + currWeight + upsetBonus;
+  // calculate final value
+  let finalValue = titleWeight + playoffWeight + wlWeight + currWeight + upsetBonus - baseLossDrift - upsetLossPenalty;
+  
+  // optional: floor the value at 0 so it doesn't go negative, or remove this line to allow negative stock
+  return Math.max(0, finalValue); 
 };
-
 function renderOdds(){
   const upcoming = SCHEDULE.filter(f => !results[f.id]).slice(0, 3);
   const el = document.getElementById('odds_feed');
