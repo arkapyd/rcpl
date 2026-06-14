@@ -3359,47 +3359,65 @@ function renderCareerStats(){
   if(!tbody) return;
   
   let html = '';
-  let sortedTeams = [...TEAMS].sort((a,b) => {
-    let sa = CAREER_STATS[a], sb = CAREER_STATS[b];
-    let winPctA = sa && sa.m ? (sa.w / sa.m) : 0;
-    let winPctB = sb && sb.m ? (sb.w / sb.m) : 0;
-    return winPctB - winPctA || (sb ? sb.w : 0) - (sa ? sa.w : 0);
+  
+  // 1. Calculate live combined stats for sorting and rendering
+  let combinedStats = TEAMS.map(t => {
+    let s = CAREER_STATS[t] || { m:0, w:0, runs:0, wkts:0, eco:0 };
+    const s5 = (window.currentStandings || []).find(x => x.team === t) || { p:0, w:0, l:0, rf:0, wkts_taken:0, ra:0, oa_balls:0, wkts_lost:0 };
+    
+    // Combine base counting stats
+    let m = s.m + s5.p;
+    let w = s.w + s5.w;
+    let l = (s.m - s.w) + s5.l;
+    let winPctNum = m > 0 ? (w / m) : 0;
+    let winPct = m > 0 ? (winPctNum * 100).toFixed(1) + '%' : '0.0%';
+    let runs = s.runs + s5.rf;
+    let wkts = s.wkts + s5.wkts_taken;
+    
+    // Combine Economy Rate 
+    // (Back-calculating historical runs conceded assuming OVERS_PER_INNINGS per match)
+    let histOvers = s.m * OVERS_PER_INNINGS;
+    let histRunsConceded = s.eco * histOvers;
+    let totalOversBowled = histOvers + (s5.oa_balls / 6);
+    let totalRunsConceded = histRunsConceded + s5.ra;
+    let eco = totalOversBowled > 0 ? (totalRunsConceded / totalOversBowled) : s.eco;
+    
+    // RPW — fold S1–S4 baseline + live S5 (uses CAREER_STATS.wktsLost if manually added later, else S5-only)
+    let rpwRuns = s5.rf; 
+    let rpwWL = s5.wkts_lost;
+    if(s.wktsLost != null){ 
+      rpwRuns += s.runs; 
+      rpwWL += s.wktsLost; 
+    }
+    const rpwStr = rpwWL > 0 ? (rpwRuns / rpwWL).toFixed(2) : '—';
+    
+    return { t, m, w, l, winPctNum, winPct, runs, wkts, eco, rpwStr };
   });
 
-  sortedTeams.forEach(t => {
-    let s = CAREER_STATS[t];
-    if(!s) return;
-    let losses = s.m - s.w;
-    let winPct = s.m > 0 ? ((s.w / s.m) * 100).toFixed(1) + '%' : '0.0%';
-    const isHighlighted = (selectedTeamFilter && t === selectedTeamFilter) ? ' highlight-row' : '';
+  // 2. Sort by combined Win % first, then combined Wins
+  combinedStats.sort((a, b) => b.winPctNum - a.winPctNum || b.w - a.w);
 
-    // RPW — fold S1–S4 baseline + live S5 (uses CAREER_STATS.wktsLost if present, else S5-only)
-    const s5 = (window.currentStandings || []).find(x => x.team === t);
-    const s5Runs = s5 ? (s5.rf || 0) : 0;
-    const s5WL = s5 ? (s5.wkts_lost || 0) : 0;
-    let rpwRuns, rpwWL;
-    if(s.wktsLost != null){ rpwRuns = (s.runs || 0) + s5Runs; rpwWL = s.wktsLost + s5WL; }
-    else { rpwRuns = s5Runs; rpwWL = s5WL; }
-    const rpwStr = rpwWL > 0 ? (rpwRuns / rpwWL).toFixed(2) : '—';
-
+  // 3. Render the table
+  combinedStats.forEach(stat => {
+    const isHighlighted = (selectedTeamFilter && stat.t === selectedTeamFilter) ? ' highlight-row' : '';
     html += `
       <tr class="${isHighlighted}">
         <td style="text-align:left; padding-left:18px;">
-           <span class="team-cell" style="--team-glow:${TEAM_COLORS[t]};" onclick="window.takeoverTeam('${t}')">${t.toUpperCase()}</span>
+           <span class="team-cell" style="--team-glow:${TEAM_COLORS[stat.t]};" onclick="window.takeoverTeam('${stat.t}')">${stat.t.toUpperCase()}</span>
         </td>
-        <td class="num">${s.m}</td>
-        <td class="num">${s.w}</td>
-        <td class="num">${losses}</td>
-        <td class="num" style="font-weight:700; color:var(--text);">${winPct}</td>
-        <td class="num">${s.runs}</td>
-        <td class="num">${s.wkts}</td>
-        <td class="num">${s.eco.toFixed(2)}</td>
-        <td class="num" style="font-weight:700; color:var(--accent);">${rpwStr}</td>
+        <td class="num">${stat.m}</td>
+        <td class="num">${stat.w}</td>
+        <td class="num">${stat.l}</td>
+        <td class="num" style="font-weight:700; color:var(--text);">${stat.winPct}</td>
+        <td class="num">${stat.runs}</td>
+        <td class="num">${stat.wkts}</td>
+        <td class="num">${stat.eco.toFixed(2)}</td>
+        <td class="num" style="font-weight:700; color:var(--accent);">${stat.rpwStr}</td>
       </tr>`;
   });
+  
   tbody.innerHTML = html;
 }
-
 // ============================== HEAD-TO-HEAD (rivalry view) ==============================
 let _h2hTeam = null;
 
