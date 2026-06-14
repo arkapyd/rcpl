@@ -3228,23 +3228,11 @@ function renderExhaustiveStats(){
   const tbody = document.getElementById('exhaustive_body');
   if(!tbody) return;
   
-  // check actual match results instead of standings array length
   if(Object.keys(results).length === 0){
     tbody.innerHTML = '<tr><td colspan="13" class="feed-empty">first match pending. data crunching on standby.</td></tr>';
     return;
   }
   
-  let teamAch = {};
-  TEAMS.forEach(t => teamAch[t] = { titles: 0, playoffs: 0 });
-  Object.values(SEASON_OUTCOMES).forEach(history => {
-      history.forEach(s => {
-          if(s.outcome === 'champion') teamAch[s.team].titles++;
-          if(['champion', 'finalist', 'qualifier', 'eliminator', 'pending-final'].includes(s.outcome)){
-              teamAch[s.team].playoffs++;
-          }
-      });
-  });
-
   let html = '';
   window.currentStandings.forEach(s => {
     let m = s.p;
@@ -3261,18 +3249,8 @@ function renderExhaustiveStats(){
     let wpm = m > 0 ? (wkts / m) : 0;
     let bewm = m > 0 ? (10 + (0.3 * wpm) - (0.7 * econ)) : 0;
     
-    let ach = teamAch[s.team];
-    let titleWeight = Math.min(60, ach.titles * 30);
-    let playoffWeight = Math.min(20, ach.playoffs * 5);
-    
-    let hist = CAREER_STATS[s.team];
-    let histRatio = hist && hist.m > 0 ? (hist.w / hist.m) : 0.5;
-    let wlWeight = histRatio * 5;
-    
-    let currRatio = m > 0 ? (s.w / m) : 0;
-    let currWeight = currRatio * 15;
-    
-    let value = titleWeight + playoffWeight + wlWeight + currWeight;
+    // dynamically fetch unified value
+    let value = window.calcManagerValue(s.team);
 
     const isHighlighted = (selectedTeamFilter && s.team === selectedTeamFilter) ? ' highlight-row' : '';
     const nrrCls = nrr > 0 ? 'pos-nrr' : (nrr < 0 ? 'neg-nrr' : '');
@@ -3303,20 +3281,18 @@ function renderMvmStats() {
   const tbody = document.getElementById('mvm_body');
   if(!tbody) return;
 
-  // base array guarantees all 10 teams render even before matches are played
   let baseArray = (window.currentStandings && window.currentStandings.length > 0)
     ? window.currentStandings
     : TEAMS.map((t, index) => ({ team: t, p: 0, w: 0, l: 0, pos: index + 1 }));
 
   let mvmData = baseArray.map((s, i) => {
-    let m = s.p || 0;
-    let currRatio = m > 0 ? (s.w / m) : 0;
-    let valueAdded = currRatio * 15;
+    // dynamically fetch unified value
+    let valueAdded = window.calcManagerValue(s.team);
 
     return {
       manager: MANAGERS[s.team] || '—',
       team: s.team,
-      p: m,
+      p: s.p || 0,
       w: s.w || 0,
       l: s.l || 0,
       pos: s.pos || (i + 1),
@@ -3324,18 +3300,16 @@ function renderMvmStats() {
     };
   });
 
-  // sort by value added, tie-break by wins, then ladder position
   mvmData.sort((a, b) => b.valueAdded - a.valueAdded || b.w - a.w || a.pos - b.pos);
 
   let html = '';
   mvmData.forEach((d) => {
     const isHighlighted = (selectedTeamFilter && d.team === selectedTeamFilter) ? ' highlight-row' : '';
     
-    // check if matches played is 0 to default to dashes
     const pDisplay = d.p > 0 ? d.p : '—';
     const wDisplay = d.p > 0 ? d.w : '—';
     const lDisplay = d.p > 0 ? d.l : '—';
-    const vDisplay = d.p > 0 ? `+${d.valueAdded.toFixed(2)}` : '—';
+    const vDisplay = d.p > 0 ? `+${d.valueAdded.toFixed(2)}` : '+0.00';
     const posDisplay = d.p > 0 ? String(d.pos).padStart(2,'0') : '—';
 
     html += `
@@ -3512,6 +3486,87 @@ window.calcBet = function(input, odds, teamA, teamB, fav, isEvens) {
   resultsDiv.querySelector('.res-b-loss').innerText = `-${val.toFixed(2)}`;
 };
 
+// global helper to calculate dynamic team strength (used for odds and underdog upsets)
+window.calcTeamStrength = function(t, opp) {
+  let s = window.currentStandings ? window.currentStandings.find(x => x.team === t) : null;
+  let histPct = HISTORICAL_RATING[t] || 50;
+  
+  let managerId = (MANAGERS[t] || '').toLowerCase();
+  let mgrHistory = SEASON_OUTCOMES[managerId] || [];
+  let mgrStats = computeManagerIndex(mgrHistory);
+  let normMgrIndex = Math.min(100, mgrStats.index);
+  if(mgrStats.seasons === 0) normMgrIndex = 50;
+
+  let h2h = getH2H(t, opp);
+  let h2hGames = h2h.aWins + h2h.bWins;
+  let h2hPct = h2hGames > 0 ? (h2h.aWins / h2hGames) * 100 : 50;
+
+  if(!s || s.p === 0) {
+    return (normMgrIndex * 0.50) + (histPct * 0.35) + (h2hPct * 0.15);
+  }
+
+  let winPct = (s.w / s.p) * 100;
+  let recent = s.form.filter(x => x.res !== 'NA');
+  let formPct = 50;
+  if(recent.length > 0){
+    let w = recent.filter(x => x.res === 'W').length;
+    let t_res = recent.filter(x => x.res === 'T').length;
+    formPct = ((w + (t_res*0.5)) / recent.length) * 100;
+  }
+
+  let nrrBoost = Math.max(-10, Math.min(10, s.nrr * 2));
+  return (normMgrIndex * 0.50) + (formPct * 0.20) + (h2hPct * 0.15) + (winPct * 0.05) + (histPct * 0.10) + nrrBoost;
+};
+
+// global helper to calculate unified Value (V$) incorporating odds upsets
+window.calcManagerValue = function(team) {
+  let s = window.currentStandings ? window.currentStandings.find(x => x.team === team) : null;
+  let m = s ? s.p : 0;
+  let w = s ? s.w : 0;
+
+  // 1. titles & playoffs weight
+  let titles = 0, playoffs = 0;
+  Object.values(SEASON_OUTCOMES).forEach(history => {
+      history.forEach(season => {
+          if(season.team === team){
+              if(season.outcome === 'champion') titles++;
+              if(['champion', 'finalist', 'qualifier', 'eliminator', 'pending-final'].includes(season.outcome)) playoffs++;
+          }
+      });
+  });
+  let titleWeight = Math.min(60, titles * 30);
+  let playoffWeight = Math.min(20, playoffs * 5);
+
+  // 2. historical w/l weight
+  let hist = CAREER_STATS[team];
+  let histRatio = hist && hist.m > 0 ? (hist.w / hist.m) : 0.5;
+  let wlWeight = histRatio * 5;
+
+  // 3. current s5 form weight
+  let currRatio = m > 0 ? (w / m) : 0;
+  let currWeight = currRatio * 15;
+
+  // 4. underdog upset bonus (powered by the odds calculator engine)
+  let underdogWins = 0;
+  SCHEDULE.forEach(f => {
+    const r = results[f.id];
+    if (!r) return;
+    const winner = getWinner(r);
+    if (winner === team) {
+      const opp = (r.t1 === team) ? r.t2 : r.t1;
+      const myScore = window.calcTeamStrength(team, opp);
+      const oppScore = window.calcTeamStrength(opp, team);
+      // ratio < 1 means the odds calculator considered this team the underdog
+      if (myScore < oppScore) underdogWins++;
+    }
+  });
+  
+  // reward +3.5 V$ for every upset win
+  let upsetBonus = underdogWins * 2.5; 
+
+  return titleWeight + playoffWeight + wlWeight + currWeight + upsetBonus;
+};
+
 function renderOdds(){
   const upcoming = SCHEDULE.filter(f => !results[f.id]).slice(0, 3);
   const el = document.getElementById('odds_feed');
@@ -3528,43 +3583,9 @@ function renderOdds(){
      {v: 4.0, s: '4/1'}, {v: 5.0, s: '5/1'}
   ];
 
-const getTeamScore = (t, opp) => {
-    let s = window.currentStandings.find(x => x.team === t);
-    let histPct = HISTORICAL_RATING[t] || 50;
-    
-    let managerId = (MANAGERS[t] || '').toLowerCase();
-    let mgrHistory = SEASON_OUTCOMES[managerId] || [];
-    let mgrStats = computeManagerIndex(mgrHistory);
-    let normMgrIndex = Math.min(100, mgrStats.index);
-    if(mgrStats.seasons === 0) normMgrIndex = 50;
-
-    // head-to-head vs this specific opponent (S1–S3 history + live S5); neutral 50 if they've never met
-    let h2h = getH2H(t, opp);
-    let h2hGames = h2h.aWins + h2h.bWins;
-    let h2hPct = h2hGames > 0 ? (h2h.aWins / h2hGames) * 100 : 50;
-
-    if(!s || s.p === 0) {
-      return (normMgrIndex * 0.50) + (histPct * 0.35) + (h2hPct * 0.15);
-    }
-
-    let winPct = (s.w / s.p) * 100;
-
-    let recent = s.form.filter(x => x.res !== 'NA');
-    let formPct = 50;
-    if(recent.length > 0){
-      let w = recent.filter(x => x.res === 'W').length;
-      let t_res = recent.filter(x => x.res === 'T').length;
-      formPct = ((w + (t_res*0.5)) / recent.length) * 100;
-    }
-
-    let nrrBoost = Math.max(-10, Math.min(10, s.nrr * 2));
-
-    return (normMgrIndex * 0.50) + (formPct * 0.20) + (h2hPct * 0.15) + (winPct * 0.05) + (histPct * 0.10) + nrrBoost;
-  };
-
   el.innerHTML = upcoming.map(f => {
-    let scoreA = getTeamScore(f.a, f.b);
-    let scoreB = getTeamScore(f.b, f.a);
+    let scoreA = window.calcTeamStrength(f.a, f.b);
+    let scoreB = window.calcTeamStrength(f.b, f.a);
 
     let ratio = scoreA / scoreB;
     let fav = f.a;
