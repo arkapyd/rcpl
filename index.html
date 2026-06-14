@@ -761,23 +761,25 @@ tbody tr.highlight-row {
 
 /* odds grid */
 .odds-grid{
-  display:grid; grid-template-columns:repeat(3, 1fr); gap:16px;
+  display:grid; grid-template-columns:repeat(4, 1fr); gap:14px;
 }
-@media (max-width:900px){
+@media (max-width:1100px){
+  .odds-grid{ grid-template-columns:repeat(2, 1fr); }
+}
+@media (max-width:700px){
   .odds-grid{ grid-template-columns:1fr; }
 }
 .odd-card{
   background:var(--surface);
   border:1px solid var(--border);
   border-radius:6px;
-  padding:18px;
+  padding:16px;
   transition:border-color .25s, transform .25s;
 }
 .odd-card:hover{ border-color:var(--border-bright); transform:translateY(-2px); }
-.odd-card-teams{ display:flex; justify-content:space-between; align-items:center; font-family:'Anton',sans-serif; font-size:1.25rem; letter-spacing:0.05em; }
-.odd-val{ text-align:center; font-size:2.8rem; font-family:'Anton',sans-serif; color:var(--text); margin:10px 0; line-height:1; }
-.odd-fav{ text-align:center; font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.1em; }
-
+.odd-card-teams{ display:flex; justify-content:space-between; align-items:center; font-family:'Anton',sans-serif; font-size:1.15rem; letter-spacing:0.05em; }
+.odd-val{ text-align:center; font-size:2.2rem; font-family:'Anton',sans-serif; color:var(--text); margin:10px 0; line-height:1; white-space:nowrap; }
+.odd-fav{ text-align:center; font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.1em; }
 /* admin */
 .admin-wrap{
   display:none;
