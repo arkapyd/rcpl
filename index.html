@@ -2207,7 +2207,7 @@ const HISTORICAL_H2H = {
   gt:   { pbks:1, kkr:0, mi:0, rcb:0, dc:0, csk:1, rr:0, srh:0, lsg:1 },
 };
 // 70-match schedule
-const SCHEDULE = [
+let SCHEDULE = [
   {id:'M01', a:'csk', b:'dc'}, {id:'M02', a:'rcb', b:'lsg'}, {id:'M03', a:'srh', b:'gt'},
   {id:'M04', a:'mi',  b:'pbks'},{id:'M05', a:'kkr', b:'rr'}, {id:'M06', a:'csk', b:'lsg'},
   {id:'M07', a:'rcb', b:'dc'}, {id:'M08', a:'gt',  b:'srh'},{id:'M09', a:'mi',  b:'rr'},
@@ -2251,6 +2251,9 @@ const saveLocal = () => { try { localStorage.setItem(LS_KEY, JSON.stringify(resu
 const loadLocal = () => { try { const r = localStorage.getItem(LS_KEY); return r ? JSON.parse(r) : null; } catch(e){ return null; } };
 const saveLocalRoster = () => { try { localStorage.setItem(LS_ROSTER, JSON.stringify(MANAGERS)); } catch(e){} };
 const loadLocalRoster = () => { try { const r = localStorage.getItem(LS_ROSTER); return r ? JSON.parse(r) : null; } catch(e){ return null; } };
+const LS_SCHEDULE = 'rcpl_s5_schedule_v1';
+const saveLocalSchedule = () => { try { localStorage.setItem(LS_SCHEDULE, JSON.stringify(SCHEDULE)); } catch(e){} };
+const loadLocalSchedule = () => { try { const r = localStorage.getItem(LS_SCHEDULE); return r ? JSON.parse(r) : null; } catch(e){ return null; } };
 const LS_FP = 'rcpl_s5_fairplay_v1';
 const saveLocalFp = () => { try { localStorage.setItem(LS_FP, JSON.stringify(fairplay)); } catch(e){} };
 const loadLocalFp = () => { try { const r = localStorage.getItem(LS_FP); return r ? JSON.parse(r) : null; } catch(e){ return null; } };
@@ -2411,6 +2414,22 @@ function cloudSaveRoster(){
     if(p && p.catch) p.catch(e => { console.error('roster write failed:', e); window.showToast('roster saved locally only.', 'error'); });
   } catch(e){ console.error('roster write threw:', e); window.showToast('roster save error — local only.', 'error'); }
 }
+
+function applySchedule(s){
+  if(s && Array.isArray(s) && s.length > 0){
+    SCHEDULE = s;
+    saveLocalSchedule();
+  }
+}
+
+function cloudSaveSchedule(){
+  saveLocalSchedule();
+  if(!dbRef) return;
+  try {
+    const p = dbRef.update(sanitize({ schedule: SCHEDULE }));
+    if(p && p.catch) p.catch(e => { console.error('schedule write failed:', e); window.showToast('schedule saved locally only.', 'error'); });
+  } catch(e){ console.error('schedule write threw:', e); window.showToast('schedule save error — local only.', 'error'); }
+}
    function applyFairplay(f){
   fairplay = (f && typeof f === 'object') ? f : {};
   saveLocalFp();
@@ -2449,6 +2468,7 @@ const _fbTimeout = setTimeout(() => {
   if(_bootDone) return;
   setConnBanner('offline');
   window.showToast('cloud slow — loaded local data.', 'error');
+  applySchedule(loadLocalSchedule());
   applyRoster(loadLocalRoster());
   applyBets(loadLocalBets());
   applyFairplay(loadLocalFp());
@@ -2461,6 +2481,7 @@ if(dbRef){
     _cloudConnected = true;
     setConnBanner('online');
     const d = snap.val();
+    applySchedule(d && d.schedule);
     applyRoster(d && d.roster);
     applyFairplay(d && d.fairplay);
     applyBets(d && d.bets);
@@ -2471,6 +2492,7 @@ if(dbRef){
     console.error('firebase read failed:', err);
     setConnBanner('offline');
     window.showToast('cloud read failed — using local data.', 'error');
+    applySchedule(loadLocalSchedule());
     applyRoster(loadLocalRoster());
     applyBets(loadLocalBets());
     applyFairplay(loadLocalFp());
@@ -2479,6 +2501,7 @@ if(dbRef){
 } else {
   clearTimeout(_fbTimeout);
   setConnBanner('offline');
+  applySchedule(loadLocalSchedule());
   applyRoster(loadLocalRoster());
   applyFairplay(loadLocalFp());
   applyBets(loadLocalBets());
@@ -4465,36 +4488,60 @@ window.swapMatches = function(){
   if(!m1 || !m2){ window.showToast('enter both match ids to swap.', 'error'); return; }
   if(m1 === m2){ window.showToast('cannot swap a match with itself.', 'error'); return; }
 
-  const f1 = SCHEDULE.find(x => x.id === m1);
-  const f2 = SCHEDULE.find(x => x.id === m2);
+  const f1Index = SCHEDULE.findIndex(x => x.id === m1);
+  const f2Index = SCHEDULE.findIndex(x => x.id === m2);
 
-  if(!f1 || !f2){ window.showToast('invalid match ids. use format M01, M02.', 'error'); return; }
+  if(f1Index === -1 || f2Index === -1){ window.showToast('invalid match ids. use format M01, M02.', 'error'); return; }
 
-  const r1 = results[m1] ? JSON.parse(JSON.stringify(results[m1])) : null;
-  const r2 = results[m2] ? JSON.parse(JSON.stringify(results[m2])) : null;
+  if(confirm(`swap the schedule and all associated data for ${m1} and ${m2}?`)){
+    // 1. swap the teams in the global schedule array
+    const tempA = SCHEDULE[f1Index].a;
+    const tempB = SCHEDULE[f1Index].b;
+    SCHEDULE[f1Index].a = SCHEDULE[f2Index].a;
+    SCHEDULE[f1Index].b = SCHEDULE[f2Index].b;
+    SCHEDULE[f2Index].a = tempA;
+    SCHEDULE[f2Index].b = tempB;
 
-  if(!r1 && !r2){ window.showToast('neither match has a result to swap.', 'error'); return; }
+    // 2. helper to safely swap the buckets
+    const swapDict = (dict) => {
+      const temp = dict[m1] ? JSON.parse(JSON.stringify(dict[m1])) : null;
+      if(dict[m2]) dict[m1] = JSON.parse(JSON.stringify(dict[m2])); else delete dict[m1];
+      if(temp) dict[m2] = temp; else delete dict[m2];
+    };
 
-  if(confirm(`swap complete logged results between ${m1} and ${m2}?`)){
-    if(r2) results[m1] = r2; else delete results[m1];
-    if(r1) results[m2] = r1; else delete results[m2];
+    // 3. execute swaps
+    swapDict(results);
+    swapDict(fairplay);
+    swapDict(bets);
 
+    // 4. commit everything to cloud
+    cloudSaveSchedule();
     pushToCloud();
-    updateUI();
+    cloudSaveFp();
+    cloudSaveBets();
+
+    // 5. clean up the ui
     m1Input.value = '';
     m2Input.value = '';
-    window.loadFixture();
-    window.showToast(`swapped data between ${m1} and ${m2}.`, 'success');
+    updateUI(); 
+    
+    // forcefully refresh the admin panel dropdowns
+    if(typeof renderFpMatchOptions === 'function') renderFpMatchOptions();
+    if(typeof renderBetMatchOptions === 'function') renderBetMatchOptions();
+    window.loadFixture(); 
+    
+    window.showToast(`swapped schedule and data for ${m1} and ${m2}.`, 'success');
   }
 };
 
 // ============================== DATA BACKUP / RESTORE ==============================
 window.exportData = function(){
   const payload = {
-    league: 'rcpl',
-    ref: 'rcpl_s5_v2',
-    exportedAt: new Date().toISOString(),
-    roster: MANAGERS,
+      league: 'rcpl',
+      ref: 'rcpl_s5_v2',
+      exportedAt: new Date().toISOString(),
+      schedule: SCHEDULE,
+      roster: MANAGERS,
     fairplay,
     bets,
     results
@@ -4523,6 +4570,7 @@ window.importData = function(ev){
       const count = Object.keys(incoming).length;
       if(confirm(`Import ${count} matches? They will be MERGED into the current data and synced to the cloud (same-ID matches get overwritten; nothing else is deleted).`)){
         Object.keys(incoming).forEach(k => { if(incoming[k]) results[k] = incoming[k]; });
+        if(data.schedule){ applySchedule(data.schedule); cloudSaveSchedule(); }
         if(data.roster){ applyRoster(data.roster); cloudSaveRoster(); }
         if(data.fairplay){ applyFairplay(data.fairplay); cloudSaveFp(); }
         if(data.bets){ applyBets(data.bets); cloudSaveBets(); }
