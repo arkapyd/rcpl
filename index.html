@@ -1709,11 +1709,11 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
             <th class="num">Wickets Taken</th>
             <th class="num">Economy</th>
             <th class="num">Wickets/Match</th>
-            <th class="num" style="color:var(--accent);">BEWM</th>
-            <th class="num" style="color:var(--win);">Value (V$)</th>
+           <th class="num" style="color:var(--accent);">BEWM</th>
+            <th class="num" style="color:var(--win);" title="S5 Form & Upset Value">S5 V$</th>
           </tr>
         </thead>
-        <tbody id="exhaustive_body"></tbody>
+      <tbody id="exhaustive_body"></tbody>
       </table>
     </div>
     <div id="stats_mvm" style="display:none; overflow-x:auto;" class="table-wrap">
@@ -1743,8 +1743,9 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
             <th class="num" style="color:var(--accent);">Win %</th>
             <th class="num">Runs</th>
             <th class="num">Wickets</th>
-            <th class="num">Economy</th>
+           <th class="num">Economy</th>
             <th class="num" style="color:var(--accent);" title="runs scored ÷ wickets lost · S1–S4 (if recorded) + live S5">RPW</th>
+            <th class="num" style="color:var(--win);" title="Historical Legacy Franchise Value">Legacy V$</th>
           </tr>
         </thead>
        <tbody id="career_body"></tbody>
@@ -3237,20 +3238,20 @@ function renderExhaustiveStats(){
   window.currentStandings.forEach(s => {
     let m = s.p;
     let nrr = s.nrr;
-    
     let avg = m > 0 ? (s.rf / m) : 0;
     let rpw = s.wkts_lost > 0 ? (s.rf / s.wkts_lost) : null;
     let sr = s.of_balls > 0 ? (s.rf / s.of_balls) * 100 : 0;
     let rr = s.of_balls > 0 ? (s.rf / (s.of_balls / 6)) : 0;
     let basra = avg + sr;
-    
     let wkts = s.wkts_taken || 0;
     let econ = s.oa_balls > 0 ? (s.ra / (s.oa_balls / 6)) : 0;
     let wpm = m > 0 ? (wkts / m) : 0;
     let bewm = m > 0 ? (10 + (0.3 * wpm) - (0.7 * econ)) : 0;
     
-    // dynamically fetch unified value
-    let value = window.calcManagerValue(s.team);
+    // dynamically fetch isolated s5 value and format color
+    let value = window.calcS5Value(s.team);
+    let vColor = value > 0 ? 'var(--win)' : (value < 0 ? 'var(--loss)' : 'var(--text-muted)');
+    let vSign = value > 0 ? '+' : '';
 
     const isHighlighted = (selectedTeamFilter && s.team === selectedTeamFilter) ? ' highlight-row' : '';
     const nrrCls = nrr > 0 ? 'pos-nrr' : (nrr < 0 ? 'neg-nrr' : '');
@@ -3271,7 +3272,7 @@ function renderExhaustiveStats(){
         <td class="num">${econ.toFixed(2)}</td>
         <td class="num">${wpm.toFixed(2)}</td>
         <td class="num" style="font-weight:700; color:var(--text);">${m === 0 ? '—' : bewm.toFixed(2)}</td>
-        <td class="num" style="color:var(--win); font-weight:800; font-size:1rem;">${value.toFixed(2)}</td>
+        <td class="num" style="color:${vColor}; font-weight:800; font-size:1rem;">${vSign}${value.toFixed(2)}</td>
       </tr>`;
   });
   tbody.innerHTML = html;
@@ -3286,9 +3287,7 @@ function renderMvmStats() {
     : TEAMS.map((t, index) => ({ team: t, p: 0, w: 0, l: 0, pos: index + 1 }));
 
   let mvmData = baseArray.map((s, i) => {
-    // dynamically fetch unified value
-    let valueAdded = window.calcManagerValue(s.team);
-
+    let valueAdded = window.calcS5Value(s.team);
     return {
       manager: MANAGERS[s.team] || '—',
       team: s.team,
@@ -3309,8 +3308,12 @@ function renderMvmStats() {
     const pDisplay = d.p > 0 ? d.p : '—';
     const wDisplay = d.p > 0 ? d.w : '—';
     const lDisplay = d.p > 0 ? d.l : '—';
-    const vDisplay = d.p > 0 ? `+${d.valueAdded.toFixed(2)}` : '+0.00';
     const posDisplay = d.p > 0 ? String(d.pos).padStart(2,'0') : '—';
+
+    // handle red text for negative stock value
+    let vColor = d.valueAdded > 0 ? 'var(--win)' : (d.valueAdded < 0 ? 'var(--loss)' : 'var(--text-muted)');
+    let vSign = d.valueAdded > 0 ? '+' : '';
+    let vDisplay = `${vSign}${d.valueAdded.toFixed(2)}`;
 
     html += `
       <tr class="${isHighlighted}">
@@ -3321,13 +3324,14 @@ function renderMvmStats() {
         <td class="num">${pDisplay}</td>
         <td class="num">${wDisplay}</td>
         <td class="num">${lDisplay}</td>
-        <td class="num" style="color:var(--win); font-weight:800; font-size:1rem;">${vDisplay}</td>
+        <td class="num" style="color:${vColor}; font-weight:800; font-size:1rem;">${vDisplay}</td>
         <td class="num" style="color:var(--text-dim);">${posDisplay}</td>
       </tr>`;
   });
   
   tbody.innerHTML = html;
 }
+
 function renderCareerStats(){
   const tbody = document.getElementById('career_body');
   if(!tbody) return;
@@ -3348,15 +3352,12 @@ function renderCareerStats(){
     let runs = s.runs + s5.rf;
     let wkts = s.wkts + s5.wkts_taken;
     
-    // Combine Economy Rate 
-    // (Back-calculating historical runs conceded assuming OVERS_PER_INNINGS per match)
     let histOvers = s.m * OVERS_PER_INNINGS;
     let histRunsConceded = s.eco * histOvers;
     let totalOversBowled = histOvers + (s5.oa_balls / 6);
     let totalRunsConceded = histRunsConceded + s5.ra;
     let eco = totalOversBowled > 0 ? (totalRunsConceded / totalOversBowled) : s.eco;
     
-    // RPW — fold S1–S4 baseline + live S5 (uses CAREER_STATS.wktsLost if manually added later, else S5-only)
     let rpwRuns = s5.rf; 
     let rpwWL = s5.wkts_lost;
     if(s.wktsLost != null){ 
@@ -3365,7 +3366,10 @@ function renderCareerStats(){
     }
     const rpwStr = rpwWL > 0 ? (rpwRuns / rpwWL).toFixed(2) : '—';
     
-    return { t, m, w, l, winPctNum, winPct, runs, wkts, eco, rpwStr };
+    // Fetch legacy value for the new column
+    let legacyValue = window.calcLegacyValue(t);
+
+    return { t, m, w, l, winPctNum, winPct, runs, wkts, eco, rpwStr, legacyValue };
   });
 
   // 2. Sort by combined Win % first, then combined Wins
@@ -3387,6 +3391,7 @@ function renderCareerStats(){
         <td class="num">${stat.wkts}</td>
         <td class="num">${stat.eco.toFixed(2)}</td>
         <td class="num" style="font-weight:700; color:var(--accent);">${stat.rpwStr}</td>
+        <td class="num" style="font-weight:800; color:var(--win);">${stat.legacyValue.toFixed(2)}</td>
       </tr>`;
   });
   
@@ -3518,14 +3523,52 @@ window.calcTeamStrength = function(t, opp) {
   return (normMgrIndex * 0.50) + (formPct * 0.20) + (h2hPct * 0.15) + (winPct * 0.05) + (histPct * 0.10) + nrrBoost;
 };
 
-// global helper to calculate unified Value (V$) incorporating odds upsets and value erosion
-window.calcManagerValue = function(team) {
+// global helper to calculate strictly S5 Value (V$) incorporating form and odds upsets
+window.calcS5Value = function(team) {
   let s = window.currentStandings ? window.currentStandings.find(x => x.team === team) : null;
   let m = s ? s.p : 0;
   let w = s ? s.w : 0;
   let l = s ? s.l : 0;
 
-  // 1. titles & playoffs weight
+  // 1. current s5 form weight (baseline momentum)
+  let currRatio = m > 0 ? (w / m) : 0;
+  let currWeight = currRatio * 15;
+
+  // 2. upset upside & value erosion (loss drift + upset penalties)
+  let underdogWins = 0;
+  let upsetLosses = 0;
+
+  SCHEDULE.forEach(f => {
+    const r = results[f.id];
+    if (!r) return;
+    
+    const isTeamA = f.a === team;
+    const isTeamB = f.b === team;
+    if (!isTeamA && !isTeamB) return;
+
+    const winner = getWinner(r);
+    const opp = isTeamA ? f.b : f.a;
+    
+    const myScore = window.calcTeamStrength(team, opp);
+    const oppScore = window.calcTeamStrength(opp, team);
+
+    if (winner === team) {
+      if (myScore < oppScore) underdogWins++;
+    } else if (winner === opp) {
+      if (myScore > oppScore) upsetLosses++;
+    }
+  });
+  
+  let upsetBonus = underdogWins * 3.5;
+  let baseLossDrift = l * 0.75;
+  let upsetLossPenalty = upsetLosses * 2.5;
+
+  // calculate final s5 value (can drop below zero to reflect massive erosion)
+  return currWeight + upsetBonus - baseLossDrift - upsetLossPenalty;
+};
+
+// global helper to calculate historical franchise legacy
+window.calcLegacyValue = function(team) {
   let titles = 0, playoffs = 0;
   Object.values(SEASON_OUTCOMES).forEach(history => {
       history.forEach(season => {
@@ -3538,54 +3581,11 @@ window.calcManagerValue = function(team) {
   let titleWeight = Math.min(60, titles * 30);
   let playoffWeight = Math.min(20, playoffs * 5);
 
-  // 2. historical w/l weight
   let hist = CAREER_STATS[team];
   let histRatio = hist && hist.m > 0 ? (hist.w / hist.m) : 0.5;
   let wlWeight = histRatio * 5;
 
-  // 3. current s5 form weight (baseline momentum)
-  let currRatio = m > 0 ? (w / m) : 0;
-  let currWeight = currRatio * 15;
-
-  // 4. upset upside & value erosion (loss drift + upset penalties)
-  let underdogWins = 0;
-  let upsetLosses = 0;
-
-  SCHEDULE.forEach(f => {
-    const r = results[f.id];
-    if (!r) return;
-    
-    // check if the team is playing in this logged fixture
-    const isTeamA = f.a === team;
-    const isTeamB = f.b === team;
-    if (!isTeamA && !isTeamB) return;
-
-    const winner = getWinner(r);
-    const opp = isTeamA ? f.b : f.a;
-    
-    // calculate pre-match strengths for odds context
-    const myScore = window.calcTeamStrength(team, opp);
-    const oppScore = window.calcTeamStrength(opp, team);
-
-    if (winner === team) {
-      // team won. if my score was lower, it's an underdog upset win!
-      if (myScore < oppScore) underdogWins++;
-    } else if (winner === opp) {
-      // team lost. if my score was higher, we choked as the favorite (upset loss)
-      if (myScore > oppScore) upsetLosses++;
-    }
-  });
-  
-  // the multipliers (tweak these to make erosion more or less severe)
-  let upsetBonus = underdogWins * 3.5;          // +3.5 V$ per underdog win
-  let baseLossDrift = l * 0.75;                 // -0.75 V$ for every single loss
-  let upsetLossPenalty = upsetLosses * 2.5;     // -2.5 V$ EXTRA penalty for losing as the favorite
-
-  // calculate final value
-  let finalValue = titleWeight + playoffWeight + wlWeight + currWeight + upsetBonus - baseLossDrift - upsetLossPenalty;
-  
-  // optional: floor the value at 0 so it doesn't go negative, or remove this line to allow negative stock
-  return finalValue; 
+  return titleWeight + playoffWeight + wlWeight;
 };
 function renderOdds(){
   const upcoming = SCHEDULE.filter(f => !results[f.id]).slice(0, 3);
