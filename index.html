@@ -3523,7 +3523,7 @@ window.calcTeamStrength = function(t, opp) {
   return (normMgrIndex * 0.50) + (formPct * 0.20) + (h2hPct * 0.15) + (winPct * 0.05) + (histPct * 0.10) + nrrBoost;
 };
 
-// global helper to calculate strictly S5 Value (V$) incorporating form and odds upsets
+// global helper to calculate strictly S5 Value (V$) incorporating form, odds upsets, and victory margins
 window.calcS5Value = function(team) {
   let s = window.currentStandings ? window.currentStandings.find(x => x.team === team) : null;
   let m = s ? s.p : 0;
@@ -3534,9 +3534,11 @@ window.calcS5Value = function(team) {
   let currRatio = m > 0 ? (w / m) : 0;
   let currWeight = currRatio * 15;
 
-  // 2. upset upside & value erosion (loss drift + upset penalties)
+  // 2. modifiers
   let underdogWins = 0;
   let upsetLosses = 0;
+  let marginBonus = 0;
+  let marginPenalty = 0;
 
   SCHEDULE.forEach(f => {
     const r = results[f.id];
@@ -3552,10 +3554,30 @@ window.calcS5Value = function(team) {
     const myScore = window.calcTeamStrength(team, opp);
     const oppScore = window.calcTeamStrength(opp, team);
 
+    // calculate raw margin data
+    let runMargin = 0;
+    let wktMargin = 0;
+    let ballsLeft = 0;
+    
+    if (!r.super_over) {
+      if (r.r1 > r.r2) {
+        runMargin = r.r1 - r.r2;
+      } else if (r.r2 > r.r1) {
+        wktMargin = 10 - (r.w2 || 0);
+        ballsLeft = 30 - (r.b2 || 30);
+        if (ballsLeft < 0) ballsLeft = 0; // safety fallback
+      }
+    }
+
+    // allocate the upset trackers and margin deltas
     if (winner === team) {
       if (myScore < oppScore) underdogWins++;
+      // team won: build positive margin bonus
+      marginBonus += (runMargin * 0.15) + (wktMargin * 0.3) + (ballsLeft * 0.15);
     } else if (winner === opp) {
       if (myScore > oppScore) upsetLosses++;
+      // team lost: build negative margin penalty
+      marginPenalty += (runMargin * 0.15) + (wktMargin * 0.3) + (ballsLeft * 0.15);
     }
   });
   
@@ -3563,8 +3585,8 @@ window.calcS5Value = function(team) {
   let baseLossDrift = l * 0.75;
   let upsetLossPenalty = upsetLosses * 2.5;
 
-  // calculate final s5 value (can drop below zero to reflect massive erosion)
-  return currWeight + upsetBonus - baseLossDrift - upsetLossPenalty;
+  // calculate final s5 value combining base weight, upsets, loss drift, and margin deltas
+  return currWeight + upsetBonus + marginBonus - baseLossDrift - upsetLossPenalty - marginPenalty;
 };
 
 // global helper to calculate historical franchise legacy
