@@ -3613,26 +3613,28 @@ window.calcTotalCareerValue = function(team) {
           }
       });
   });
-  let titleWeight = Math.min(60, titles * 30);
-  let playoffWeight = Math.min(20, playoffs * 5);
 
-  // 2. dynamic all-time win/loss weight (S1-S4 + S5 combined)
+  // drastically scale up hardware multipliers to reflect true franchise prestige
+  let titleWeight = titles * 150;
+  let playoffWeight = playoffs * 40;
+
+  // 2. historical volume and win weight (using strictly S1-S4 CAREER_STATS)
   let hist = CAREER_STATS[team] || { m:0, w:0 };
-  let s5 = window.currentStandings ? window.currentStandings.find(x => x.team === team) : null;
-  let totalM = hist.m + (s5 ? s5.p : 0);
-  let totalW = hist.w + (s5 ? s5.w : 0);
   
-  let liveRatio = totalM > 0 ? (totalW / totalM) : 0.5;
-  // scaled to 15 so career consistency matches the scale of a perfect S5 base run
-  let wlWeight = liveRatio * 15; 
+  // +12 V$ per historical win, +3 V$ per historical match played (franchise base market cap)
+  let histWinWeight = hist.w * 12; 
+  let histLongevityWeight = hist.m * 3;
+
+  // calculate the immovable legacy base value
+  let legacyBaseValue = titleWeight + playoffWeight + histWinWeight + histLongevityWeight;
 
   // 3. live value added/eroded by the current S5 manager
   let s5ValueAdded = window.calcS5Value(team);
 
   // combine for the true living franchise stock price
-  return titleWeight + playoffWeight + wlWeight + s5ValueAdded;
+  return legacyBaseValue + s5ValueAdded;
 };
-function renderOdds(){
+  function renderOdds(){
   const upcoming = SCHEDULE.filter(f => !results[f.id]).slice(0, 3);
   const el = document.getElementById('odds_feed');
   if(upcoming.length === 0){
