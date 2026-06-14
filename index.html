@@ -343,33 +343,65 @@ table th.num,
   .hero-right{ align-self:auto; }
 }
 
-/* groups */
-.groups{
-  max-width:1340px; margin:24px auto 0; padding:0 28px;
-  display:grid; grid-template-columns:1fr 1fr; gap:24px;
+/* groups + season leaders — two-column combo */
+.combo{
+  display:grid;
+  grid-template-columns:1fr 1.4fr;
+  gap:24px;
+  align-items:stretch;
 }
-.group{
+.combo-draw,
+.combo-leaders{
+  display:flex;
+  flex-direction:column;
+}
+.combo-head{
+  display:flex; justify-content:space-between; align-items:baseline;
+  border-bottom:1px solid var(--border);
+  padding-bottom:10px;
+  margin-bottom:20px;
+  gap:16px;
+}
+.combo-title{
+  font-family:'Anton',sans-serif;
+  font-size:1.5rem; letter-spacing:.18em;
+  text-transform:uppercase;
+  margin:0; color:var(--text);
+}
+.combo-title .num-pre{
+  color:var(--accent);
+  font-family:'JetBrains Mono',monospace;
+  font-size:.85rem;
+  margin-right:10px;
+  letter-spacing:0;
+}
+/* draw strips — outlined group letter + flowing team pills */
+.draw-strip{
+  display:flex; align-items:center; gap:18px;
+  flex:1;
   background:var(--surface);
   border:1px solid var(--border);
   border-radius:6px;
-  padding:18px 20px;
+  padding:14px 18px;
   position:relative;
   overflow:hidden;
 }
-.group::before{
+.draw-strip + .draw-strip{ margin-top:14px; }
+.draw-strip::before{
   content:''; position:absolute; top:0; left:0; bottom:0; width:3px;
   background:var(--accent);
 }
-.group-label{
-  font-family:'JetBrains Mono',monospace;
-  font-size:.7rem; letter-spacing:.25em;
-  color:var(--text-dim); text-transform:uppercase;
-  margin-bottom:10px;
-}
-.group-name{
+.draw-letter{
   font-family:'Anton',sans-serif;
-  font-size:1.4rem; letter-spacing:.15em;
-  color:var(--text); margin:0 0 12px;
+  font-size:2.6rem; line-height:1;
+  letter-spacing:.02em;
+  color:transparent;
+  -webkit-text-stroke:1.5px var(--accent);
+  flex-shrink:0;
+  width:42px; text-align:center;
+}
+.draw-teams{
+  display:flex; flex-wrap:wrap; align-items:center;
 }
 .team-pill{
   display:inline-block;
@@ -426,7 +458,7 @@ table th.num,
 /* stat strip */
 .stat-strip{
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+  grid-template-columns:repeat(2,1fr);
   gap:14px;
 }
 .stat-card{
@@ -592,7 +624,7 @@ tbody tr.highlight-row {
 }
 @media (max-width:900px){
   .split{ grid-template-columns:1fr; }
-  .groups{ grid-template-columns:1fr; }
+  .combo{ grid-template-columns:1fr; }
   .stat-strip{ grid-template-columns:repeat(2,1fr); }
   #stats_graphs > div { grid-template-columns: 1fr !important; }
 }
@@ -1590,27 +1622,34 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   </div>
 </section>
 
-<div class="groups">
-  <div class="group">
-    <div class="group-label">// pool</div>
-    <h3 class="group-name">Group A</h3>
-    <div id="group_a_teams"></div>
-  </div>
-  <div class="group">
-    <div class="group-label">// pool</div>
-    <h3 class="group-name">Group B</h3>
-    <div id="group_b_teams"></div>
-  </div>
-</div>
-
 <div class="container">
 
   <section class="section">
-    <div class="section-head">
-      <h2 class="section-title"><span class="num-pre">01</span>Season Leaders</h2>
-      <div class="section-meta" id="leader_meta">— · live</div>
+    <div class="combo">
+      <!-- left · the draw -->
+      <div class="combo-draw">
+        <div class="combo-head">
+          <h2 class="combo-title"><span class="num-pre">◆</span>The Draw</h2>
+          <div class="section-meta">two pools · five each</div>
+        </div>
+        <div class="draw-strip">
+          <div class="draw-letter">A</div>
+          <div class="draw-teams" id="group_a_teams"></div>
+        </div>
+        <div class="draw-strip">
+          <div class="draw-letter">B</div>
+          <div class="draw-teams" id="group_b_teams"></div>
+        </div>
+      </div>
+      <!-- right · season leaders -->
+      <div class="combo-leaders">
+        <div class="section-head">
+          <h2 class="section-title"><span class="num-pre">01</span>Season Leaders</h2>
+          <div class="section-meta" id="leader_meta">— · live</div>
+        </div>
+        <div class="stat-strip" id="stat_strip"></div>
+      </div>
     </div>
-    <div class="stat-strip" id="stat_strip"></div>
   </section>
 
   <section class="section">
