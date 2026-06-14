@@ -134,7 +134,52 @@ table th.num,
 }
 #conn_banner.offline{ display:block; background:rgba(239,68,68,.1); color:#fca5a5; border-bottom:1px solid rgba(239,68,68,.3); }
 #conn_banner.online{ display:block; background:rgba(132,204,22,.08); color:#bef264; border-bottom:1px solid rgba(132,204,22,.3); }
-
+#live_banner{
+  max-width:1340px; margin:14px auto 0; padding:0 28px;
+}
+#live_banner_head{
+  display:flex; align-items:center; gap:10px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.78rem; letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--loss);
+  padding:10px 4px;
+}
+#live_pulse{
+  width:9px; height:9px; border-radius:50%;
+  background:var(--loss);
+  animation:live-pulse 1.6s ease-in-out infinite;
+}
+@keyframes live-pulse{
+  0%,100%{ opacity:1; transform:scale(1); }
+  50%{ opacity:.4; transform:scale(.8); }
+}
+#live_banner_meta{
+  color:var(--text-muted);
+  font-weight:400;
+  letter-spacing:.1em;
+  text-transform:none;
+  margin-left:auto;
+  margin-right:8px;
+}
+#live_banner_close{
+  cursor:pointer;
+  color:var(--text-dim);
+  font-size:1.2rem; line-height:1;
+}
+#live_banner_close:hover{ color:var(--accent); }
+#live_player_wrap{
+  position:relative; width:100%;
+  padding-top:56.25%; /* 16:9 */
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:6px;
+  overflow:hidden;
+}
+#live_player_wrap iframe{
+  position:absolute; inset:0;
+  width:100%; height:100%; border:0;
+}
 /* ============================================================
    hero
    ============================================================ */
@@ -1592,9 +1637,21 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     <div id="live_clock">— — —</div>
   </div>
 </div>
+<!-- AFTER -->
 <div id="progress_bar_wrap"><div id="progress_bar"></div></div>
 <div id="conn_banner"></div>
 
+<div id="live_banner" style="display:none;">
+  <div id="live_banner_head">
+    <span id="live_pulse"></span>
+    <span id="live_banner_label">LIVE NOW</span>
+    <span id="live_banner_meta"></span>
+    <span id="live_banner_close" onclick="window.dismissLiveBanner()" title="hide for this session">&times;</span>
+  </div>
+  <div id="live_player_wrap">
+    <div id="live_player"></div>
+  </div>
+</div>
 <section class="hero">
   <div class="hero-left">
     <div class="eyebrow">// season five · now live</div>
@@ -2046,6 +2103,21 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
         <button class="danger" onclick="window.clearFairplay()">Clear FP For This Match</button>
       </div>
     </div>
+   <div class="admin-section">
+  <h3>Live Broadcast</h3>
+  <div class="admin-status">// enter your Twitch channel name (e.g. twitch.tv/arkapyd → "arkapyd"). leave blank + uncheck to take the banner down.</div>
+  <div class="row">
+    <div><label>Twitch Channel Name</label><input type="text" id="live_channel" placeholder="e.g. arkapyd"></div>
+    <div><label>Label (optional)</label><input type="text" id="live_label" placeholder="e.g. M23 · KKR vs RCB"></div>
+  </div>
+  <div class="row">
+    <label class="checkbox-row">
+      <input type="checkbox" id="live_active_toggle">
+      Broadcast is live
+    </label>
+  </div>
+  <button onclick="window.saveLiveStatus()">Update Live Status</button>
+</div>
     <div class="admin-section">
       <h3>Data &amp; Backups</h3>
       <div class="admin-status">// download a JSON snapshot of every result — keep it as your archival dataset for future seasons.</div>
@@ -2394,7 +2466,63 @@ function setConnBanner(state){
     el.textContent = '● offline — cloud unreachable. local-only mode.';
   }
 }
+// ============================== LIVE BROADCAST ==============================
+let liveState = { active: false, videoId: '', label: '' };
+let _liveDismissed = false;
 
+// AFTER
+function applyLive(l){
+  liveState = (l && typeof l === 'object') ? l : { active:false, channel:'', label:'' };
+  renderLiveBanner();
+}
+
+function cloudSaveLive(){
+  if(!dbRef) return;
+  try {
+    const p = dbRef.update(sanitize({ live: liveState }));
+    if(p && p.catch) p.catch(e => { console.error('live write failed:', e); window.showToast('live status saved locally only.', 'error'); });
+  } catch(e){ console.error('live write threw:', e); }
+}
+
+// AFTER
+function renderLiveBanner(){
+  const el = document.getElementById('live_banner');
+  const wrap = document.getElementById('live_player');
+  const meta = document.getElementById('live_banner_meta');
+  if(!el || !wrap) return;
+
+  if(!liveState.active || !liveState.channel || _liveDismissed){
+    el.style.display = 'none';
+    wrap.innerHTML = '';
+    return;
+  }
+
+  el.style.display = 'block';
+  if(meta) meta.textContent = liveState.label || '';
+
+  const parent = location.hostname || 'arkapyd.github.io';
+  const existing = wrap.querySelector('iframe');
+  if(!existing || existing.dataset.ch !== liveState.channel){
+    wrap.innerHTML = `<iframe data-ch="${liveState.channel}" src="https://player.twitch.tv/?channel=${liveState.channel}&parent=${parent}&muted=false" title="RCPL live stream" allowfullscreen></iframe>`;
+  }
+}
+
+window.dismissLiveBanner = function(){
+  _liveDismissed = true;
+  renderLiveBanner();
+};
+  // AFTER
+window.saveLiveStatus = function(){
+  const channel = (document.getElementById('live_channel').value || '').trim().toLowerCase();
+  const label = (document.getElementById('live_label').value || '').trim();
+  const active = document.getElementById('live_active_toggle').checked;
+  if(active && !channel){ window.showToast('enter your Twitch channel name first.', 'error'); return; }
+  liveState = { active, channel, label };
+  _liveDismissed = false;
+  cloudSaveLive();
+  renderLiveBanner();
+  window.showToast(active ? 'broadcast marked live.' : 'broadcast taken down.', 'success');
+};
 // ============================== FIREBASE ==============================
 function sanitize(o){ return JSON.parse(JSON.stringify(o, (k,v) => v === undefined ? null : v)); }
 function pushToCloud(){
@@ -2531,6 +2659,7 @@ const _fbTimeout = setTimeout(() => {
 }, 5000);
 
 if(dbRef){
+  // AFTER
   dbRef.on('value', snap => {
     clearTimeout(_fbTimeout);
     _cloudConnected = true;
@@ -2540,6 +2669,7 @@ if(dbRef){
     applyRoster(d && d.roster);
     applyFairplay(d && d.fairplay);
     applyBets(d && d.bets);
+    applyLive(d && d.live);
     ingest(d && d.results);
   }, err => {
     clearTimeout(_fbTimeout);
@@ -4815,12 +4945,16 @@ window.bankSeason5 = function(){
   window.showToast('S5 vault + head-to-head generated — copy from the box below.', 'success');
 };
 
+// AFTER
 window.unlockAdmin = function(){
   if(prompt('admin password:') === 'rcpl2026'){
     document.getElementById('admin_panel').style.display = 'block';
     renderRosterAdmin();
     renderFpAdmin();
     renderBetAdmin();
+    document.getElementById('live_channel').value = liveState.channel || '';
+    document.getElementById('live_label').value = liveState.label || '';
+    document.getElementById('live_active_toggle').checked = !!liveState.active;
     window.showToast('admin access granted.', 'success');
     document.getElementById('admin_panel').scrollIntoView({ behavior:'smooth' });
   }
