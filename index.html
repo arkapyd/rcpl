@@ -3585,7 +3585,7 @@ window.calcManagerValue = function(team) {
   let finalValue = titleWeight + playoffWeight + wlWeight + currWeight + upsetBonus - baseLossDrift - upsetLossPenalty;
   
   // optional: floor the value at 0 so it doesn't go negative, or remove this line to allow negative stock
-  return Math.max(0, finalValue); 
+  return finalValue; 
 };
 function renderOdds(){
   const upcoming = SCHEDULE.filter(f => !results[f.id]).slice(0, 3);
