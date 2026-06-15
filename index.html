@@ -1938,7 +1938,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
             <th class="num">Wickets</th>
            <th class="num">Economy</th>
             <th class="num" style="color:var(--accent);" title="runs scored ÷ wickets lost · S1–S4 (if recorded) + live S5">RPW</th>
-            <th class="num" style="color:var(--accent);" title="total runs ÷ completed innings (all out or full overs) · S1–S4 (if recorded) + live S5">Bat. Avg</th>
+            <th class="num" style="color:var(--accent);" title="total runs ÷ completed innings · S5 exact (all out / full overs); S1–S4 approximated by matches played">Bat. Avg</th>
             <th class="num" style="color:var(--win);" title="All-Time Franchise Value (Base Legacy + Live S5 V$)">Total V$</th>
           </tr>
         </thead>
@@ -3630,13 +3630,14 @@ function renderCareerStats(){
     }
     const rpwStr = rpwWL > 0 ? (rpwRuns / rpwWL).toFixed(2) : '—';
     
-    // Bat. Avg — total runs ÷ completed innings, S5 folded onto the S1–S4 baseline (if recorded)
-    let batRuns = s5.rf;
-    let batInns = s5BatInns[t] || 0;
-    if(s.battedInns != null){
-      batRuns += s.runs;
-      batInns += s.battedInns;
-    }
+   // Bat. Avg — total runs ÷ completed innings, S1–S4 + live S5.
+    // S1–S4 stored only season aggregates (no per-innings detail), so its completed-innings
+    // count is proxied by matches played (CAREER_STATS.m) — each historical match = one innings.
+    // S5 uses the exact count (all out / full overs). A precise `battedInns` on a CAREER_STATS
+    // entry overrides the proxy for that team.
+    let histBatInns = (s.battedInns != null) ? s.battedInns : (s.m || 0);
+    let batRuns = (s.runs || 0) + s5.rf;
+    let batInns = histBatInns + (s5BatInns[t] || 0);
     const batAvgStr = batInns > 0 ? (batRuns / batInns).toFixed(2) : '—';
     
     // Fetch total live franchise value
