@@ -627,8 +627,8 @@ tbody tr.highlight-row {
   font-weight:800; color:var(--text); font-size:1rem;
 }
 .col-nrr{ color:var(--text-muted); }
-.col-nrr.pos-nrr{ color:var(--win); }
-.col-nrr.neg-nrr{ color:#f87171; }
+/* points table: NRR in the page theme colour; neutral in other tables */
+#standings_body .col-nrr{ color:var(--accent); }
 
 .top4-row{ position:relative; }
 .top4-row td:first-child::before{
@@ -2962,7 +2962,6 @@ function renderStandings(standings){
     const recent = s.form.slice(-5);
     while(recent.length < 5) recent.unshift({ res:'NA' });
     const formCells = recent.map(f => `<span class="form-letter ${f.res}" title="${f.detail || 'no match yet'}">${f.res === 'NA' ? '·' : f.res}</span>`).join('');
-    const nrrCls = s.nrr > 0 ? 'pos-nrr' : (s.nrr < 0 ? 'neg-nrr' : '');
     const fpData = fp[s.team] || { avg: null, count: 0 };
     const fpStr = (fpData.avg != null) ? fpData.avg.toFixed(2) : '—';
     return `
@@ -2977,7 +2976,7 @@ function renderStandings(standings){
         <td class="num">${s.w}</td>
         <td class="num">${s.l}</td>
         <td class="num col-pts">${s.pts}</td>
-        <td class="num col-nrr ${nrrCls}">${s.p === 0 ? '—' : s.nrrStr}</td>
+        <td class="num col-nrr">${s.p === 0 ? '—' : s.nrrStr}</td>
         <td class="num col-fp" title="${fpData.count} rated">${fpStr}</td>
         <td><div class="form-row">${formCells}</div></td>
       </tr>`;
