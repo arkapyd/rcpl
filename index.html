@@ -2615,6 +2615,44 @@ function pushMatch(id){
     window.showToast('cloud write error — saved locally only.', 'error');
   }
 }
+
+// per-match write for fairplay — single fixture node instead of the whole fairplay blob.
+function pushFp(id){
+  saveLocalFp();
+  if(!dbRef) return;
+  try {
+    const p = fairplay[id]
+      ? dbRef.child('fairplay/' + id).set(sanitize(fairplay[id]))
+      : dbRef.child('fairplay/' + id).remove();
+    if(p && p.catch) p.catch(e => {
+      console.error('fairplay match write failed:', e);
+      window.showToast('FP saved locally only.', 'error');
+      setConnBanner('offline');
+    });
+  } catch(e){
+    console.error('fairplay match write threw:', e);
+    window.showToast('FP save error — local only.', 'error');
+  }
+}
+
+// per-match write for bets — single fixture node instead of the whole bets blob.
+function pushBets(id){
+  saveLocalBets();
+  if(!dbRef) return;
+  try {
+    const p = bets[id]
+      ? dbRef.child('bets/' + id).set(sanitize(bets[id]))
+      : dbRef.child('bets/' + id).remove();
+    if(p && p.catch) p.catch(e => {
+      console.error('bets match write failed:', e);
+      window.showToast('bets saved locally only.', 'error');
+      setConnBanner('offline');
+    });
+  } catch(e){
+    console.error('bets match write threw:', e);
+    window.showToast('bets save error — local only.', 'error');
+  }
+}
 // ============================== MANAGER ROSTER (editable + persisted) ==============================
 function titleCase(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
@@ -3203,11 +3241,13 @@ function renderStatLeaders(standings){
     return;
   }
   
+  const battingInnings = getBattingInnings();
   let advancedStats = standings.map(s => {
     let m = s.p;
-    let avg = m > 0 ? (s.rf / m) : 0;
+    let battedInns = battingInnings[s.team] || 0;
+    let batAvg = battedInns > 0 ? (s.rf / battedInns) : 0;
     let sr = s.of_balls > 0 ? (s.rf / s.of_balls) * 100 : 0;
-    let basra = avg + sr;
+    let basra = batAvg + sr;
     
     let wkts = s.wkts_taken || 0;
     let econ = s.oa_balls > 0 ? (s.ra / (s.oa_balls / 6)) : 0;
@@ -3542,13 +3582,12 @@ function renderExhaustiveStats(){
   const battingInnings = getBattingInnings();
   window.currentStandings.forEach(s => {
     let m = s.p;
-    let avg = m > 0 ? (s.rf / m) : 0;
     let rpw = s.wkts_lost > 0 ? (s.rf / s.wkts_lost) : null;
     let battedInns = battingInnings[s.team] || 0;
     let batAvg = battedInns > 0 ? (s.rf / battedInns) : null;
     let sr = s.of_balls > 0 ? (s.rf / s.of_balls) * 100 : 0;
     let rr = s.of_balls > 0 ? (s.rf / (s.of_balls / 6)) : 0;
-    let basra = avg + sr;
+    let basra = (batAvg != null ? batAvg : 0) + sr;
     let wkts = s.wkts_taken || 0;
     let econ = s.oa_balls > 0 ? (s.ra / (s.oa_balls / 6)) : 0;
     let wpm = m > 0 ? (wkts / m) : 0;
@@ -3718,11 +3757,13 @@ function renderCareerStats(){
 // season metrics + BASRA/BEWM ranks (ranked among teams that have played)
 function computeCompareMetrics(){
   const st = window.currentStandings || [];
+  const battingInnings = getBattingInnings();
   const rows = st.map((s, i) => {
     const m = s.p;
-    const avg = m > 0 ? (s.rf / m) : 0;
+    const battedInns = battingInnings[s.team] || 0;
+    const batAvg = battedInns > 0 ? (s.rf / battedInns) : 0;
     const sr = s.of_balls > 0 ? (s.rf / s.of_balls) * 100 : 0;
-    const basra = m > 0 ? (avg + sr) : 0;
+    const basra = m > 0 ? (batAvg + sr) : 0;
     const wkts = s.wkts_taken || 0;
     const econ = s.oa_balls > 0 ? (s.ra / (s.oa_balls / 6)) : 0;
     const wpm = m > 0 ? (wkts / m) : 0;
@@ -4407,7 +4448,7 @@ window.saveBets = function(){
   if(Object.keys(matchBets).length === 0) delete bets[id];
   else bets[id] = matchBets;
 
-  cloudSaveBets();
+  pushBets(id);
   renderBetMatchOptions();
   renderBetEntryRows();
   renderBetLedger();
@@ -4421,7 +4462,7 @@ window.clearBetsForMatch = function(){
   if(!bets[id]){ window.showToast(`${id} has no recorded bets.`, 'error'); return; }
   if(confirm(`clear all recorded bets for ${id}?`)){
     delete bets[id];
-    cloudSaveBets();
+    pushBets(id);
     renderBetMatchOptions();
     renderBetEntryRows();
     renderBetLedger();
@@ -4468,7 +4509,7 @@ function collectFpFromInputs(id){
 function commitFp(id, entry){
   if(Object.keys(entry).length === 0) delete fairplay[id];
   else fairplay[id] = entry;
-  cloudSaveFp();
+  pushFp(id);
 }
 
 // "Save FP Only" — persist FP without touching the match result (works for unplayed fixtures too)
@@ -5079,11 +5120,13 @@ window.swapMatches = function(){
     swapDict(bets);
 
     // 4. commit everything to cloud
-    cloudSaveSchedule();
+   cloudSaveSchedule();
     pushMatch(m1);
     pushMatch(m2);
-    cloudSaveFp();
-    cloudSaveBets();
+    pushFp(m1);
+    pushFp(m2);
+    pushBets(m1);
+    pushBets(m2);
 
     // 5. clean up the ui
     m1Input.value = '';
