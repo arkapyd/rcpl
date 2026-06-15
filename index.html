@@ -1314,6 +1314,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   color: var(--t1);
   opacity: 0.85;
 }
+.hero-stat-row:hover{ background: var(--t1); }
 .hero-stat-row:hover .stat-row-rank,
 .hero-stat-row:hover .stat-row-team,
 .hero-stat-row:hover .stat-row-value,
@@ -1871,7 +1872,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
         <thead>
           <tr>
             <th>Team</th>
-            <th class="num">NRR</th>
+            <th class="num">Runs</th>
             <th class="num">Runs/Match</th>
             <th class="num" style="color:var(--accent);">RPW</th>
             <th class="num">Strike Rate</th>
@@ -3483,7 +3484,6 @@ function renderExhaustiveStats(){
   let html = '';
   window.currentStandings.forEach(s => {
     let m = s.p;
-    let nrr = s.nrr;
     let avg = m > 0 ? (s.rf / m) : 0;
     let rpw = s.wkts_lost > 0 ? (s.rf / s.wkts_lost) : null;
     let sr = s.of_balls > 0 ? (s.rf / s.of_balls) * 100 : 0;
@@ -3506,7 +3506,7 @@ function renderExhaustiveStats(){
         <td style="text-align:left; padding-left:18px;">
            <span class="team-cell" style="--team-glow:${TEAM_COLORS[s.team]};" onclick="window.takeoverTeam('${s.team}')">${s.team.toUpperCase()}</span>
         </td>
-         <td class="num col-nrr">${m === 0 ? '—' : nrr.toFixed(3)}</td>
+        <td class="num">${s.rf}</td>
         <td class="num">${avg.toFixed(2)}</td>
         <td class="num" style="font-weight:700; color:var(--accent);">${rpw != null ? rpw.toFixed(2) : '—'}</td>
         <td class="num">${sr.toFixed(2)}</td>
