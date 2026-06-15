@@ -2017,8 +2017,24 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
           <div><label>Balls</label><input type="number" id="so_b2" min="0" max="12" value="12"></div>
         </div>
       </div>
-     <div style="display:flex; gap:10px; margin-top:14px;">
-        <button onclick="window.saveMatch()">Save Match</button>
+    <div class="row" style="margin-top:10px;">
+        <div style="flex:0 0 100%;">
+          <label style="color:var(--text-dim);">// fairplay rating · 0–10 each · optional, leave blank to skip · tied to this fixture</label>
+        </div>
+      </div>
+      <div class="row">
+        <div style="max-width:200px;">
+          <label>FP · <span id="fp_label_a" style="color:var(--accent); font-weight:700;">team a</span></label>
+          <input type="number" id="fp_a" min="0" max="10" step="any" placeholder="—">
+        </div>
+        <div style="max-width:200px;">
+          <label>FP · <span id="fp_label_b" style="color:var(--accent); font-weight:700;">team b</span></label>
+          <input type="number" id="fp_b" min="0" max="10" step="any" placeholder="—">
+        </div>
+      </div>
+     <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+        <button onclick="window.saveMatch()">Save Match + FP</button>
+        <button class="ghost" onclick="window.saveFairplayInline()">Save FP Only</button>
         <button class="danger" onclick="window.resetMatch()">Reset Selected Match</button>
       </div>
     </div>
@@ -2103,22 +2119,6 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
       </div>
     </div>
      <div class="admin-section">
-      <h3>Fairplay (FP) Entry</h3>
-      <div class="admin-status">// rate each team's fair play out of 10 for any fixture — played or not. the points table shows each team's running FP average across every rated match. leave a box blank to skip rating that team.</div>
-      <div class="row">
-        <div style="flex:2;">
-          <label>Select Fixture</label>
-          <select id="fp_fixture_select" onchange="window.loadFpFixture()"></select>
-        </div>
-      </div>
-      <div class="admin-status" id="fp_fixture_status">// pick a fixture to rate</div>
-      <div id="fp_entry_rows"></div>
-      <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
-        <button onclick="window.saveFairplay()">Save FP</button>
-        <button class="danger" onclick="window.clearFairplay()">Clear FP For This Match</button>
-      </div>
-    </div>
-   <div class="admin-section">
   <h3>Live Broadcast</h3>
   <div class="admin-status">// enter your Twitch channel name (e.g. twitch.tv/arkapyd → "arkapyd"). leave blank + uncheck to take the banner down.</div>
   <div class="row">
@@ -4277,83 +4277,38 @@ function getFairplayAverages(){
   return out;
 }
 
-function renderFpMatchOptions(){
-  const sel = document.getElementById('fp_fixture_select');
-  if(!sel) return;
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">select a fixture…</option>' +
-    SCHEDULE.map(f => {
-      const r = results[f.id];
-      const status = r ? ' [played]' : ' [upcoming]';
-      const has = (fairplay[f.id] && Object.keys(fairplay[f.id]).length) ? ' · FP set' : '';
-      return `<option value="${f.id}">${f.id} · ${f.a.toUpperCase()} vs ${f.b.toUpperCase()}${status}${has}</option>`;
-    }).join('');
-  if(cur) sel.value = cur;
-}
-
-function renderFpEntryRows(){
-  const wrap = document.getElementById('fp_entry_rows');
-  const statusEl = document.getElementById('fp_fixture_status');
-  const sel = document.getElementById('fp_fixture_select');
-  if(!wrap || !sel) return;
-  const id = sel.value;
-  if(!id){ wrap.innerHTML = ''; if(statusEl) statusEl.innerHTML = '// pick a fixture to rate'; return; }
-  const f = SCHEDULE.find(x => x.id === id);
-  const r = results[id];
-  const saved = fairplay[id] || {};
-  if(statusEl){
-    statusEl.innerHTML = r
-      ? `<span class="accent">${id}</span> · <span class="played">played</span> · ${f.a.toUpperCase()} vs ${f.b.toUpperCase()}`
-      : `<span class="accent">${id}</span> · <span class="upcoming-text">upcoming</span> · ${f.a.toUpperCase()} vs ${f.b.toUpperCase()}`;
-  }
-  const rowFor = (team, idx) => {
-    const v = (saved[team] != null) ? saved[team] : '';
-    return `
-      <div class="fp-grid-row">
-        <div>
-          <label>Team</label>
-          <div class="fp-team-name" style="color:${TEAM_COLORS[team]};">${team.toUpperCase()}</div>
-        </div>
-        <div style="max-width:170px;">
-          <label>Fairplay (0–10)</label>
-          <input type="number" min="0" max="10" step="any" id="fpval_${idx}" value="${v}" placeholder="—">
-        </div>
-      </div>`;
-  };
-  wrap.innerHTML = rowFor(f.a, 0) + rowFor(f.b, 1);
-}
-
-function renderFpAdmin(){
-  renderFpMatchOptions();
-  renderFpEntryRows();
-}
-
-window.loadFpFixture = function(){
-  renderFpEntryRows();
-};
-
-window.saveFairplay = function(){
-  const sel = document.getElementById('fp_fixture_select');
-  const id = sel ? sel.value : '';
-  if(!id){ window.showToast('select a fixture first.', 'error'); return; }
+// collect + validate FP from the inline inputs in Match Result Entry (keyed by fixture teams)
+function collectFpFromInputs(id){
   const f = SCHEDULE.find(x => x.id === id);
   const entry = {};
+  if(!f) return { ok:true, entry };
   let bad = null;
-  [[f.a, 0], [f.b, 1]].forEach(([team, idx]) => {
-    const el = document.getElementById('fpval_' + idx);
+  [[f.a, 'fp_a'], [f.b, 'fp_b']].forEach(([team, elId]) => {
+    const el = document.getElementById(elId);
     if(!el) return;
     const raw = (el.value || '').trim();
-    if(raw === '') return; // left blank → no rating for this team
+    if(raw === '') return; // blank → no rating for this team
     const v = parseFloat(raw);
     if(isNaN(v) || v < 0 || v > 10){ bad = bad || `${team.toUpperCase()}: FP must be 0–10.`; return; }
     entry[team] = v;
   });
-  if(bad){ window.showToast(bad, 'error'); return; }
+  return { ok: !bad, error: bad, entry };
+}
+
+// write (or clear) the FP entry for a fixture and sync
+function commitFp(id, entry){
   if(Object.keys(entry).length === 0) delete fairplay[id];
   else fairplay[id] = entry;
   cloudSaveFp();
-  renderFpMatchOptions();
-  renderFpEntryRows();
+}
+
+// "Save FP Only" — persist FP without touching the match result (works for unplayed fixtures too)
+window.saveFairplayInline = function(){
+  const id = document.getElementById('fixture_select').value;
+  if(!id){ window.showToast('select a fixture first.', 'error'); return; }
+  const fp = collectFpFromInputs(id);
+  if(!fp.ok){ window.showToast(fp.error, 'error'); return; }
+  commitFp(id, fp.entry);
   updateUI();
   window.showToast(`saved FP for ${id}.`, 'success');
 };
@@ -4830,6 +4785,17 @@ window.loadFixture = function(){
     document.getElementById('super_over_panel').style.display = 'none';
     status.innerHTML = `<span class="accent">${id}</span> · <span class="upcoming-text">upcoming</span> · ${f.a.toUpperCase()} vs ${f.b.toUpperCase()}`;
   }
+
+  // fairplay inputs (independent of result) — tied to this fixture's teams
+  const _fp = fairplay[id] || {};
+  const _fpa = document.getElementById('fp_a');
+  const _fpb = document.getElementById('fp_b');
+  if(_fpa) _fpa.value = (_fp[f.a] != null) ? _fp[f.a] : '';
+  if(_fpb) _fpb.value = (_fp[f.b] != null) ? _fp[f.b] : '';
+  const _la = document.getElementById('fp_label_a');
+  const _lb = document.getElementById('fp_label_b');
+  if(_la){ _la.textContent = f.a.toUpperCase(); _la.style.color = TEAM_COLORS[f.a]; }
+  if(_lb){ _lb.textContent = f.b.toUpperCase(); _lb.style.color = TEAM_COLORS[f.b]; }
 };
 
 function clearForm(){
@@ -4839,6 +4805,7 @@ function clearForm(){
   ['b1','b2'].forEach(x => document.getElementById(x).value = 30);
   document.getElementById('has_super_over').checked = false;
   document.getElementById('super_over_panel').style.display = 'none';
+  ['fp_a','fp_b'].forEach(x => { const el = document.getElementById(x); if(el) el.value = ''; });
 }
 
 window.saveMatch = function(){
@@ -4868,6 +4835,10 @@ window.saveMatch = function(){
     return;
   }
 
+  // validate the inline fairplay scores before committing (blank = skip)
+  const _fp = collectFpFromInputs(id);
+  if(!_fp.ok){ window.showToast(_fp.error, 'error'); return; }
+
   if(document.getElementById('has_super_over').checked){
     r.super_over = {
       r1: +document.getElementById('so_r1').value || 0,
@@ -4879,8 +4850,8 @@ window.saveMatch = function(){
     };
   }
 
-  // AFTER
   results[id] = r;
+  commitFp(id, _fp.entry);
   pushMatch(id);
   updateUI();
   document.getElementById('fixture_select').value = id;
@@ -4951,9 +4922,8 @@ window.swapMatches = function(){
     updateUI(); 
     
     // forcefully refresh the admin panel dropdowns
-    if(typeof renderFpMatchOptions === 'function') renderFpMatchOptions();
     if(typeof renderBetMatchOptions === 'function') renderBetMatchOptions();
-    window.loadFixture(); 
+    window.loadFixture();
     
     window.showToast(`swapped schedule and data for ${m1} and ${m2}.`, 'success');
   }
@@ -5064,7 +5034,6 @@ window.unlockAdmin = function(){
     if(_rb) _rb.style.display = 'none';
     const _rbtn = document.getElementById('roster_toggle_btn');
     if(_rbtn) _rbtn.textContent = 'Show ▸';
-    renderFpAdmin();
     renderBetAdmin();
     document.getElementById('live_channel').value = liveState.channel || '';
     document.getElementById('live_label').value = liveState.label || '';
