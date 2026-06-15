@@ -2986,9 +2986,10 @@ function renderStandings(standings){
     const isHighlighted = (selectedTeamFilter && s.team === selectedTeamFilter) ? ' highlight-row' : '';
     const ordered = s.form.slice().sort((a, b) => (a.ts || 0) - (b.ts || 0));
     const recent = ordered.slice(-5);
-    while(recent.length < 5) recent.unshift({ res:'NA' });
+    const latestIdx = recent.length - 1;        // newest real result (before right-padding)
+    while(recent.length < 5) recent.push({ res:'NA' });
     const formCells = recent.map((f, i) => {
-      const isLatest = i === recent.length - 1 && f.res !== 'NA';
+      const isLatest = i === latestIdx && f.res !== 'NA';
       return `<span class="form-letter ${f.res}${isLatest ? ' latest' : ''}" title="${f.detail || 'no match yet'}">${f.res === 'NA' ? '·' : f.res}</span>`;
     }).join('');
     const fpData = fp[s.team] || { avg: null, count: 0 };
