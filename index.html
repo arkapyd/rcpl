@@ -1618,7 +1618,37 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   letter-spacing:.15em;
   text-transform:uppercase;
 }
-</style>
+
+/* ===== mobile pass ===== */
+@media (max-width:640px){
+  body{ padding:74px 0 48px; }
+
+  /* ribbon — tighter; drop the clock (eats width on phones) */
+  .ribbon{ height:54px; padding:0 14px; }
+  .ribbon-logo{ height:38px; width:38px; }
+  .ribbon-title{ font-size:.8rem; letter-spacing:.06em; }
+  #live_clock{ display:none; }
+  #s5_countdown{ font-size:.62rem; padding:5px 8px; }
+  #progress_bar_wrap{ top:54px; }
+  #conn_banner{ top:55px; }
+
+  /* tighter gutters */
+  .container, .hero, .foot, #live_banner{ padding-left:14px; padding-right:14px; }
+  .hero{ padding-top:26px; padding-bottom:18px; min-height:0; }
+  .section{ margin-top:32px; }
+  .section-head{ flex-wrap:wrap; }
+  .section-title, .combo-title{ font-size:1.25rem; letter-spacing:.1em; }
+
+  /* tables scroll sideways instead of crushing columns */
+  .table-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
+  /* modals fit small screens */
+  .modal-content{ padding:20px 16px; }
+  .mgr-modal-index-row{ grid-template-columns:1fr 1fr; }
+
+  /* footer stacks */
+  .foot{ flex-direction:column; gap:8px; align-items:flex-start; }
+}
 </head>
 <body>
 
