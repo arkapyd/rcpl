@@ -650,6 +650,7 @@ tbody tr.highlight-row {
 .form-letter.L{ background:rgba(239,68,68,.15); color:#f87171; border:1px solid rgba(239,68,68,.35); }
 .form-letter.T{ background:rgba(250,204,21,.15); color:var(--tie); border:1px solid rgba(250,204,21,.35); }
 .form-letter.NA{ background:transparent; color:var(--text-dim); border:1px dashed var(--border-bright); }
+.form-letter.latest{ text-decoration:underline; text-decoration-thickness:1.5px; text-underline-offset:2px; }
 
 /* Global team link hover */
 .team-link {
@@ -2040,17 +2041,22 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
       </div>
     </div>
 
-    <div class="admin-section">
-      <h3>Managers &amp; Roster</h3>
+   <div class="admin-section">
+      <h3 style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <span>Managers &amp; Roster</span>
+        <button class="ghost" id="roster_toggle_btn" onclick="window.toggleRosterEditor()" style="padding:6px 12px; font-size:.68rem;">Show ▸</button>
+      </h3>
       <div class="admin-status" id="roster_status">// set each team's S5 manager. choose <span class="accent">＋ add new…</span> and type a name to add a debutant (starts at zero, tracked from S5).</div>
-      <div id="roster_editor"></div>
-      <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
-        <button onclick="window.saveRoster()">Save Roster</button>
-        <button class="ghost" onclick="window.renderRosterAdmin()">Reload</button>
-      </div>
-      <div style="margin-top:18px;">
-        <div class="admin-status" style="margin-bottom:8px;">// archived vault — managers with banked history not playing this season. their record is kept safe; reassign one above to bring them back where they left off.</div>
-        <div id="roster_archived" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+      <div id="roster_body" style="display:none;">
+        <div id="roster_editor"></div>
+        <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+          <button onclick="window.saveRoster()">Save Roster</button>
+          <button class="ghost" onclick="window.renderRosterAdmin()">Reload</button>
+        </div>
+        <div style="margin-top:18px;">
+          <div class="admin-status" style="margin-bottom:8px;">// archived vault — managers with banked history not playing this season. their record is kept safe; reassign one above to bring them back where they left off.</div>
+          <div id="roster_archived" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+        </div>
       </div>
     </div>
    <div class="admin-section">
@@ -2926,6 +2932,16 @@ window.renderRosterAdmin = function(){
   }
 };
 
+window.toggleRosterEditor = function(){
+  const body = document.getElementById('roster_body');
+  const btn = document.getElementById('roster_toggle_btn');
+  if(!body) return;
+  const show = body.style.display === 'none';
+  body.style.display = show ? 'block' : 'none';
+  if(btn) btn.textContent = show ? 'Hide ▾' : 'Show ▸';
+  if(show) renderRosterAdmin();   // build fresh from current roster each time it opens
+};
+
 window._rosterSelChange = function(t){
   const sel = document.getElementById('mgrsel_' + t);
   const inp = document.getElementById('mgrnew_' + t);
@@ -2968,9 +2984,13 @@ function renderStandings(standings){
   tbody.innerHTML = standings.map((s, i) => {
     const top4 = i < 4 ? ' top4-row' : '';
     const isHighlighted = (selectedTeamFilter && s.team === selectedTeamFilter) ? ' highlight-row' : '';
-    const recent = s.form.slice(-5);
+    const ordered = s.form.slice().sort((a, b) => (a.ts || 0) - (b.ts || 0));
+    const recent = ordered.slice(-5);
     while(recent.length < 5) recent.unshift({ res:'NA' });
-    const formCells = recent.map(f => `<span class="form-letter ${f.res}" title="${f.detail || 'no match yet'}">${f.res === 'NA' ? '·' : f.res}</span>`).join('');
+    const formCells = recent.map((f, i) => {
+      const isLatest = i === recent.length - 1 && f.res !== 'NA';
+      return `<span class="form-letter ${f.res}${isLatest ? ' latest' : ''}" title="${f.detail || 'no match yet'}">${f.res === 'NA' ? '·' : f.res}</span>`;
+    }).join('');
     const fpData = fp[s.team] || { avg: null, count: 0 };
     const fpStr = (fpData.avg != null) ? fpData.avg.toFixed(2) : '—';
     return `
@@ -5036,11 +5056,14 @@ window.bankSeason5 = function(){
   window.showToast('S5 vault + head-to-head generated — copy from the box below.', 'success');
 };
 
-// AFTER
 window.unlockAdmin = function(){
   if(prompt('admin password:') === 'rcpl2026'){
     document.getElementById('admin_panel').style.display = 'block';
-    renderRosterAdmin();
+    // roster editor starts collapsed (it's long) — user expands on demand
+    const _rb = document.getElementById('roster_body');
+    if(_rb) _rb.style.display = 'none';
+    const _rbtn = document.getElementById('roster_toggle_btn');
+    if(_rbtn) _rbtn.textContent = 'Show ▸';
     renderFpAdmin();
     renderBetAdmin();
     document.getElementById('live_channel').value = liveState.channel || '';
