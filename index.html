@@ -1823,10 +1823,11 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
         <div class="section-meta" id="stats_meta">team-level · across played matches</div>
       </div>
       <div class="stats-header" style="display:flex; flex-direction:column; gap:8px; margin-top:6px;">
-        <div id="subtabs_seasonal" style="display:flex; gap:10px;">
+        <div id="subtabs_seasonal" style="display:flex; gap:10px; flex-wrap:wrap;">
           <button class="tab-btn active" onclick="window.switchStatsTab('boards')">Leaderboards</button>
           <button class="tab-btn" onclick="window.switchStatsTab('exhaustive')">Exhaustive Stats</button>
           <button class="tab-btn" onclick="window.switchStatsTab('mvm')">Most Valuable Manager</button>
+          <button class="tab-btn" onclick="window.switchStatsTab('compare')">Compare Teams</button>
           <button class="tab-btn" onclick="window.switchStatsTab('graphs')">View Graphs</button>
         </div>
         <div id="subtabs_career" style="display:none; gap:10px;">
@@ -1922,6 +1923,27 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
         <div class="graph-card" onclick="window.openSingleGraph('wkts')" title="expand">
           <span class="graph-expand">&#10530;</span>
           <canvas id="chartWkts"></canvas>
+        </div>
+      </div>
+    </div>
+    <div id="stats_compare" style="display:none;" class="table-wrap">
+      <div style="padding:20px 18px;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--text-dim); margin-bottom:14px;">
+          // pick two teams to compare head-to-head on the season
+        </div>
+        <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+          <div style="flex:1; min-width:130px;">
+            <label>Team A</label>
+            <select id="cmp_a"></select>
+          </div>
+          <div style="flex:0 0 auto; font-family:'Anton',sans-serif; font-size:1.1rem; color:var(--text-dim); padding-bottom:8px;">VS</div>
+          <div style="flex:1; min-width:130px;">
+            <label>Team B</label>
+            <select id="cmp_b"></select>
+          </div>
+          <div style="flex:0 0 auto;">
+            <button onclick="window.openCompare()">Compare</button>
+          </div>
         </div>
       </div>
     </div>
@@ -2212,6 +2234,15 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   </div>
 </div>
 
+<div id="compare_modal" class="modal-overlay">
+  <div class="modal-content" style="max-width:680px; width:96%;">
+    <span class="modal-close" onclick="document.getElementById('compare_modal').classList.remove('show')">&times;</span>
+    <h2 class="modal-title" id="compare_title">Team Comparison</h2>
+    <div class="modal-subtitle" id="compare_sub">// season head-to-head</div>
+    <div id="compare_body"></div>
+  </div>
+</div>
+
 <div id="odds_info_modal" class="modal-overlay">
   <div class="modal-content">
     <span class="modal-close" onclick="document.getElementById('odds_info_modal').classList.remove('show')">&times;</span>
@@ -2435,6 +2466,7 @@ window.switchStatsTab = function(tab) {
   // AFTER
   if(document.getElementById('stats_h2h')) document.getElementById('stats_h2h').style.display = tab === 'h2h' ? 'block' : 'none';
   if(document.getElementById('stats_graphs')) document.getElementById('stats_graphs').style.display = tab === 'graphs' ? 'block' : 'none';
+  if(document.getElementById('stats_compare')) document.getElementById('stats_compare').style.display = tab === 'compare' ? 'block' : 'none';
   document.querySelectorAll('.tab-btn:not(.modal-trigger)').forEach(b => b.classList.remove('active'));
   const activeBtn = document.querySelector(`.tab-btn[onclick="window.switchStatsTab('${tab}')"]`);
   if(activeBtn) activeBtn.classList.add('active');
@@ -2803,8 +2835,18 @@ function fillTeamSelect(id){
     el.appendChild(o);
   });
 }
+function fillCompareSelects(){
+  const a = document.getElementById('cmp_a'), b = document.getElementById('cmp_b');
+  if(!a || !b) return;
+  const opts = TEAMS.map(t => `<option value="${t}">${t.toUpperCase()}</option>`).join('');
+  a.innerHTML = opts; b.innerHTML = opts;
+  a.value = TEAMS[0];
+  b.value = TEAMS[1];
+}
+
 function initUI(){
   ['t1','t2'].forEach(fillTeamSelect);
+  fillCompareSelects();
 document.getElementById('group_a_teams').innerHTML = GROUP_A.map(t =>
     `<span class="team-pill" style="--team-color:${TEAM_COLORS[t]};" onclick="window.takeoverTeam('${t}')">${t.toUpperCase()}</span>`
   ).join('');
@@ -3672,6 +3714,102 @@ function renderCareerStats(){
   
   tbody.innerHTML = html;
 }
+// ============================== COMPARE TEAMS ==============================
+// season metrics + BASRA/BEWM ranks (ranked among teams that have played)
+function computeCompareMetrics(){
+  const st = window.currentStandings || [];
+  const rows = st.map((s, i) => {
+    const m = s.p;
+    const avg = m > 0 ? (s.rf / m) : 0;
+    const sr = s.of_balls > 0 ? (s.rf / s.of_balls) * 100 : 0;
+    const basra = m > 0 ? (avg + sr) : 0;
+    const wkts = s.wkts_taken || 0;
+    const econ = s.oa_balls > 0 ? (s.ra / (s.oa_balls / 6)) : 0;
+    const wpm = m > 0 ? (wkts / m) : 0;
+    const bewm = m > 0 ? (10 + (0.3 * wpm) - (0.7 * econ)) : 0;
+    return { team: s.team, pos: i + 1, p: s.p, w: s.w, l: s.l, nrr: s.nrr, nrrStr: s.nrrStr, basra, bewm, played: m > 0 };
+  });
+  const rankBy = key => {
+    const played = rows.filter(r => r.played).slice().sort((a, b) => b[key] - a[key]);
+    const rank = {};
+    played.forEach((r, i) => rank[r.team] = i + 1);
+    return rank;
+  };
+  const basraRank = rankBy('basra');
+  const bewmRank = rankBy('bewm');
+  rows.forEach(r => { r.basraRank = basraRank[r.team] || null; r.bewmRank = bewmRank[r.team] || null; });
+  return rows;
+}
+
+window.openCompare = function(){
+  const aCode = document.getElementById('cmp_a').value;
+  const bCode = document.getElementById('cmp_b').value;
+  if(!aCode || !bCode){ window.showToast('pick two teams to compare.', 'error'); return; }
+  if(aCode === bCode){ window.showToast('pick two different teams.', 'error'); return; }
+
+  const rows = computeCompareMetrics();
+  const A = rows.find(r => r.team === aCode);
+  const B = rows.find(r => r.team === bCode);
+  if(!A || !B){ window.showToast('no data for those teams yet.', 'error'); return; }
+
+  // stylized crest — team code glowing in the team's colour (no logo files exist on the site)
+  const badge = t => {
+    const c1 = TEAM_COLORS[t] || '#86acd8';
+    return `
+      <div style="display:flex; flex-direction:column; align-items:center; gap:10px; flex:1; min-width:120px;">
+        <div style="width:108px; height:108px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+                    background:var(--surface-2); border:3px solid ${c1}; box-shadow:0 0 30px ${c1}66, inset 0 0 22px ${c1}22;
+                    font-family:'Anton',sans-serif; font-size:2rem; letter-spacing:.04em; color:${c1};">
+          ${t.toUpperCase()}
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:.66rem; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim);">mgr · ${MANAGERS[t] || '—'}</div>
+      </div>`;
+  };
+
+  const cmp = (x, y, lowerBetter) => {
+    if(x == null || y == null || x === y) return null;
+    return (lowerBetter ? (x < y) : (x > y)) ? 'a' : 'b';
+  };
+  const fmtRank = (val, rank) => rank ? `${val.toFixed(2)} <span style="color:var(--text-dim);">#${rank}</span>` : '—';
+
+  const tape = [
+    { label: 'Matches',        a: String(A.p), b: String(B.p), better: null },
+    { label: 'Won',            a: String(A.w), b: String(B.w), better: cmp(A.w, B.w, false) },
+    { label: 'Lost',           a: String(A.l), b: String(B.l), better: cmp(A.l, B.l, true) },
+    { label: 'Table Position', a: `#${A.pos}`, b: `#${B.pos}`, better: cmp(A.pos, B.pos, true) },
+    { label: 'NRR',            a: A.played ? A.nrrStr : '—', b: B.played ? B.nrrStr : '—', better: cmp(A.played ? A.nrr : null, B.played ? B.nrr : null, false) },
+    { label: 'BASRA',          a: A.played ? fmtRank(A.basra, A.basraRank) : '—', b: B.played ? fmtRank(B.basra, B.basraRank) : '—', better: cmp(A.basraRank, B.basraRank, true) },
+    { label: 'BEWM',           a: A.played ? fmtRank(A.bewm, A.bewmRank) : '—', b: B.played ? fmtRank(B.bewm, B.bewmRank) : '—', better: cmp(A.bewmRank, B.bewmRank, true) }
+  ];
+
+  const cA = TEAM_COLORS[aCode] || 'var(--accent)';
+  const cB = TEAM_COLORS[bCode] || 'var(--accent)';
+  const valCell = (txt, isBetter, color) =>
+    `<div style="text-align:center; font-family:'JetBrains Mono',monospace; font-weight:${isBetter ? '800' : '500'}; color:${isBetter ? color : 'var(--text-muted)'};">${txt}</div>`;
+
+  const tapeHtml = tape.map(r => `
+    <div style="display:grid; grid-template-columns:1fr 116px 1fr; align-items:center; gap:8px; padding:11px 4px; border-bottom:1px solid var(--border);">
+      ${valCell(r.a, r.better === 'a', cA)}
+      <div style="text-align:center; font-family:'JetBrains Mono',monospace; font-size:.62rem; letter-spacing:.16em; text-transform:uppercase; color:var(--text-dim);">${r.label}</div>
+      ${valCell(r.b, r.better === 'b', cB)}
+    </div>`).join('');
+
+  const html = `
+    <div style="display:flex; align-items:flex-start; justify-content:center; gap:12px; margin:6px 0 18px;">
+      ${badge(aCode)}
+      <div style="font-family:'Anton',sans-serif; font-size:1.4rem; color:var(--text-dim); padding-top:34px;">VS</div>
+      ${badge(bCode)}
+    </div>
+    ${tapeHtml}
+    <div style="margin-top:14px; font-family:'JetBrains Mono',monospace; font-size:.62rem; letter-spacing:.04em; color:var(--text-dim); line-height:1.6;">
+      BASRA = batting average + strike rate · BEWM = bowling efficiency · #rank is among teams that have played; higher BASRA/BEWM (lower #) is better.
+    </div>`;
+
+  document.getElementById('compare_title').innerText = `${aCode.toUpperCase()} vs ${bCode.toUpperCase()}`;
+  document.getElementById('compare_body').innerHTML = html;
+  document.getElementById('compare_modal').classList.add('show');
+};
+
 // ============================== HEAD-TO-HEAD (rivalry view) ==============================
 let _h2hTeam = null;
 
