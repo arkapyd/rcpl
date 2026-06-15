@@ -3470,14 +3470,13 @@ function renderExhaustiveStats(){
     let vSign = value > 0 ? '+' : '';
 
     const isHighlighted = (selectedTeamFilter && s.team === selectedTeamFilter) ? ' highlight-row' : '';
-    const nrrCls = nrr > 0 ? 'pos-nrr' : (nrr < 0 ? 'neg-nrr' : '');
 
     html += `
       <tr class="${isHighlighted}">
         <td style="text-align:left; padding-left:18px;">
            <span class="team-cell" style="--team-glow:${TEAM_COLORS[s.team]};" onclick="window.takeoverTeam('${s.team}')">${s.team.toUpperCase()}</span>
         </td>
-        <td class="num col-nrr ${nrrCls}">${m === 0 ? '—' : nrr.toFixed(3)}</td>
+         <td class="num col-nrr">${m === 0 ? '—' : nrr.toFixed(3)}</td>
         <td class="num">${avg.toFixed(2)}</td>
         <td class="num" style="font-weight:700; color:var(--accent);">${rpw != null ? rpw.toFixed(2) : '—'}</td>
         <td class="num">${sr.toFixed(2)}</td>
