@@ -1938,6 +1938,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
             <th class="num">Wickets</th>
            <th class="num">Economy</th>
             <th class="num" style="color:var(--accent);" title="runs scored ÷ wickets lost · S1–S4 (if recorded) + live S5">RPW</th>
+            <th class="num" style="color:var(--accent);" title="total runs ÷ completed innings (all out or full overs) · S1–S4 (if recorded) + live S5">Bat. Avg</th>
             <th class="num" style="color:var(--win);" title="All-Time Franchise Value (Base Legacy + Live S5 V$)">Total V$</th>
           </tr>
         </thead>
@@ -3599,6 +3600,7 @@ function renderCareerStats(){
   if(!tbody) return;
   
   let html = '';
+  const s5BatInns = getBattingInnings();
   
   // 1. Calculate live combined stats for sorting and rendering
   let combinedStats = TEAMS.map(t => {
@@ -3628,10 +3630,19 @@ function renderCareerStats(){
     }
     const rpwStr = rpwWL > 0 ? (rpwRuns / rpwWL).toFixed(2) : '—';
     
+    // Bat. Avg — total runs ÷ completed innings, S5 folded onto the S1–S4 baseline (if recorded)
+    let batRuns = s5.rf;
+    let batInns = s5BatInns[t] || 0;
+    if(s.battedInns != null){
+      batRuns += s.runs;
+      batInns += s.battedInns;
+    }
+    const batAvgStr = batInns > 0 ? (batRuns / batInns).toFixed(2) : '—';
+    
     // Fetch total live franchise value
     let totalValue = window.calcTotalCareerValue(t);
 
-    return { t, m, w, l, winPctNum, winPct, runs, wkts, eco, rpwStr, totalValue };
+    return { t, m, w, l, winPctNum, winPct, runs, wkts, eco, rpwStr, batAvgStr, totalValue };
   });
 
   // 2. Sort by combined Win % first, then combined Wins
@@ -3653,6 +3664,7 @@ function renderCareerStats(){
         <td class="num">${stat.wkts}</td>
         <td class="num">${stat.eco.toFixed(2)}</td>
         <td class="num" style="font-weight:700; color:var(--accent);">${stat.rpwStr}</td>
+        <td class="num" style="font-weight:700; color:var(--accent);">${stat.batAvgStr}</td>
         <td class="num" style="font-weight:800; color:var(--win);">${stat.totalValue.toFixed(2)}</td>
       </tr>`;
   });
