@@ -1873,7 +1873,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
           <tr>
             <th>Team</th>
             <th class="num">Runs</th>
-            <th class="num">Runs/Match</th>
+            <th class="num">Bat. Avg</th>
             <th class="num" style="color:var(--accent);">RPW</th>
             <th class="num">Strike Rate</th>
             <th class="num">Run Rate</th>
@@ -3472,6 +3472,20 @@ function renderSoloChart(metric){
   const hist = computeChartHistory();
   drawChart('chartSolo', def.title, buildChartDatasets(hist, metric), def.reverse, false);
 }
+// batting-average innings counter — an innings counts toward Bat. Avg only if the team was
+// "fully extended": all out (10 wkts) OR batted the full 5 overs (30 balls). a chase that ended
+// early (neither all out nor full overs) is treated as a not-out team innings and excluded.
+function getBattingInnings(){
+  const cnt = {};
+  TEAMS.forEach(t => cnt[t] = 0);
+  Object.values(results).forEach(r => {
+    if(!r || !r.t1 || !r.t2) return;
+    if((r.w1 || 0) >= 10 || (r.b1 || 0) >= OVERS_PER_INNINGS*6) cnt[r.t1] = (cnt[r.t1] || 0) + 1;
+    if((r.w2 || 0) >= 10 || (r.b2 || 0) >= OVERS_PER_INNINGS*6) cnt[r.t2] = (cnt[r.t2] || 0) + 1;
+  });
+  return cnt;
+}
+
 function renderExhaustiveStats(){
   const tbody = document.getElementById('exhaustive_body');
   if(!tbody) return;
@@ -3482,10 +3496,13 @@ function renderExhaustiveStats(){
   }
   
   let html = '';
+  const battingInnings = getBattingInnings();
   window.currentStandings.forEach(s => {
     let m = s.p;
     let avg = m > 0 ? (s.rf / m) : 0;
     let rpw = s.wkts_lost > 0 ? (s.rf / s.wkts_lost) : null;
+    let battedInns = battingInnings[s.team] || 0;
+    let batAvg = battedInns > 0 ? (s.rf / battedInns) : null;
     let sr = s.of_balls > 0 ? (s.rf / s.of_balls) * 100 : 0;
     let rr = s.of_balls > 0 ? (s.rf / (s.of_balls / 6)) : 0;
     let basra = avg + sr;
@@ -3507,7 +3524,7 @@ function renderExhaustiveStats(){
            <span class="team-cell" style="--team-glow:${TEAM_COLORS[s.team]};" onclick="window.takeoverTeam('${s.team}')">${s.team.toUpperCase()}</span>
         </td>
         <td class="num">${s.rf}</td>
-        <td class="num">${avg.toFixed(2)}</td>
+        <td class="num">${batAvg != null ? batAvg.toFixed(2) : '—'}</td>
         <td class="num" style="font-weight:700; color:var(--accent);">${rpw != null ? rpw.toFixed(2) : '—'}</td>
         <td class="num">${sr.toFixed(2)}</td>
         <td class="num">${rr.toFixed(2)}</td>
