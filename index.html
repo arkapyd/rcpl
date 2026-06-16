@@ -2915,7 +2915,7 @@ function fillCompareSelects(){
 function initUI(){
   ['t1','t2'].forEach(fillTeamSelect);
   fillCompareSelects();
-document.getElementById('group_a_teams').innerHTML = GROUP_A.map(t =>
+  document.getElementById('group_a_teams').innerHTML = GROUP_A.map(t =>
     `<span class="team-pill" style="--team-color:${TEAM_COLORS[t]};" onclick="window.takeoverTeam('${t}')">${t.toUpperCase()}</span>`
   ).join('');
   document.getElementById('group_b_teams').innerHTML = GROUP_B.map(t =>
@@ -2927,10 +2927,10 @@ document.getElementById('group_a_teams').innerHTML = GROUP_A.map(t =>
     SCHEDULE.map(f => `<option value="${f.id}">${f.id} · ${f.a.toUpperCase()} vs ${f.b.toUpperCase()}</option>`).join('');
   fs.addEventListener('change', window.loadFixture);
 
- // managers grid — rendered from the live (editable) roster
+  // managers grid — rendered from the live (editable) roster
   renderManagersGrid();
 
-initSortableTables();
+  initSortableTables();
   initReveals();
 }
 
