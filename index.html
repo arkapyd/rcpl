@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-database-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="data.js"></script>
 <style>
 /* ============================================================
@@ -2549,15 +2549,12 @@ function setConnBanner(state){
 let liveState = { active: false, videoId: '', label: '' };
 let _liveDismissed = false;
 
+// AFTER
 function applyLive(l){
-  try {
-    liveState = (l && typeof l === 'object') ? l : { active:false, channel:'', label:'' };
-    renderLiveBanner();
-  } catch(e){
-    console.error('applyLive failed:', e);
-    liveState = { active:false, channel:'', label:'' };
-  }
+  liveState = (l && typeof l === 'object') ? l : { active:false, channel:'', label:'' };
+  renderLiveBanner();
 }
+
 function cloudSaveLive(){
   if(!dbRef) return;
   try {
@@ -2582,15 +2579,12 @@ function renderLiveBanner(){
   el.style.display = 'block';
   if(meta) meta.textContent = liveState.label || '';
 
-  try {
-    const existing = wrap.querySelector('iframe');
-    if(!existing || existing.dataset.ch !== liveState.channel){
-      wrap.innerHTML = `<iframe data-ch="${liveState.channel}" src="https://player.twitch.tv/?channel=${liveState.channel}&parent=arkapyd.github.io&muted=false" title="RCPL live stream" allowfullscreen></iframe>`;
-    }
-  } catch(e){
-    console.error('live player render failed:', e);
-    wrap.innerHTML = '';
-  }}
+  // AFTER
+  const existing = wrap.querySelector('iframe');
+  if(!existing || existing.dataset.ch !== liveState.channel){
+    wrap.innerHTML = `<iframe data-ch="${liveState.channel}" src="https://player.twitch.tv/?channel=${liveState.channel}&parent=arkapyd.github.io&muted=false" title="RCPL live stream" allowfullscreen></iframe>`;
+  }
+}
 
 window.dismissLiveBanner = function(){
   _liveDismissed = true;
