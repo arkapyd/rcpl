@@ -2549,12 +2549,15 @@ function setConnBanner(state){
 let liveState = { active: false, videoId: '', label: '' };
 let _liveDismissed = false;
 
-// AFTER
 function applyLive(l){
-  liveState = (l && typeof l === 'object') ? l : { active:false, channel:'', label:'' };
-  renderLiveBanner();
+  try {
+    liveState = (l && typeof l === 'object') ? l : { active:false, channel:'', label:'' };
+    renderLiveBanner();
+  } catch(e){
+    console.error('applyLive failed:', e);
+    liveState = { active:false, channel:'', label:'' };
+  }
 }
-
 function cloudSaveLive(){
   if(!dbRef) return;
   try {
@@ -2579,12 +2582,15 @@ function renderLiveBanner(){
   el.style.display = 'block';
   if(meta) meta.textContent = liveState.label || '';
 
-  // AFTER
-  const existing = wrap.querySelector('iframe');
-  if(!existing || existing.dataset.ch !== liveState.channel){
-    wrap.innerHTML = `<iframe data-ch="${liveState.channel}" src="https://player.twitch.tv/?channel=${liveState.channel}&parent=arkapyd.github.io&muted=false" title="RCPL live stream" allowfullscreen></iframe>`;
-  }
-}
+  try {
+    const existing = wrap.querySelector('iframe');
+    if(!existing || existing.dataset.ch !== liveState.channel){
+      wrap.innerHTML = `<iframe data-ch="${liveState.channel}" src="https://player.twitch.tv/?channel=${liveState.channel}&parent=arkapyd.github.io&muted=false" title="RCPL live stream" allowfullscreen></iframe>`;
+    }
+  } catch(e){
+    console.error('live player render failed:', e);
+    wrap.innerHTML = '';
+  }}
 
 window.dismissLiveBanner = function(){
   _liveDismissed = true;
