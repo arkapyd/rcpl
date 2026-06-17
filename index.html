@@ -1879,23 +1879,20 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
         <tbody id="mvm_body"></tbody>
       </table>
     </div>
-    <div id="stats_graphs" style="display:none;">
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-        <div class="graph-card" onclick="window.openSingleGraph('pos')" title="expand">
-          <span class="graph-expand">&#10530;</span>
-          <canvas id="chartPos"></canvas>
+   <div id="stats_graphs" style="display:none;" class="table-wrap">
+      <div style="display:flex; flex-wrap:wrap; gap:24px; padding:20px;">
+        <div id="master_graph_legend" style="flex:0 0 200px; display:flex; flex-direction:column; gap:20px;">
+          <div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin-bottom:10px;">// select stats</div>
+            <div id="stat_checkboxes" style="display:flex; flex-direction:column; gap:8px;"></div>
+          </div>
+          <div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin-bottom:10px;">// toggle teams</div>
+            <div id="team_checkboxes" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;"></div>
+          </div>
         </div>
-        <div class="graph-card" onclick="window.openSingleGraph('pts')" title="expand">
-          <span class="graph-expand">&#10530;</span>
-          <canvas id="chartPts"></canvas>
-        </div>
-        <div class="graph-card" onclick="window.openSingleGraph('runs')" title="expand">
-          <span class="graph-expand">&#10530;</span>
-          <canvas id="chartRuns"></canvas>
-        </div>
-        <div class="graph-card" onclick="window.openSingleGraph('wkts')" title="expand">
-          <span class="graph-expand">&#10530;</span>
-          <canvas id="chartWkts"></canvas>
+        <div style="flex:1; min-width:300px; min-height:450px; position:relative;">
+          <canvas id="masterChart"></canvas>
         </div>
       </div>
     </div>
@@ -2172,18 +2169,6 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     <span class="modal-close" onclick="document.getElementById('mgr_modal').classList.remove('show')">&times;</span>
     <h2 class="modal-title" id="mgr_modal_name">—</h2>
     <div id="mgr_modal_body"></div>
-  </div>
-</div>
-
-<!-- AFTER -->
-<div id="graphs_modal" class="modal-overlay">
-  <div class="modal-content" style="max-width:760px; width:95%;">
-    <span class="modal-close" onclick="document.getElementById('graphs_modal').classList.remove('show')">&times;</span>
-    <h2 class="modal-title" id="graph_solo_title">—</h2>
-    <div class="modal-subtitle" id="graph_solo_sub">// match-by-match progression</div>
-    <div style="background:var(--bg); border:1px solid var(--border); padding:18px; border-radius:6px; margin-top:4px;">
-      <canvas id="chartSolo"></canvas>
-    </div>
   </div>
 </div>
 
@@ -3283,15 +3268,11 @@ function renderStatBoards(){
    
 // AFTER
 // ============================== GRAPHS RENDERING ==============================
-let chartInstances = {};
-
-// metric → chart title + whether the y-axis runs top-down (positions count up the table)
-const CHART_DEFS = {
-  pos:  { title: 'team positions', reverse: true  },
-  pts:  { title: 'team points',    reverse: false },
-  runs: { title: 'runs scored',    reverse: false },
-  wkts: { title: 'wickets taken',  reverse: false }
+window.graphState = {
+  stats: { pts: true, pos: false, runs: false, wkts: false },
+  teams: {}
 };
+window.masterChartInstance = null;
 
 // per-match cumulative history (pts / runs / wkts / table position) for every team
 function computeChartHistory(){
@@ -3353,100 +3334,113 @@ function computeChartHistory(){
   return hist;
 }
 
-function buildChartDatasets(hist, key){
-  return TEAMS.map(t => {
-    const isSelected = selectedTeamFilter === t;
-    const isFaded = selectedTeamFilter && !isSelected;
-    const color = isFaded ? '#383838' : TEAM_COLORS[t];
-    return {
-      label: t.toUpperCase(),
-      data: hist[t][key],
-      borderColor: color,
-      backgroundColor: color,
-      tension: 0.2,
-      borderWidth: isSelected ? 4 : 2,
-      pointRadius: isSelected ? 4 : 3,
-      order: isSelected ? 0 : 1
-    };
-  });
+window.toggleGraphStat = function(stat, isChecked) {
+  window.graphState.stats[stat] = isChecked;
+  window.updateMasterGraph();
+};
+
+window.toggleGraphTeam = function(team, isChecked) {
+  window.graphState.teams[team] = isChecked;
+  window.updateMasterGraph();
+};
+
+function renderCharts() {
+  if (typeof Chart === 'undefined') return;
+
+  const statLabels = { pts: 'Total Points', pos: 'Table Position', runs: 'Runs Scored', wkts: 'Wickets Taken' };
+
+  // initialise with all teams active if first load
+  if (Object.keys(window.graphState.teams).length === 0) {
+    TEAMS.forEach(t => window.graphState.teams[t] = true);
+  }
+
+  document.getElementById('stat_checkboxes').innerHTML = Object.keys(statLabels).map(k => `
+    <label class="checkbox-row" style="color:var(--text); font-family:'Manrope',sans-serif; font-size:.85rem; cursor:pointer;">
+      <input type="checkbox" onchange="window.toggleGraphStat('${k}', this.checked)" ${window.graphState.stats[k] ? 'checked' : ''}>
+      ${statLabels[k]}
+    </label>
+  `).join('');
+
+  document.getElementById('team_checkboxes').innerHTML = TEAMS.map(t => `
+    <label class="checkbox-row" style="color:${TEAM_COLORS[t]}; font-family:'JetBrains Mono',monospace; font-size:.75rem; font-weight:700; cursor:pointer;">
+      <input type="checkbox" onchange="window.toggleGraphTeam('${t}', this.checked)" ${window.graphState.teams[t] ? 'checked' : ''}>
+      ${t.toUpperCase()}
+    </label>
+  `).join('');
+
+  window.updateMasterGraph();
 }
 
-function drawChart(id, title, datasets, reverseY, showTitle){
-  if(showTitle === undefined) showTitle = true;
-  const ctx = document.getElementById(id);
+window.updateMasterGraph = function() {
+  const hist = computeChartHistory();
+  const datasets = [];
+  const activeStats = Object.keys(window.graphState.stats).filter(k => window.graphState.stats[k]);
+  const activeTeams = Object.keys(window.graphState.teams).filter(k => window.graphState.teams[k]);
+
+  const statStyles = {
+    pts:  { dash: [],          width: 3 },
+    pos:  { dash: [5, 5],      width: 2 },
+    runs: { dash: [2, 2],      width: 2 },
+    wkts: { dash: [10, 5, 2],  width: 2 }
+  };
+  const statTitles = { pts: 'Points', pos: 'Position', runs: 'Runs', wkts: 'Wickets' };
+
+  activeTeams.forEach(t => {
+    activeStats.forEach(stat => {
+      datasets.push({
+        label: `${t.toUpperCase()} ${statTitles[stat]}`,
+        data: hist[t][stat],
+        borderColor: TEAM_COLORS[t],
+        backgroundColor: TEAM_COLORS[t],
+        borderDash: statStyles[stat].dash,
+        borderWidth: statStyles[stat].width,
+        pointRadius: 3,
+        tension: 0.2,
+        yAxisID: 'y-' + stat
+      });
+    });
+  });
+
+  const scales = {
+    x: { ticks: { color: '#737373', font: { family: 'JetBrains Mono', size: 10 } }, grid: { color: 'rgba(56,56,56,.2)' } }
+  };
+
+  // dynamically attach y-axes based on checked stats so scales don't distort each other
+  if (window.graphState.stats.pos) scales['y-pos'] = { type: 'linear', position: 'left', reverse: true, min: 1, max: 10, title: { display: true, text: 'Position', color: '#a3a3a3' }, grid: { color: 'rgba(56,56,56,.1)' }, ticks: { color: '#a3a3a3', stepSize: 1 } };
+  if (window.graphState.stats.pts) scales['y-pts'] = { type: 'linear', position: 'right', min: 0, title: { display: true, text: 'Points', color: '#a3a3a3' }, grid: { color: 'rgba(56,56,56,.1)' }, ticks: { color: '#a3a3a3' } };
+  if (window.graphState.stats.runs) scales['y-runs'] = { type: 'linear', position: 'left', title: { display: true, text: 'Runs', color: '#a3a3a3' }, grid: { display: false }, ticks: { color: '#a3a3a3' } };
+  if (window.graphState.stats.wkts) scales['y-wkts'] = { type: 'linear', position: 'right', title: { display: true, text: 'Wickets', color: '#a3a3a3' }, grid: { display: false }, ticks: { color: '#a3a3a3' } };
+
+  const ctx = document.getElementById('masterChart');
   if (!ctx) return;
-  if (chartInstances[id]) chartInstances[id].destroy();
+  if (window.masterChartInstance) window.masterChartInstance.destroy();
 
   const matchLabels = Array.from({length: 15}, (_, i) => i);
 
-  chartInstances[id] = new Chart(ctx, {
+  window.masterChartInstance = new Chart(ctx, {
     type: 'line',
     data: { labels: matchLabels, datasets },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       interaction: { mode: 'nearest', intersect: false },
       plugins: {
-        title: { display: showTitle, text: title, color: '#f5f5f4', font: {family:'Anton', size: 16, letterSpacing: 2} },
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#141414',
-          titleColor: '#f5f5f4',
+          backgroundColor: '#141414', titleColor: '#f5f5f4', bodyColor: '#a3a3a3',
+          borderColor: '#383838', borderWidth: 1, padding: 10,
           titleFont: { family: 'JetBrains Mono', size: 11, weight: '700' },
-          bodyColor: '#a3a3a3',
           bodyFont: { family: 'JetBrains Mono', size: 11 },
-          borderColor: '#383838',
-          borderWidth: 1,
-          padding: 10,
-          displayColors: true,
-          boxWidth: 10,
-          boxHeight: 10,
           callbacks: {
             title: (items) => items.length ? 'Match ' + items[0].label : '',
             label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}`
           }
         }
       },
-      scales: {
-        y: {
-          reverse: reverseY,
-          beginAtZero: !reverseY,
-          min: reverseY ? 1 : undefined,
-          max: reverseY ? 10 : undefined,
-          ticks: {
-            color: '#a3a3a3',
-            font: { family: 'JetBrains Mono', size: 10 },
-            stepSize: reverseY ? 1 : undefined,
-            precision: 0
-          },
-          grid: { color: 'rgba(56,56,56,.35)' }
-        },
-        x: {
-          ticks: { color: '#737373', font: { family: 'JetBrains Mono', size: 10 } },
-          grid: { color: 'rgba(56,56,56,.2)' }
-        }
-      }
+      scales
     }
   });
-}
-
-// the 2×2 inline grid (graphs tab)
-function renderCharts() {
-  if (typeof Chart === 'undefined') return;
-  const hist = computeChartHistory();
-  Object.keys(CHART_DEFS).forEach(metric => {
-    const id = 'chart' + metric.charAt(0).toUpperCase() + metric.slice(1);
-    drawChart(id, CHART_DEFS[metric].title, buildChartDatasets(hist, metric), CHART_DEFS[metric].reverse);
-  });
-}
-
-// single enlarged chart (modal) — title is suppressed since the modal header carries it
-function renderSoloChart(metric){
-  if (typeof Chart === 'undefined') return;
-  const def = CHART_DEFS[metric];
-  if(!def) return;
-  const hist = computeChartHistory();
-  drawChart('chartSolo', def.title, buildChartDatasets(hist, metric), def.reverse, false);
-}
+};
 // batting-average innings counter — an innings counts toward Bat. Avg only if the team was
 // "fully extended": all out (10 wkts) OR batted the full 5 overs (30 balls). a chase that ended
 // early (neither all out nor full overs) is treated as a not-out team innings and excluded.
