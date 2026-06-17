@@ -1899,20 +1899,15 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
         </div>
       </div>
     </div>
-    <div id="stats_compare" style="display:none;" class="table-wrap">
+   <div id="stats_compare" style="display:none;" class="table-wrap">
       <div style="padding:20px 18px;">
         <div style="font-family:'JetBrains Mono',monospace; font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--text-dim); margin-bottom:14px;">
-          // pick two teams to compare head-to-head on the season
+          // pick a fixture to compare both teams head-to-head
         </div>
         <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
-          <div style="flex:1; min-width:130px;">
-            <label>Team A</label>
-            <select id="cmp_a"></select>
-          </div>
-          <div style="flex:0 0 auto; font-family:'Anton',sans-serif; font-size:1.1rem; color:var(--text-dim); padding-bottom:8px;">VS</div>
-          <div style="flex:1; min-width:130px;">
-            <label>Team B</label>
-            <select id="cmp_b"></select>
+          <div style="flex:2; min-width:200px;">
+            <label>Select Fixture</label>
+            <select id="cmp_fixture"></select>
           </div>
           <div style="flex:0 0 auto;">
             <button onclick="window.openCompare()">Compare</button>
@@ -2774,14 +2769,11 @@ function fillTeamSelect(id){
   });
 }
 function fillCompareSelects(){
-  const a = document.getElementById('cmp_a'), b = document.getElementById('cmp_b');
-  if(!a || !b) return;
-  const opts = TEAMS.map(t => `<option value="${t}">${t.toUpperCase()}</option>`).join('');
-  a.innerHTML = opts; b.innerHTML = opts;
-  a.value = TEAMS[0];
-  b.value = TEAMS[1];
+  const sel = document.getElementById('cmp_fixture');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">select a fixture…</option>' +
+    SCHEDULE.map(f => `<option value="${f.id}">${f.id} · ${f.a.toUpperCase()} vs ${f.b.toUpperCase()}</option>`).join('');
 }
-
 function initUI(){
   ['t1','t2'].forEach(fillTeamSelect);
   fillCompareSelects();
@@ -3683,10 +3675,14 @@ function computeCompareMetrics(){
 }
 
 window.openCompare = function(){
-  const aCode = document.getElementById('cmp_a').value;
-  const bCode = document.getElementById('cmp_b').value;
-  if(!aCode || !bCode){ window.showToast('pick two teams to compare.', 'error'); return; }
-  if(aCode === bCode){ window.showToast('pick two different teams.', 'error'); return; }
+  const fixId = document.getElementById('cmp_fixture').value;
+  if(!fixId){ window.showToast('pick a fixture to compare.', 'error'); return; }
+
+  const f = SCHEDULE.find(x => x.id === fixId);
+  if(!f) return;
+
+  const aCode = f.a;
+  const bCode = f.b;
 
   const rows = computeCompareMetrics();
   const A = rows.find(r => r.team === aCode);
