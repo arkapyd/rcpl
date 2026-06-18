@@ -1866,7 +1866,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
             <th class="num">Bat. Avg</th>
             <th class="num">RPW</th>
             <th class="num">Strike Rate</th>
-            <th class="num">Run Rate</th>
+            <th class="num" title="Matches Played">M</th>
             <th class="num">BASRA</th>
             <th class="num">HS</th>
             <th class="num">Wickets Taken</th>
@@ -3536,7 +3536,6 @@ function renderExhaustiveStats(){
     let battedInns = battingInnings[s.team] || 0;
     let batAvg = battedInns > 0 ? (s.rf / battedInns) : null;
     let sr = s.of_balls > 0 ? (s.rf / s.of_balls) * 100 : 0;
-    let rr = s.of_balls > 0 ? (s.rf / (s.of_balls / 6)) : 0;
     let basra = (batAvg != null ? batAvg : 0) + sr;
     let wkts = s.wkts_taken || 0;
     let econ = s.oa_balls > 0 ? (s.ra / (s.oa_balls / 6)) : 0;
@@ -3559,7 +3558,7 @@ function renderExhaustiveStats(){
         <td class="num">${batAvg != null ? batAvg.toFixed(2) : '—'}</td>
         <td class="num" style="font-weight:700;">${rpw != null ? rpw.toFixed(2) : '—'}</td>
         <td class="num">${sr.toFixed(2)}</td>
-        <td class="num">${rr.toFixed(2)}</td>
+        <td class="num">${m}</td>
         <td class="num" style="font-weight:700; color:var(--text);">${basra.toFixed(2)}</td>
         <td class="num">${s.hs}</td>
         <td class="num">${wkts}</td>
