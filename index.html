@@ -525,6 +525,7 @@ thead th{
 thead th, .schedule-table th{ cursor:pointer; user-select:none; -webkit-user-select:none; }
 thead th:hover, .schedule-table th:hover{ color:var(--text); }
 .sort-ind{ color:var(--accent); font-size:.72em; letter-spacing:0; }
+th.active-sort, td.active-sort { color: var(--accent) !important; }
 
 /* scroll reveal — sections & cards ease up as they enter the viewport */
 html{ scroll-behavior:smooth; }
@@ -1855,19 +1856,40 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
             <th>Team</th>
             <th class="num">Runs</th>
             <th class="num">Bat. Avg</th>
-            <th class="num" style="color:var(--accent);">RPW</th>
+            <th class="num">RPW</th>
             <th class="num">Strike Rate</th>
             <th class="num">Run Rate</th>
-            <th class="num" style="color:var(--accent);">BASRA</th>
+            <th class="num">BASRA</th>
             <th class="num">HS</th>
             <th class="num">Wickets Taken</th>
             <th class="num">Economy</th>
             <th class="num">Wickets/Match</th>
-           <th class="num" style="color:var(--accent);">BEWM</th>
+           <th class="num">BEWM</th>
             <th class="num" style="color:var(--win);" title="S5 Form & Upset Value">S5 V$</th>
           </tr>
         </thead>
       <tbody id="exhaustive_body"></tbody>
+      </table>
+    </div>
+...
+    <div id="stats_career" style="display:none; overflow-x:auto;" class="table-wrap">
+      <table style="width:100%; min-width:800px; border-collapse:collapse; font-size:.85rem;">
+        <thead>
+          <tr>
+            <th>Team</th>
+            <th class="num">M</th>
+            <th class="num">W</th>
+            <th class="num">L</th>
+            <th class="num">Win %</th>
+            <th class="num">Runs</th>
+            <th class="num">Wickets</th>
+           <th class="num">Economy</th>
+            <th class="num" title="runs scored ÷ wickets lost · S1–S4 (if recorded) + live S5">RPW</th>
+            <th class="num" title="total runs ÷ completed innings · S5 exact (all out / full overs); S1–S4 approximated by matches played">Bat. Avg</th>
+            <th class="num" style="color:var(--win);" title="All-Time Franchise Value (Base Legacy + Live S5 V$)">Total V$</th>
+          </tr>
+        </thead>
+      <tbody id="career_body"></tbody>
       </table>
     </div>
     <div id="stats_mvm" style="display:none; overflow-x:auto;" class="table-wrap">
@@ -3514,7 +3536,7 @@ function renderExhaustiveStats(){
         </td>
         <td class="num">${s.rf}</td>
         <td class="num">${batAvg != null ? batAvg.toFixed(2) : '—'}</td>
-        <td class="num" style="font-weight:700; color:var(--accent);">${rpw != null ? rpw.toFixed(2) : '—'}</td>
+        <td class="num" style="font-weight:700;">${rpw != null ? rpw.toFixed(2) : '—'}</td>
         <td class="num">${sr.toFixed(2)}</td>
         <td class="num">${rr.toFixed(2)}</td>
         <td class="num" style="font-weight:700; color:var(--text);">${basra.toFixed(2)}</td>
@@ -3652,8 +3674,8 @@ function renderCareerStats(){
         <td class="num">${stat.runs}</td>
         <td class="num">${stat.wkts}</td>
         <td class="num">${stat.eco.toFixed(2)}</td>
-        <td class="num" style="font-weight:700; color:var(--accent);">${stat.rpwStr}</td>
-        <td class="num" style="font-weight:700; color:var(--accent);">${stat.batAvgStr}</td>
+        <td class="num" style="font-weight:700;">${stat.rpwStr}</td>
+        <td class="num" style="font-weight:700;">${stat.batAvgStr}</td>
         <td class="num" style="font-weight:800; color:var(--win);">${stat.totalValue.toFixed(2)}</td>
       </tr>`;
   });
@@ -4520,7 +4542,19 @@ function updateSortIndicators(table, colIndex, dir){
       th.appendChild(ind);
     }
     ind.textContent = (i === colIndex) ? (dir === 'asc' ? ' ▲' : ' ▼') : '';
+    if (i === colIndex) th.classList.add('active-sort');
+    else th.classList.remove('active-sort');
   });
+
+  const tbody = table.tBodies[0];
+  if(tbody) {
+    Array.from(tbody.rows).forEach(tr => {
+      Array.from(tr.cells).forEach((td, i) => {
+        if(i === colIndex) td.classList.add('active-sort');
+        else td.classList.remove('active-sort');
+      });
+    });
+  }
 }
 
 function initSortableTables(){
