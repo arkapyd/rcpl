@@ -114,15 +114,21 @@ table th.num,
   letter-spacing:.5px;
 }
 #progress_bar_wrap{
-  position:fixed; top:64px; left:0; right:0; height:2px;
-  background:transparent; z-index:999;
-  pointer-events:none;
+  position:fixed; top:64px; left:0; right:0;
+  z-index:999; pointer-events:none;
 }
 #progress_bar{
-  height:100%; width:0%;
+  height:3.5px; width:0%;
   background:linear-gradient(90deg, var(--accent-2), var(--accent));
   box-shadow:0 0 12px rgba(var(--accent-2-rgb),.6);
   transition:width .6s cubic-bezier(.4,0,.2,1);
+}
+#progress_text{
+  position:absolute; right:28px; top:6px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.6rem; letter-spacing:.2em;
+  text-transform:uppercase; color:var(--accent);
+  opacity:.75;
 }
 
 #conn_banner{
@@ -1600,6 +1606,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   #live_clock{ display:none; }
   #s5_countdown{ font-size:.62rem; padding:5px 8px; }
   #progress_bar_wrap{ top:54px; }
+  #progress_text{ right:14px; font-size:.55rem; top:5px; }
   #conn_banner{ top:55px; }
 
   /* tighter gutters */
@@ -1649,9 +1656,11 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     <div id="live_clock">— — —</div>
   </div>
 </div>
-<div id="progress_bar_wrap"><div id="progress_bar"></div></div>
+<div id="progress_bar_wrap">
+  <div id="progress_bar"></div>
+  <div id="progress_text">// season progress</div>
+</div>
 <div id="conn_banner"></div>
-
 <section class="hero">
   <div class="hero-left">
     <div class="eyebrow">// season five · now live</div>
