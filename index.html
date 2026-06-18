@@ -1156,6 +1156,13 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   background:var(--surface-2);
   border-bottom:1px solid var(--border);
 }
+.stat-board-head.clickable{
+  cursor:pointer;
+  transition:background .15s;
+}
+.stat-board-head.clickable:hover{
+  background:var(--surface-3);
+}
 .stat-board-head h3{
   margin:0;
   font-family:'Anton',sans-serif;
@@ -1810,31 +1817,31 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
       </div>
     </div>
     
-    <div class="stat-grid" id="stats_boards">
+   <div class="stat-grid" id="stats_boards">
       <div class="stat-board">
-        <div class="stat-board-head">
-          <h3>Top Run Scorers</h3>
+        <div class="stat-board-head clickable" onclick="window.jumpToExhaustiveSort(1, 'desc')" title="view full rankings">
+          <h3>Top Run Scorers <span style="float:right; color:var(--text-dim); font-size:1.1rem; margin-top:-3px; transition:color .2s;">⇲</span></h3>
           <div class="stat-board-sub">total runs · orange cap</div>
         </div>
         <div class="stat-board-body" id="board_runs"></div>
       </div>
       <div class="stat-board">
-        <div class="stat-board-head">
-          <h3>Top Wicket Takers</h3>
+        <div class="stat-board-head clickable" onclick="window.jumpToExhaustiveSort(8, 'desc')" title="view full rankings">
+          <h3>Top Wicket Takers <span style="float:right; color:var(--text-dim); font-size:1.1rem; margin-top:-3px; transition:color .2s;">⇲</span></h3>
           <div class="stat-board-sub">opposition wickets · purple cap</div>
         </div>
         <div class="stat-board-body" id="board_wickets"></div>
       </div>
       <div class="stat-board">
-        <div class="stat-board-head">
-          <h3>Best Economy</h3>
+        <div class="stat-board-head clickable" onclick="window.jumpToExhaustiveSort(9, 'asc')" title="view full rankings">
+          <h3>Best Economy <span style="float:right; color:var(--text-dim); font-size:1.1rem; margin-top:-3px; transition:color .2s;">⇲</span></h3>
           <div class="stat-board-sub">Runs conceded per over · lower = better</div>
         </div>
         <div class="stat-board-body" id="board_economy"></div>
       </div>
       <div class="stat-board">
-        <div class="stat-board-head">
-          <h3>Best RPW</h3>
+        <div class="stat-board-head clickable" onclick="window.jumpToExhaustiveSort(3, 'desc')" title="view full rankings">
+          <h3>Best RPW <span style="float:right; color:var(--text-dim); font-size:1.1rem; margin-top:-3px; transition:color .2s;">⇲</span></h3>
           <div class="stat-board-sub">Runs scored per wicket lost · RPW</div>
         </div>
         <div class="stat-board-body" id="board_average"></div>
@@ -2409,7 +2416,8 @@ window.switchStatsTab = function(tab) {
   const activeBtn = document.querySelector(`.tab-btn[onclick="window.switchStatsTab('${tab}')"]`);
   if(activeBtn) activeBtn.classList.add('active');
   if(tab === 'graphs') setTimeout(renderCharts, 50);
-};window.switchStatsGroup = function(group){
+}
+  window.switchStatsGroup = function(group){
   const seasonal = group === 'seasonal';
   document.getElementById('subtabs_seasonal').style.display = seasonal ? 'flex' : 'none';
   document.getElementById('subtabs_career').style.display = seasonal ? 'none' : 'flex';
@@ -2418,6 +2426,19 @@ window.switchStatsTab = function(tab) {
   if(gt) gt.classList.add('active');
   window.switchStatsTab(seasonal ? 'boards' : 'career');
 };
+
+window.jumpToExhaustiveSort = function(colIndex, dir) {
+  window.switchStatsTab('exhaustive');
+  const table = document.querySelector('#stats_exhaustive table');
+  if(table) {
+    const key = tableKey(table);
+    _tableSortState[key] = { colIndex: colIndex, dir: dir };
+    applySort(table, colIndex, dir);
+  }
+  const header = document.querySelector('.stats-header');
+  if(header) header.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
 window.openSingleGraph = function(metric){
   const def = CHART_DEFS[metric];
   if(!def) return;
