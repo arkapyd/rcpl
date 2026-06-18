@@ -1212,11 +1212,12 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 }
 .stat-row-team{
   display:inline-block;
-  font-weight:700;
-  letter-spacing:.05em;
+  font-family:'Anton',sans-serif;
+  letter-spacing:.08em;
   text-transform:uppercase;
   cursor:pointer;
-  font-size:.92rem;
+  font-size:1.25rem;
+  line-height:1;
   color:var(--accent);
   transition:color .2s ease, transform .2s ease;
 }
@@ -1278,7 +1279,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   font-weight: 700;
 }
 .hero-stat-row .stat-row-team {
-  font-size: 1.25rem;
+  font-size: 1.55rem;
   color: var(--t1);
 }
 .hero-stat-row .stat-row-value {
@@ -3355,7 +3356,7 @@ function renderStatBoards(){
       <div class="stat-row${isHighlighted}${isHero}" style="--t1:${t1}; --t2:${t2};">
         <div class="stat-row-rank">${String(i+1).padStart(2,'0')}</div>
         <div class="stat-row-team" style="--team-glow:${t1};" onclick="window.takeoverTeam('${s.team}')">
-          ${s.team.toUpperCase()}
+          ${TEAM_NAMES[s.team]}
         </div>
         <div class="stat-row-value">${valStr}</div>
       </div>`;
