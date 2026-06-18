@@ -1985,11 +1985,12 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     </div>
   </section>
 
-  <section class="section">
+ <section class="section">
     <div class="section-head">
       <div style="display:flex; justify-content:space-between; width:100%; align-items:baseline;">
         <h2 class="section-title" style="display:flex; align-items:center; gap:10px;">
           <span><span class="num-pre">07</span>Predictive Odds</span>
+          <span onclick="document.getElementById('ledger_modal').classList.add('show')" style="cursor:pointer; color:var(--text-dim); font-size:.7rem; font-family:'JetBrains Mono', monospace; font-weight:normal; letter-spacing:.15em; border:1px solid var(--border-bright); padding:2px 8px; border-radius:3px; transition:color .2s, border-color .2s;" onmouseover="this.style.color='var(--accent)'; this.style.borderColor='var(--accent)';" onmouseout="this.style.color='var(--text-dim)'; this.style.borderColor='var(--border-bright)';">LEDGER</span>
           <span onclick="document.getElementById('odds_info_modal').classList.add('show')" style="cursor:pointer; color:var(--text-dim); font-size:1.1rem; font-family:'JetBrains Mono', monospace; font-weight:normal; transition:color .2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-dim)'">ⓘ</span>
         </h2>
         <div class="section-meta">upcoming fixtures · weighted by form, head-to-head & S1–S4 history</div>
@@ -2222,6 +2223,29 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     <h2 class="modal-title" id="compare_title">Team Comparison</h2>
     <div class="modal-subtitle" id="compare_sub">// season head-to-head</div>
     <div id="compare_body"></div>
+  </div>
+</div>
+
+<div id="ledger_modal" class="modal-overlay">
+  <div class="modal-content" style="max-width:720px; width:95%;">
+    <span class="modal-close" onclick="document.getElementById('ledger_modal').classList.remove('show')">&times;</span>
+    <h2 class="modal-title">Betting Ledger</h2>
+    <div class="modal-subtitle" id="public_ledger_meta">// no bets recorded yet</div>
+    <div class="table-wrap" style="overflow-x:auto; margin-top:14px;">
+      <table style="width:100%; min-width:600px; border-collapse:collapse; font-size:.85rem;">
+        <thead>
+          <tr>
+            <th style="text-align:left; padding-left:18px;">Manager</th>
+            <th>Team</th>
+            <th class="num">Bets</th>
+            <th class="num">Settled</th>
+            <th class="num">Staked</th>
+            <th class="num" style="color:var(--win);">Net P/L (V$)</th>
+          </tr>
+        </thead>
+        <tbody id="public_ledger_body"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -4281,39 +4305,47 @@ function renderBetEntryRows(){
 }
 
 function renderBetLedger(){
-  const tbody = document.getElementById('bet_ledger_body');
-  const meta = document.getElementById('bet_ledger_meta');
-  if(!tbody) return;
+  const tbodyAdmin = document.getElementById('bet_ledger_body');
+  const metaAdmin = document.getElementById('bet_ledger_meta');
+  const tbodyPublic = document.getElementById('public_ledger_body');
+  const metaPublic = document.getElementById('public_ledger_meta');
+
   const rows = computeBetLedger();
   const anyBets = rows.some(x => x.count > 0);
-  if(!anyBets){
-    tbody.innerHTML = '<tr><td colspan="6" class="feed-empty">no bets recorded yet — add some in the Enter Bets tab.</td></tr>';
-    if(meta) meta.innerHTML = '// no bets recorded yet';
-    return;
-  }
-  rows.sort((a, b) => b.pnl - a.pnl || b.staked - a.staked);
-  tbody.innerHTML = rows.map(x => {
-    const cls = x.pnl > 0 ? 'pos' : (x.pnl < 0 ? 'neg' : 'zero');
-    const sign = x.pnl > 0 ? '+' : '';
-    const teamCell = x.team
-      ? `<span class="team-cell" style="--team-glow:${TEAM_COLORS[x.team]};" onclick="window.takeoverTeam('${x.team}')">${x.team.toUpperCase()}</span>`
-      : '<span style="color:var(--text-dim);">—</span>';
-    return `
-      <tr>
-        <td style="text-align:left; padding-left:18px; font-weight:700; text-transform:uppercase; color:var(--text);">${x.name}</td>
-        <td>${teamCell}</td>
-        <td class="num">${x.count}</td>
-        <td class="num">${x.settled}</td>
-        <td class="num">${x.staked.toFixed(2)}</td>
-        <td class="num bet-pnl ${cls}" style="font-weight:800; font-size:1rem;">${sign}${x.pnl.toFixed(2)}</td>
-      </tr>`;
-  }).join('');
-  const totalBets = rows.reduce((s, x) => s + x.count, 0);
-  const totalSettled = rows.reduce((s, x) => s + x.settled, 0);
-  const net = rows.reduce((s, x) => s + x.pnl, 0);
-  if(meta) meta.innerHTML = `// ${totalBets} bet(s) · ${totalSettled} settled · table net: <strong style="color:${net >= 0 ? 'var(--win)' : 'var(--loss)'};">${net >= 0 ? '+' : ''}${net.toFixed(2)} V$</strong>`;
-}
+  let html = '';
+  let metaText = '// no bets recorded yet';
 
+  if(!anyBets){
+    html = '<tr><td colspan="6" class="feed-empty">no bets recorded yet.</td></tr>';
+  } else {
+    rows.sort((a, b) => b.pnl - a.pnl || b.staked - a.staked);
+    html = rows.map(x => {
+      const cls = x.pnl > 0 ? 'pos' : (x.pnl < 0 ? 'neg' : 'zero');
+      const sign = x.pnl > 0 ? '+' : '';
+      const teamCell = x.team
+        ? `<span class="team-cell" style="--team-glow:${TEAM_COLORS[x.team]};" onclick="document.querySelectorAll('.modal-overlay.show').forEach(m=>m.classList.remove('show')); window.takeoverTeam('${x.team}')">${x.team.toUpperCase()}</span>`
+        : '<span style="color:var(--text-dim);">—</span>';
+      return `
+        <tr>
+          <td style="text-align:left; padding-left:18px; font-weight:700; text-transform:uppercase; color:var(--text);">${x.name}</td>
+          <td>${teamCell}</td>
+          <td class="num">${x.count}</td>
+          <td class="num">${x.settled}</td>
+          <td class="num">${x.staked.toFixed(2)}</td>
+          <td class="num bet-pnl ${cls}" style="font-weight:800; font-size:1rem;">${sign}${x.pnl.toFixed(2)}</td>
+        </tr>`;
+    }).join('');
+    const totalBets = rows.reduce((s, x) => s + x.count, 0);
+    const totalSettled = rows.reduce((s, x) => s + x.settled, 0);
+    const net = rows.reduce((s, x) => s + x.pnl, 0);
+    metaText = `// ${totalBets} bet(s) · ${totalSettled} settled · table net: <strong style="color:${net >= 0 ? 'var(--win)' : 'var(--loss)'};">${net >= 0 ? '+' : ''}${net.toFixed(2)} V$</strong>`;
+  }
+
+  if(tbodyAdmin) tbodyAdmin.innerHTML = html;
+  if(metaAdmin) metaAdmin.innerHTML = metaText;
+  if(tbodyPublic) tbodyPublic.innerHTML = html;
+  if(metaPublic) metaPublic.innerHTML = metaText;
+}
 function renderBetAdmin(){
   renderBetMatchOptions();
   renderBetEntryRows();
