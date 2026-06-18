@@ -3020,7 +3020,8 @@ function renderStandings(standings){
     while(recent.length < 5) recent.push({ res:'NA' });
     const formCells = recent.map((f, i) => {
       const isLatest = i === latestIdx && f.res !== 'NA';
-      return `<span class="form-letter ${f.res}${isLatest ? ' latest' : ''}" title="${f.detail || 'no match yet'}">${f.res === 'NA' ? '·' : f.res}</span>`;
+      const clickAction = f.res !== 'NA' ? `onclick="window.openScorecard('${f.mid}')"` : '';
+      return `<span class="form-letter ${f.res}${isLatest ? ' latest' : ''}" title="${f.detail || 'no match yet'}" ${clickAction}>${f.res === 'NA' ? '·' : f.res}</span>`;
     }).join('');
     const fpData = fp[s.team] || { avg: null, count: 0 };
     const fpStr = (fpData.avg != null) ? fpData.avg.toFixed(2) : '—';
