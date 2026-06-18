@@ -114,7 +114,7 @@ table th.num,
   letter-spacing:.5px;
 }
 #progress_bar_wrap{
-  position:fixed; top:64px; left:0; right:0;
+  position:absolute; bottom:0; left:0; right:0;
   z-index:999; pointer-events:none;
 }
 #progress_bar{
@@ -124,11 +124,10 @@ table th.num,
   transition:width .6s cubic-bezier(.4,0,.2,1);
 }
 #progress_text{
-  position:absolute; right:28px; top:6px;
   font-family:'JetBrains Mono',monospace;
-  font-size:.6rem; letter-spacing:.2em;
+  font-size:.6rem; letter-spacing:.15em;
   text-transform:uppercase; color:var(--accent);
-  opacity:.75;
+  opacity:.8; margin-right:8px; display:inline-block;
 }
 
 #conn_banner{
@@ -1605,8 +1604,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   .ribbon-title{ font-size:.8rem; letter-spacing:.06em; }
   #live_clock{ display:none; }
   #s5_countdown{ font-size:.62rem; padding:5px 8px; }
-  #progress_bar_wrap{ top:54px; }
-  #progress_text{ right:14px; font-size:.55rem; top:5px; }
+  #progress_text{ font-size:.55rem; margin-right:0; }
   #conn_banner{ top:55px; }
 
   /* tighter gutters */
@@ -1652,13 +1650,13 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     <div class="ribbon-title">REAL CRICKET <span class="accent">PREMIER</span> LEAGUE</div>
   </div>
   <div class="ribbon-right">
+    <div id="progress_text">// season progress</div>
     <div id="s5_countdown" style="font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--accent); background:rgba(var(--accent-rgb),0.1); border:1px solid rgba(var(--accent-rgb),0.3); padding:6px 12px; border-radius:4px; letter-spacing:.5px; display:none;"></div>
     <div id="live_clock">— — —</div>
   </div>
-</div>
-<div id="progress_bar_wrap">
-  <div id="progress_bar"></div>
-  <div id="progress_text">// season progress</div>
+  <div id="progress_bar_wrap">
+    <div id="progress_bar"></div>
+  </div>
 </div>
 <div id="conn_banner"></div>
 <section class="hero">
