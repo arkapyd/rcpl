@@ -2327,15 +2327,15 @@ let MANAGERS = {
 };
 const DEFAULT_MANAGERS = { ...MANAGERS };
 // ============================== MANAGER CAREER HISTORY ==============================
-function computeManagerIndex(history){
+function computeManagerIndex(history, liveData = null){
   let total_w = 0, total_m = 0;
   let champs = 0, finalists = 0, qualifiers = 0, eliminators = 0, groups = 0, pending = 0;
   let cumulative_value = 0;
-  
+ 
   history.forEach(s => {
     if(s.w !== null) total_w += s.w;
     if(s.m !== null) total_m += s.m;
-    
+   
     let season_val = 0;
     if(s.outcome === 'champion') { champs++; season_val += 60; }
     else if(s.outcome === 'finalist') { finalists++; }
@@ -2343,7 +2343,7 @@ function computeManagerIndex(history){
     else if(s.outcome === 'eliminator') { eliminators++; }
     else if(s.outcome === 'group') { groups++; }
     else if(s.outcome === 'pending-final') { pending++; }
-    
+   
     if(['champion', 'finalist', 'qualifier', 'eliminator', 'pending-final'].includes(s.outcome)){
       season_val += 20;
     }
@@ -2352,19 +2352,26 @@ function computeManagerIndex(history){
     }
     cumulative_value += season_val;
   });
-  
+
+  // Inject live S5 data into the index scaling
+  if(liveData && liveData.m > 0) {
+    total_w += liveData.w;
+    total_m += liveData.m;
+    cumulative_value += (liveData.w / liveData.m) * 20;
+  }
+ 
   const finals_appearances = champs + finalists + pending;
   const playoff_appearances = finals_appearances + qualifiers + eliminators;
   const win_rate = total_m > 0 ? total_w/total_m : 0;
-  
+ 
   const index_val = total_m > 0 ? (cumulative_value / total_m) * 14 : 0;
   let index = Math.round(index_val);
-  
-  // Give new managers (like Isho) a starting index of 1
-  if (history.length === 0) {
+ 
+  // Give pure debutants with 0 total matches a baseline of 1
+  if (total_m === 0) {
     index = 1;
   }
-  
+ 
   return {
     seasons: history.length, total_w, total_m, win_rate,
     champs, finalists, qualifiers, eliminators, groups, pending,
@@ -3951,9 +3958,10 @@ window.calcTeamStrength = function(t, opp) {
   
   let managerId = (MANAGERS[t] || '').toLowerCase();
   let mgrHistory = SEASON_OUTCOMES[managerId] || [];
-  let mgrStats = computeManagerIndex(mgrHistory);
+  let liveData = s ? { m: s.p, w: s.w } : null;
+  let mgrStats = computeManagerIndex(mgrHistory, liveData);
   let normMgrIndex = Math.min(100, mgrStats.index);
-  if(mgrStats.seasons === 0) normMgrIndex = 50;
+  if(mgrStats.total_m === 0) normMgrIndex = 50;
 
   let h2h = getH2H(t, opp);
   let h2hGames = h2h.aWins + h2h.bWins;
@@ -4979,7 +4987,12 @@ window.openScorecard = function(matchId){
 // ============================== MANAGER PERFORMANCE MODAL ==============================
 window.openManagerModal = function(managerId, currentTeam, displayName, archived){
   const history = SEASON_OUTCOMES[managerId] || [];
-  const stats = computeManagerIndex(history);
+  let liveData = null;
+  if (!archived && currentTeam && window.currentStandings) {
+    let s = window.currentStandings.find(x => x.team === currentTeam);
+    if (s) liveData = { m: s.p, w: s.w };
+  }
+  const stats = computeManagerIndex(history, liveData);
   const managerName = displayName || MANAGERS[currentTeam] || (managerId ? managerId.charAt(0).toUpperCase() + managerId.slice(1) : managerId);
   const accent = TEAM_COLORS[currentTeam] || 'var(--accent)';
 
@@ -5056,7 +5069,7 @@ window.openManagerModal = function(managerId, currentTeam, displayName, archived
   const hasPending = stats.pending > 0;
   html += `
     <div class="mgr-modal-foot">
-      index = avg value added per season (60 per title, 20 per playoff, 20 scaled by win rate).
+      index = avg value added per season (60 per title, 20 per playoff, 20 scaled by win rate). dynamically scaled by live s5 matches.
       ${hasPending ? '<br><strong>S4 final is today</strong> — index may move once the result is in.' : ''}
     </div>
   `;
