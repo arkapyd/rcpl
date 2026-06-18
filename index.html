@@ -2304,6 +2304,11 @@ const TEAM_COLORS_2 = {
   kkr:'#e6b93f', rcb:'#121212', pbks:'#1d4ed8', csk:'#3730a3', mi:'#d9a93a',
   gt:'#101010',  lsg:'#6db8ec', rr:'#1e5fd0',  dc:'#df2a2a', srh:'#101010'
 };
+const TEAM_NAMES = {
+  mi: 'Indians', pbks: 'Kings', csk: 'Super Kings', kkr: 'Knight Riders',
+  gt: 'Titans', lsg: 'Super Giants', rr: 'Royals', rcb: 'Royal Challengers',
+  dc: 'Capitals', srh: 'Sunrisers'
+};
 const OVERS_PER_INNINGS = 5;
 
 // Team Managers — team → manager display name. Editable from the admin panel and
@@ -2861,7 +2866,7 @@ function fillCompareSelects(){
   const sel = document.getElementById('cmp_fixture');
   if(!sel) return;
   sel.innerHTML = '<option value="">select a fixture…</option>' +
-    SCHEDULE.map(f => `<option value="${f.id}">${f.id} · ${f.a.toUpperCase()} vs ${f.b.toUpperCase()}</option>`).join('');
+    SCHEDULE.map(f => `<option value="${f.id}">${f.id} · ${TEAM_NAMES[f.a]} vs ${TEAM_NAMES[f.b]}</option>`).join('');
 }
 function initUI(){
   ['t1','t2'].forEach(fillTeamSelect);
@@ -2875,7 +2880,7 @@ function initUI(){
 
   const fs = document.getElementById('fixture_select');
   fs.innerHTML = '<option value="">select a fixture…</option>' +
-    SCHEDULE.map(f => `<option value="${f.id}">${f.id} · ${f.a.toUpperCase()} vs ${f.b.toUpperCase()}</option>`).join('');
+    SCHEDULE.map(f => `<option value="${f.id}">${f.id} · ${TEAM_NAMES[f.a]} vs ${TEAM_NAMES[f.b]}</option>`).join('');
   fs.addEventListener('change', window.loadFixture);
 
   // managers grid — rendered from the live (editable) roster
@@ -3115,9 +3120,9 @@ function renderResultsFeed(){
           <span class="tag-played">Played</span>
         </div>
         <div class="feed-fixture">
-          <span class="team-link" style="--team-glow:${TEAM_COLORS[r.t1]};" onclick="event.stopPropagation(); window.takeoverTeam('${r.t1}')">${r.t1.toUpperCase()}</span>
+          <span class="team-link" style="--team-glow:${TEAM_COLORS[r.t1]};" onclick="event.stopPropagation(); window.takeoverTeam('${r.t1}')">${TEAM_NAMES[r.t1]}</span>
           <span class="vs">vs</span>
-          <span class="team-link" style="--team-glow:${TEAM_COLORS[r.t2]};" onclick="event.stopPropagation(); window.takeoverTeam('${r.t2}')">${r.t2.toUpperCase()}</span>
+          <span class="team-link" style="--team-glow:${TEAM_COLORS[r.t2]};" onclick="event.stopPropagation(); window.takeoverTeam('${r.t2}')">${TEAM_NAMES[r.t2]}</span>
         </div>
         <div class="feed-score">
           ${r.t1.toUpperCase()} ${r.r1}/${r.w1} (${fmtOvers(r.b1)}) &nbsp;·&nbsp; ${r.t2.toUpperCase()} ${r.r2}/${r.w2} (${fmtOvers(r.b2)}) &nbsp;—&nbsp; ${buildResultLine(fixture, r)}
@@ -3147,9 +3152,9 @@ function renderUpcomingFeed(){
         <span class="tag-upcoming">Upcoming</span>
       </div>
       <div class="feed-fixture">
-        <span class="team-link" style="--team-glow:${TEAM_COLORS[f.a]};" onclick="window.takeoverTeam('${f.a}')">${f.a.toUpperCase()}</span>
+        <span class="team-link" style="--team-glow:${TEAM_COLORS[f.a]};" onclick="window.takeoverTeam('${f.a}')">${TEAM_NAMES[f.a]}</span>
         <span class="vs">vs</span>
-        <span class="team-link" style="--team-glow:${TEAM_COLORS[f.b]};" onclick="window.takeoverTeam('${f.b}')">${f.b.toUpperCase()}</span>
+        <span class="team-link" style="--team-glow:${TEAM_COLORS[f.b]};" onclick="window.takeoverTeam('${f.b}')">${TEAM_NAMES[f.b]}</span>
       </div>
     </div>`).join('');
     
@@ -3181,9 +3186,9 @@ function renderSchedule(){
             <td><span class="sched-id">${f.id}</span></td>
             <td>
               <span class="sched-teams">
-                <span class="team-link" style="--team-glow:${TEAM_COLORS[r.t1]};" onclick="event.stopPropagation(); window.takeoverTeam('${r.t1}')">${r.t1.toUpperCase()}</span>
+                <span class="team-link" style="--team-glow:${TEAM_COLORS[r.t1]};" onclick="event.stopPropagation(); window.takeoverTeam('${r.t1}')">${TEAM_NAMES[r.t1]}</span>
                 <span class="vs">vs</span>
-                <span class="team-link" style="--team-glow:${TEAM_COLORS[r.t2]};" onclick="event.stopPropagation(); window.takeoverTeam('${r.t2}')">${r.t2.toUpperCase()}</span>
+                <span class="team-link" style="--team-glow:${TEAM_COLORS[r.t2]};" onclick="event.stopPropagation(); window.takeoverTeam('${r.t2}')">${TEAM_NAMES[r.t2]}</span>
               </span>
             </td>
             <td>
@@ -3197,9 +3202,9 @@ function renderSchedule(){
           <td><span class="sched-id">${f.id}</span></td>
           <td>
             <span class="sched-teams">
-              <span class="team-link" style="--team-glow:${TEAM_COLORS[f.a]};" onclick="window.takeoverTeam('${f.a}')">${f.a.toUpperCase()}</span>
+              <span class="team-link" style="--team-glow:${TEAM_COLORS[f.a]};" onclick="window.takeoverTeam('${f.a}')">${TEAM_NAMES[f.a]}</span>
               <span class="vs">vs</span>
-              <span class="team-link" style="--team-glow:${TEAM_COLORS[f.b]};" onclick="window.takeoverTeam('${f.b}')">${f.b.toUpperCase()}</span>
+              <span class="team-link" style="--team-glow:${TEAM_COLORS[f.b]};" onclick="window.takeoverTeam('${f.b}')">${TEAM_NAMES[f.b]}</span>
             </span>
           </td>
           <td><span class="sched-result">—</span></td>
@@ -4205,7 +4210,7 @@ function renderBetMatchOptions(){
       const r = results[f.id];
       const status = r ? ' [played]' : ' [upcoming]';
       const n = (bets[f.id] && Object.keys(bets[f.id]).length) ? ` · ${Object.keys(bets[f.id]).length} bet(s)` : '';
-      return `<option value="${f.id}">${f.id} · ${f.a.toUpperCase()} vs ${f.b.toUpperCase()}${status}${n}</option>`;
+      return `<option value="${f.id}">${f.id} · ${TEAM_NAMES[f.a]} vs ${TEAM_NAMES[f.b]}${status}${n}</option>`;
     }).join('');
   if(cur) sel.value = cur;
 }
@@ -4772,7 +4777,7 @@ function updateUI(){
     fs.innerHTML = '<option value="">select a fixture…</option>' +
       SCHEDULE.map(f => {
         const status = results[f.id] ? ' [played]' : ' [upcoming]';
-        return `<option value="${f.id}">${f.id} · ${f.a.toUpperCase()} vs ${f.b.toUpperCase()}${status}</option>`;
+        return `<option value="${f.id}">${f.id} · ${TEAM_NAMES[f.a]} vs ${TEAM_NAMES[f.b]}${status}</option>`;
       }).join('');
     if(cur) fs.value = cur;
   }
