@@ -1435,10 +1435,13 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   background-size: auto 150%;
   opacity:0; pointer-events:none;
   transition: opacity .25s ease;
+  /* recolour to a bright silhouette so the crest reads against any fill (incl. same-hue
+     ones like GT/RCB/MI); the soft dark edge keeps it visible on light fills like CSK */
+  filter: brightness(0) invert(1) drop-shadow(0 0 2px rgba(0,0,0,.5));
   -webkit-mask-image: linear-gradient(135deg, transparent 35%, #000 100%);
           mask-image: linear-gradient(135deg, transparent 35%, #000 100%);
 }
-.manager-card:hover::after{ opacity:0.16; }
+.manager-card:hover::after{ opacity:0.35; }
 
 /* ============================================================
    MANAGER MODAL — career performance breakdown
