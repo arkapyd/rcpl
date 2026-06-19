@@ -2652,20 +2652,29 @@ function pushToCloud(){
   }
 }
 
+// in-flight writes: a just-saved (or just-cleared) match is shielded from an incoming cloud
+// snapshot until its write round-trips, so a lagging/rolled-back sync can't silently wipe it.
+let _pendingMatches = {};
+
 // per-match write — writes (or removes) a single result node instead of the whole results blob.
 function pushMatch(id){
   saveLocal();
-  if(!dbRef) return;
+  _pendingMatches[id] = results[id] ? results[id] : null;   // null = deliberately removed
+  if(!dbRef){ delete _pendingMatches[id]; return; }
+  const settle = () => { delete _pendingMatches[id]; };
   try {
     const p = results[id]
       ? dbRef.child('results/' + id).set(sanitize(results[id]))
       : dbRef.child('results/' + id).remove();
+    if(p && p.then) p.then(settle);
     if(p && p.catch) p.catch(e => {
+      settle();
       console.error('cloud match write failed:', e);
       window.showToast('cloud write blocked — saved locally only.', 'error');
       setConnBanner('offline');
     });
   } catch(e){
+    settle();
     console.error('cloud match write threw:', e);
     window.showToast('cloud write error — saved locally only.', 'error');
   }
@@ -2784,6 +2793,11 @@ function cloudSaveBets(){
 function ingest(raw){
   results = (raw && typeof raw === 'object') ? raw : {};
   Object.keys(results).forEach(k => { if(!results[k]) delete results[k]; });
+  // shield freshly-saved / freshly-cleared matches from a lagging or rolled-back snapshot
+  Object.keys(_pendingMatches).forEach(id => {
+    if(_pendingMatches[id]) results[id] = _pendingMatches[id];
+    else delete results[id];
+  });
   saveLocal();
   _bootDone = true;
   if(!isUiInitialized){ initUI(); isUiInitialized = true; }
