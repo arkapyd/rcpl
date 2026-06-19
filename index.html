@@ -580,7 +580,13 @@ tbody tr.highlight-row {
 #standings_body tr:hover,
 #standings_body tr.highlight-row{
   background-color: var(--row-c1, var(--surface-2)) !important;
-  background-image: none !important;          /* drop the watermark so the fill stays clean */
+  /* keep the crest (drop only the dark veil) and blend it into the fill, so it stays
+     visible as a tonal watermark on the colour instead of vanishing into its own hue */
+  background-image: var(--team-logo, none) !important;
+  background-position: var(--logo-x, -22px) center !important;
+  background-size: auto 120px !important;
+  background-repeat: no-repeat !important;
+  background-blend-mode: luminosity;
 }
 #standings_body tr:hover .pos,
 #standings_body tr:hover .team-cell,
