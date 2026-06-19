@@ -1878,6 +1878,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
         <div id="subtabs_career" style="display:none; gap:10px;">
           <button class="tab-btn" onclick="window.switchStatsTab('career')">Exhaustive Stats</button>
           <button class="tab-btn" onclick="window.switchStatsTab('h2h')">Head-to-Head</button>
+          <button class="tab-btn" onclick="window.switchStatsTab('mh2h')">Manager H2H</button>
         </div>
       </div>
     </div>
@@ -2030,6 +2031,14 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
       <div style="padding:16px 18px 8px;">
         <div id="h2h_selector" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;"></div>
         <div id="h2h_panel"></div>
+      </div>
+    </div>
+
+  <div id="stats_mh2h" style="display:none;" class="table-wrap">
+      <div style="padding:16px 18px 8px;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); margin-bottom:12px;">// manager rivalries · S1–S4 inherited through each manager's franchises + live S5</div>
+        <div id="mh2h_selector" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;"></div>
+        <div id="mh2h_panel"></div>
       </div>
     </div>
   </section>
@@ -2539,8 +2548,8 @@ window.switchStatsTab = function(tab) {
   document.getElementById('stats_exhaustive').style.display = tab === 'exhaustive' ? 'block' : 'none';
   if(document.getElementById('stats_mvm')) document.getElementById('stats_mvm').style.display = tab === 'mvm' ? 'block' : 'none';
   if(document.getElementById('stats_career')) document.getElementById('stats_career').style.display = tab === 'career' ? 'block' : 'none';
-  // AFTER
   if(document.getElementById('stats_h2h')) document.getElementById('stats_h2h').style.display = tab === 'h2h' ? 'block' : 'none';
+  if(document.getElementById('stats_mh2h')) document.getElementById('stats_mh2h').style.display = tab === 'mh2h' ? 'block' : 'none';
   if(document.getElementById('stats_graphs')) document.getElementById('stats_graphs').style.display = tab === 'graphs' ? 'block' : 'none';
   if(document.getElementById('stats_compare')) document.getElementById('stats_compare').style.display = tab === 'compare' ? 'block' : 'none';
   document.querySelectorAll('.tab-btn:not(.modal-trigger)').forEach(b => b.classList.remove('active'));
@@ -3967,6 +3976,125 @@ function renderH2HMatrix(){
   panel.innerHTML = summary + rows;
 }
 
+// ============================== HEAD-TO-HEAD (managers) ==============================
+// A manager inherits the rivalry of the franchises they ran. For S1–S4 we gate to seasons
+// both managers were active and credit that season's franchise pairing's cumulative H2H
+// (an approximation where a franchise changed hands); live S5 is mapped exactly via the roster.
+function getManagerH2H(idA, idB){
+  let aWins = 0, bWins = 0;
+  if(idA === idB) return { aWins, bWins };
+
+  const teamBySeason = id => {
+    const map = {};
+    (SEASON_OUTCOMES[id] || []).forEach(s => { map[s.season] = s.team; });
+    return map;
+  };
+  const ta = teamBySeason(idA), tb = teamBySeason(idB);
+  const pairs = new Set();
+  Object.keys(ta).forEach(season => {
+    if(tb[season] && ta[season] !== tb[season]) pairs.add(ta[season] + '>' + tb[season]);
+  });
+  pairs.forEach(p => {
+    const [a, b] = p.split('>');
+    aWins += (HISTORICAL_H2H[a] && HISTORICAL_H2H[a][b]) || 0;
+    bWins += (HISTORICAL_H2H[b] && HISTORICAL_H2H[b][a]) || 0;
+  });
+
+  SCHEDULE.forEach(f => {
+    const r = results[f.id];
+    if(!r || !r.t1 || !r.t2) return;
+    const m1 = (MANAGERS[r.t1] || '').toLowerCase();
+    const m2 = (MANAGERS[r.t2] || '').toLowerCase();
+    const isPair = (m1 === idA && m2 === idB) || (m1 === idB && m2 === idA);
+    if(!isPair) return;
+    const w = getWinner(r);
+    const wm = w ? (MANAGERS[w] || '').toLowerCase() : null;
+    if(wm === idA) aWins++;
+    else if(wm === idB) bWins++;
+  });
+
+  return { aWins, bWins };
+}
+
+function mgrDisplayName(id){ const k = getKnownManagers(); return k[id] || titleCase(id); }
+function mgrColor(id){
+  const t = [...GROUP_A, ...GROUP_B].find(tt => (MANAGERS[tt] || '').toLowerCase() === id);
+  if(t) return TEAM_COLORS[t];
+  const hist = SEASON_OUTCOMES[id];
+  if(hist && hist.length) return TEAM_COLORS[hist[hist.length - 1].team] || 'var(--accent)';
+  return 'var(--accent)';
+}
+function orderedManagerIds(){
+  const known = getKnownManagers();
+  const ordered = [], seen = new Set();
+  [...GROUP_A, ...GROUP_B].forEach(t => {
+    const id = (MANAGERS[t] || '').toLowerCase();
+    if(id && known[id] && !seen.has(id)){ ordered.push(id); seen.add(id); }
+  });
+  Object.keys(known).sort().forEach(id => { if(!seen.has(id)){ ordered.push(id); seen.add(id); } });
+  return ordered;
+}
+
+let _mh2hMgr = null;
+window.selectMH2HMgr = function(id){ _mh2hMgr = id; renderManagerH2HMatrix(); };
+
+function renderManagerH2HMatrix(){
+  const ids = orderedManagerIds();
+  if(ids.length === 0) return;
+  const sel = (_mh2hMgr && ids.includes(_mh2hMgr)) ? _mh2hMgr : ids[0];
+
+  const selEl = document.getElementById('mh2h_selector');
+  if(selEl){
+    selEl.innerHTML = ids.map(id => {
+      const on = id === sel;
+      const c = mgrColor(id);
+      return `<span onclick="window.selectMH2HMgr('${id}')" style="cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:.72rem; font-weight:700; letter-spacing:.08em; padding:6px 11px; border-radius:4px; border:1px solid ${on ? c : 'var(--border-bright)'}; background:${on ? 'var(--surface-3)' : 'var(--surface-2)'}; color:${c}; opacity:${on ? 1 : .72}; transition:opacity .2s, border-color .2s, background .2s; text-transform:uppercase;">${mgrDisplayName(id)}</span>`;
+    }).join('');
+  }
+
+  const panel = document.getElementById('mh2h_panel');
+  if(!panel) return;
+
+  let leads = 0, trails = 0, level = 0;
+  const recs = ids.filter(id => id !== sel).map(opp => {
+    const h = getManagerH2H(sel, opp);
+    const w = h.aWins, l = h.bWins, games = w + l;
+    if(games > 0){ if(w > l) leads++; else if(l > w) trails++; else level++; }
+    return { opp, w, l, games, margin: w - l };
+  });
+  recs.sort((a, b) => (b.margin - a.margin) || (b.games - a.games) || a.opp.localeCompare(b.opp));
+
+  const selColor = mgrColor(sel);
+  const summary = `<div style="font-family:'JetBrains Mono',monospace; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dim); margin-bottom:14px;">`
+    + `how <span style="color:${selColor}; font-weight:700;">${mgrDisplayName(sel).toUpperCase()}</span> stacks up · all-time · `
+    + `<span style="color:var(--win);">leads ${leads}</span> · <span style="color:#f87171;">trails ${trails}</span> · <span style="color:var(--text-muted);">level ${level}</span></div>`;
+
+  const rows = recs.map(r => {
+    const total = r.games;
+    const wPct = total > 0 ? (r.w / total) * 100 : 0;
+    const lPct = total > 0 ? (r.l / total) * 100 : 0;
+    let verdict, vColor;
+    if(total === 0){ verdict = 'not met'; vColor = 'var(--text-dim)'; }
+    else if(r.w > r.l){ verdict = 'leads'; vColor = 'var(--win)'; }
+    else if(r.l > r.w){ verdict = 'trails'; vColor = '#f87171'; }
+    else { verdict = 'level'; vColor = 'var(--text-muted)'; }
+    const tally = total === 0 ? '—' : `${r.w}–${r.l}`;
+    const oppColor = mgrColor(r.opp);
+    return `
+      <div style="display:flex; align-items:center; gap:12px; padding:9px 2px; border-bottom:1px solid var(--border);">
+        <span style="width:120px; flex-shrink:0; font-family:'Anton',sans-serif; font-size:.95rem; letter-spacing:.04em; color:${oppColor}; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${mgrDisplayName(r.opp)}</span>
+        <div style="flex:1; min-width:60px; height:12px; border-radius:6px; overflow:hidden; background:var(--surface-3); display:flex;">
+          <div style="width:${wPct}%; background:var(--win);"></div>
+          <div style="width:${lPct}%; background:var(--loss);"></div>
+        </div>
+        <span style="width:50px; flex-shrink:0; text-align:right; font-family:'JetBrains Mono',monospace; font-size:.82rem; font-weight:700; color:var(--text);">${tally}</span>
+        <span style="width:62px; flex-shrink:0; text-align:right; font-family:'JetBrains Mono',monospace; font-size:.6rem; letter-spacing:.08em; text-transform:uppercase; color:${vColor};">${verdict}</span>
+      </div>`;
+  }).join('');
+
+  panel.innerHTML = summary + rows;
+}
+
 // ============================== PREDICTIVE ODDS ==============================
 window.calcBet = function(input, odds, teamA, teamB, fav, isEvens) {
   const resultsDiv = input.parentElement.nextElementSibling;
@@ -4811,6 +4939,7 @@ function updateUI(){
   renderMvmStats();
   renderCareerStats();
   renderH2HMatrix();
+  renderManagerH2HMatrix();
   renderBetLedger();
   reapplySorts();
 
