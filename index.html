@@ -607,6 +607,23 @@ tbody tr.highlight-row {
   padding-bottom: 17px;
 }
 
+/* up-next column */
+.next-row{ display:flex; gap:8px; align-items:center; justify-content:center; flex-wrap:wrap; }
+.next-opp{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.7rem; font-weight:700; letter-spacing:.05em;
+  color:var(--team-glow, var(--text-muted));
+  cursor:pointer;
+  transition:transform .15s ease, filter .15s ease;
+}
+.next-opp:hover{ transform:translateY(-1px); filter:brightness(1.25); }
+/* flip the up-next codes to the secondary on hover/takeover, like the rest of the row */
+#standings_body tr:hover .next-opp,
+#standings_body tr.highlight-row .next-opp{ color: var(--row-c2, var(--text)) !important; }
+/* hide the rank number while the crest is showing so they don't overlap */
+#standings_body tr:hover .pos,
+#standings_body tr.highlight-row .pos{ opacity: 0; }
+
 .pos{
   font-family:'JetBrains Mono',monospace;
   color:var(--text-dim);
@@ -1846,6 +1863,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
             <th class="num">NRR</th>
             <th class="num">FP</th>
             <th>Form</th>
+            <th>Up Next</th>
           </tr>
         </thead>
         <tbody id="standings_body"></tbody>
@@ -3179,6 +3197,14 @@ function renderStandings(standings){
     }).join('');
     const fpData = fp[s.team] || { avg: null, count: 0 };
     const fpStr = (fpData.avg != null) ? fpData.avg.toFixed(2) : '—';
+    const nextCells = SCHEDULE
+      .filter(f => !results[f.id] && (f.a === s.team || f.b === s.team))
+      .slice(0, 3)
+      .map(f => {
+        const opp = f.a === s.team ? f.b : f.a;
+        return `<span class="next-opp" style="--team-glow:${TEAM_COLORS[opp]};" title="${f.id} · vs ${TEAM_NAMES[opp]}" onclick="window.takeoverTeam('${opp}')">${opp.toUpperCase()}</span>`;
+      }).join('');
+    const nextHtml = nextCells || '<span style="color:var(--text-dim); font-style:italic;">done</span>';
     return `
       <tr class="${top4}${isHighlighted}" data-team="${s.team}" style="--team-logo:url('${s.team}.png'); --row-c1:${TEAM_COLORS[s.team]}; --row-c2:${TEAM_COLORS_2[s.team] || TEAM_COLORS[s.team]};">
         <td class="pos num">${String(i+1).padStart(2,'0')}</td>
@@ -3194,6 +3220,7 @@ function renderStandings(standings){
         <td class="num col-nrr">${s.p === 0 ? '—' : s.nrrStr}</td>
         <td class="num col-fp" title="${fpData.count} rated">${fpStr}</td>
         <td><div class="form-row">${formCells}</div></td>
+        <td><div class="next-row">${nextHtml}</div></td>
       </tr>`;
   }).join('');
   const totalPlayed = Object.keys(results).length;
