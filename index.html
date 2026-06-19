@@ -1307,6 +1307,25 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   color: var(--t2) !important;
 }
 
+/* non-toppers: thinner value numbers so the rank-1 row pops */
+.stat-row:not(.hero-stat-row) .stat-row-value{ font-weight:400; }
+
+/* topper: faded, zoomed team-logo watermark on hover (over the colour fill) */
+.hero-stat-row{ overflow:hidden; isolation:isolate; }
+.hero-stat-row > *{ position:relative; z-index:1; }
+.hero-stat-row::after{
+  content:''; position:absolute; inset:0; z-index:0;
+  background-image: var(--team-logo, none);
+  background-repeat: no-repeat;
+  background-position: right -20px center;
+  background-size: auto 240%;
+  opacity:0; pointer-events:none;
+  transition: opacity .25s ease;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 75%);
+          mask-image: linear-gradient(90deg, transparent 0%, #000 75%);
+}
+.hero-stat-row:hover::after{ opacity:0.20; }
+
 /* ============================================================
    MANAGERS — roster grid
    ============================================================ */
@@ -1400,6 +1419,23 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 .manager-card:hover .mgr-team-row{
   border-top-color: var(--mgr-2, var(--accent-2));
 }
+
+/* manager card: faded, zoomed team-logo watermark on hover (over the colour fill) */
+.manager-card{ isolation:isolate; }
+.manager-card > *{ position:relative; z-index:1; }
+.manager-card::before{ z-index:2; }
+.manager-card::after{
+  content:''; position:absolute; inset:0; z-index:0;
+  background-image: var(--team-logo, none);
+  background-repeat: no-repeat;
+  background-position: right -24px bottom -22px;
+  background-size: auto 150%;
+  opacity:0; pointer-events:none;
+  transition: opacity .25s ease;
+  -webkit-mask-image: linear-gradient(135deg, transparent 35%, #000 100%);
+          mask-image: linear-gradient(135deg, transparent 35%, #000 100%);
+}
+.manager-card:hover::after{ opacity:0.16; }
 
 /* ============================================================
    MANAGER MODAL — career performance breakdown
@@ -2966,7 +3002,7 @@ function renderManagersGrid(){
    const color2 = TEAM_COLORS_2[t] || color;
     const managerId = (MANAGERS[t] || '').toLowerCase();
     return `
-      <div class="manager-card" style="--mgr-color:${color}; --mgr-2:${color2};" onclick="window.openManagerModal('${managerId}', '${t}')">
+      <div class="manager-card" style="--mgr-color:${color}; --mgr-2:${color2}; --team-logo:url('${t}.png');" onclick="window.openManagerModal('${managerId}', '${t}')">
         <div class="mgr-eyebrow">// manager</div>
         <h3 class="mgr-name">${name}</h3>
         <div class="mgr-team-row">
@@ -3362,7 +3398,7 @@ function renderStatBoards(){
     const t2 = TEAM_COLORS_2[s.team] || t1;
     
     return `
-      <div class="stat-row${isHighlighted}${isHero}" style="--t1:${t1}; --t2:${t2};">
+      <div class="stat-row${isHighlighted}${isHero}" style="--t1:${t1}; --t2:${t2}; --team-logo:url('${s.team}.png');">
         <div class="stat-row-rank">${String(i+1).padStart(2,'0')}</div>
         <div class="stat-row-team" style="--team-glow:${t1};" onclick="window.takeoverTeam('${s.team}')">
           ${TEAM_NAMES[s.team]}
