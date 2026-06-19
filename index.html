@@ -1439,6 +1439,10 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
           mask-image: linear-gradient(135deg, transparent 35%, #000 100%);
 }
 .manager-card:hover::after{ opacity:0.86; }
+/* these two crests sit dead-centre in their files — nudge them right (toward the corner)
+   so they clear the manager name instead of ghosting behind it */
+.manager-card[data-team="srh"]::after,
+.manager-card[data-team="rcb"]::after{ background-position: right -70px bottom -22px; }
 
 /* ============================================================
    MANAGER MODAL — career performance breakdown
@@ -3028,7 +3032,7 @@ function renderManagersGrid(){
    const color2 = TEAM_COLORS_2[t] || color;
     const managerId = (MANAGERS[t] || '').toLowerCase();
     return `
-      <div class="manager-card" style="--mgr-color:${color}; --mgr-2:${color2}; --team-logo:url('${t}.png');" onclick="window.openManagerModal('${managerId}', '${t}')">
+     <div class="manager-card" data-team="${t}" style="--mgr-color:${color}; --mgr-2:${color2}; --team-logo:url('${t}.png');" onclick="window.openManagerModal('${managerId}', '${t}')">
         <div class="mgr-eyebrow">// manager</div>
         <h3 class="mgr-name">${name}</h3>
         <div class="mgr-team-row">
