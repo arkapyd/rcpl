@@ -574,6 +574,33 @@ tbody tr.highlight-row {
   background: rgba(var(--accent-rgb), 0.15) !important;
 }
 
+/* points table — hover & takeover light the row in the team palette
+   (primary fill, secondary text); hover also expands the row a touch */
+#standings_body td{ transition: padding .18s ease, color .18s ease; }
+#standings_body tr:hover,
+#standings_body tr.highlight-row{
+  background-color: var(--row-c1, var(--surface-2)) !important;
+  background-image: none !important;          /* drop the watermark so the fill stays clean */
+}
+#standings_body tr:hover .pos,
+#standings_body tr:hover .team-cell,
+#standings_body tr:hover td.num,
+#standings_body tr.highlight-row .pos,
+#standings_body tr.highlight-row .team-cell,
+#standings_body tr.highlight-row td.num{
+  color: var(--row-c2, var(--text)) !important;
+}
+#standings_body tr:hover .form-letter,
+#standings_body tr.highlight-row .form-letter{
+  background: transparent !important;
+  border-color: var(--row-c2, var(--text)) !important;
+  color: var(--row-c2, var(--text)) !important;
+}
+#standings_body tr:hover td{
+  padding-top: 17px;
+  padding-bottom: 17px;
+}
+
 .pos{
   font-family:'JetBrains Mono',monospace;
   color:var(--text-dim);
@@ -3147,7 +3174,7 @@ function renderStandings(standings){
     const fpData = fp[s.team] || { avg: null, count: 0 };
     const fpStr = (fpData.avg != null) ? fpData.avg.toFixed(2) : '—';
     return `
-      <tr class="${top4}${isHighlighted}" data-team="${s.team}" style="--team-logo:url('${s.team}.png');">
+      <tr class="${top4}${isHighlighted}" data-team="${s.team}" style="--team-logo:url('${s.team}.png'); --row-c1:${TEAM_COLORS[s.team]}; --row-c2:${TEAM_COLORS_2[s.team] || TEAM_COLORS[s.team]};">
         <td class="pos num">${String(i+1).padStart(2,'0')}</td>
         <td>
           <div class="team-cell" style="--team-glow:${TEAM_COLORS[s.team]};" onclick="window.openFormModal('${s.team}')">
