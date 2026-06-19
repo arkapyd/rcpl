@@ -610,9 +610,12 @@ tbody tr.highlight-row {
     linear-gradient(90deg, rgba(10,10,10,0.72) 0px, rgba(10,10,10,0.85) 56px, rgba(10,10,10,0) 140px),
     var(--team-logo, none);
   background-repeat: no-repeat, no-repeat;
-  background-position: left center, -22px center;
+  background-position: left center, var(--logo-x, -22px) center;
   background-size: auto, auto 120px;
 }
+/* these two logos sit wider — pull their crops further left to line up */
+#standings_body tr[data-team="rcb"]{ --logo-x: -44px; }
+#standings_body tr[data-team="srh"]{ --logo-x: -42px; }
 .form-row{ display:flex; gap:3px; justify-content:center; }
 .form-letter{
   width:18px; height:18px; border-radius:3px;
@@ -1311,7 +1314,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 .stat-row:not(.hero-stat-row) .stat-row-value{ font-weight:400; }
 
 /* topper: faded, zoomed team-logo watermark on hover (over the colour fill) */
-.hero-stat-row{ overflow:hidden; isolation:isolate; }
+.hero-stat-row{ position:relative; overflow:hidden; isolation:isolate; }
 .hero-stat-row > *{ position:relative; z-index:1; }
 .hero-stat-row::after{
   content:''; position:absolute; inset:0; z-index:0;
@@ -3117,7 +3120,7 @@ function renderStandings(standings){
     const fpData = fp[s.team] || { avg: null, count: 0 };
     const fpStr = (fpData.avg != null) ? fpData.avg.toFixed(2) : '—';
     return `
-      <tr class="${top4}${isHighlighted}" style="--team-logo:url('${s.team}.png');">
+      <tr class="${top4}${isHighlighted}" data-team="${s.team}" style="--team-logo:url('${s.team}.png');">
         <td class="pos num">${String(i+1).padStart(2,'0')}</td>
         <td>
           <div class="team-cell" style="--team-glow:${TEAM_COLORS[s.team]};" onclick="window.openFormModal('${s.team}')">
