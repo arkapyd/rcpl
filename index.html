@@ -118,17 +118,61 @@ table th.num,
   z-index:999; pointer-events:none;
 }
 #progress_bar{
+  position:relative;
   height:3.5px; width:0%;
   background:linear-gradient(90deg, var(--accent-2), var(--accent));
   box-shadow:0 0 12px rgba(var(--accent-2-rgb),.6);
   transition:width .6s cubic-bezier(.4,0,.2,1);
 }
-#progress_text{
-  font-family:'JetBrains Mono',monospace;
-  font-size:.6rem; letter-spacing:.15em;
-  text-transform:uppercase; color:var(--accent);
-  opacity:.8; margin-right:8px; display:inline-block;
+/* sparking tip at the end of the bar */
+#spark_tip{
+  position:absolute; right:-2px; top:50%;
+  transform:translateY(-50%);
+  width:6px; height:6px; border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 8px 2px var(--accent), 0 0 16px 4px rgba(var(--accent-rgb),.55);
+  transition:box-shadow .25s ease, transform .25s ease;
+  --fall:210px;                 /* how far the sparks fall — tune to taste */
 }
+.spark{
+  position:absolute; top:50%; left:50%;
+  width:2px; height:2px; border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 4px 1px var(--accent);
+  opacity:0;
+  animation:spark-fall 2.4s linear infinite;
+}
+.spark:nth-child(1){ animation-delay:0s;   animation-duration:2.4s; --drift:-6px; }
+.spark:nth-child(2){ animation-delay:.5s;  animation-duration:2.0s; --drift:5px; }
+.spark:nth-child(3){ animation-delay:1s;   animation-duration:2.7s; --drift:-3px; }
+.spark:nth-child(4){ animation-delay:1.5s; animation-duration:2.1s; --drift:7px; }
+.spark:nth-child(5){ animation-delay:2s;   animation-duration:2.5s; --drift:-4px; }
+@keyframes spark-fall{
+  0%  { transform:translate(-50%, 0) scale(1); opacity:1; }
+  15% { opacity:1; }
+  100%{ transform:translate(calc(-50% + var(--drift, 0px)), var(--fall, 200px)) scale(.2); opacity:0; }
+}
+/* match counter — revealed when the header bar is hovered */
+#progress_count{
+  position:absolute; right:-4px; bottom:9px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.62rem; font-weight:700; letter-spacing:.1em;
+  color:var(--accent);
+  background:rgba(10,10,10,.92);
+  border:1px solid rgba(var(--accent-rgb),.5);
+  padding:2px 8px; border-radius:4px;
+  white-space:nowrap;
+  box-shadow:0 0 14px rgba(var(--accent-rgb),.45);
+  opacity:0; transform:translateY(4px);
+  transition:opacity .25s ease, transform .25s ease;
+  pointer-events:none;
+}
+.ribbon:hover #progress_count{ opacity:1; transform:translateY(0); }
+.ribbon:hover #spark_tip{
+  box-shadow:0 0 14px 3px var(--accent), 0 0 28px 9px rgba(var(--accent-rgb),.7);
+  transform:translateY(-50%) scale(1.35);
+}
+@media (prefers-reduced-motion: reduce){ .spark{ display:none; } }
 
 #conn_banner{
   position:fixed; top:66px; left:0; right:0;
@@ -1753,12 +1797,20 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     <div class="ribbon-title">REAL CRICKET <span class="accent">PREMIER</span> LEAGUE</div>
   </div>
   <div class="ribbon-right">
-    <div id="progress_text">// season progress</div>
     <div id="s5_countdown" style="font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--accent); background:rgba(var(--accent-rgb),0.1); border:1px solid rgba(var(--accent-rgb),0.3); padding:6px 12px; border-radius:4px; letter-spacing:.5px; display:none;"></div>
     <div id="live_clock">— — —</div>
   </div>
   <div id="progress_bar_wrap">
-    <div id="progress_bar"></div>
+    <div id="progress_bar">
+      <div id="spark_tip">
+        <span class="spark"></span>
+        <span class="spark"></span>
+        <span class="spark"></span>
+        <span class="spark"></span>
+        <span class="spark"></span>
+      </div>
+      <div id="progress_count">0/70</div>
+    </div>
   </div>
 </div>
 <div id="conn_banner"></div>
@@ -5023,7 +5075,8 @@ function updateUI(){
 
   const playedCount = Object.keys(results).length;
   document.getElementById('progress_bar').style.width = (playedCount / 70 * 100) + '%';
-
+  const _pc = document.getElementById('progress_count');
+  if(_pc) _pc.innerText = playedCount + '/70';
   const clearEl = document.getElementById('clear_takeover');
   if(clearEl){
     if(selectedTeamFilter){
