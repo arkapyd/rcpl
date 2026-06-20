@@ -554,7 +554,45 @@ table th.num,
   border-radius:6px;
   overflow:hidden;
 }
-table{
+
+/* ============================================================
+   live stream player (Twitch embed) — only present while live
+   ============================================================ */
+.stream-wrap{
+  position:relative;
+  background:#000;
+  border:1px solid var(--border-bright);
+  border-radius:6px;
+  overflow:hidden;
+  box-shadow:0 0 34px rgba(var(--accent-rgb),.14);
+}
+.stream-wrap::before{
+  content:''; position:absolute; top:0; left:0; right:0; height:2px; z-index:3;
+  background:linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity:.8; pointer-events:none;
+}
+.stream-frame{
+  position:relative;
+  width:100%;
+  aspect-ratio:16 / 9;          /* big landscape player regardless of the source's size */
+  background:#000;
+}
+.stream-frame iframe{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  border:0; display:block;
+}
+#stream_status{
+  display:inline-flex; align-items:center; gap:8px;
+  color:var(--loss);
+  text-transform:uppercase;
+}
+#stream_status .live-dot{
+  width:8px; height:8px; border-radius:50%;
+  background:var(--loss);
+  box-shadow:0 0 9px rgba(239,68,68,.75);
+  animation:pulse-soft 1.5s ease-in-out infinite;
+}table{
   width:100%; border-collapse:collapse;
   font-size:.92rem;
 }
@@ -1792,7 +1830,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   .section-title, .combo-title{ font-size:1.25rem; letter-spacing:.1em; }
 
   /* tables scroll sideways instead of crushing columns */
-  .table-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+   overflow-x:auto; -webkit-overflow-scrolling:touch; }
 
   /* modals fit small screens */
   .modal-content{ padding:20px 16px; }
@@ -1950,6 +1988,16 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
         </thead>
         <tbody id="standings_body"></tbody>
       </table>
+    </div>
+  </section>
+
+  <section class="section" id="stream_section" style="display:none;">
+    <div class="section-head">
+      <h2 class="section-title"><span class="num-pre">▶</span>Live Stream</h2>
+      <div class="section-meta" id="stream_status">—</div>
+    </div>
+    <div class="stream-wrap">
+      <div class="stream-frame" id="stream_frame"></div>
     </div>
   </section>
 
@@ -2280,10 +2328,28 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
           <label>Match 2 (e.g. M02)</label>
           <input type="text" id="swap_m2" placeholder="MXX" style="text-transform:uppercase;">
         </div>
-        <div style="flex:0; min-width:auto;">
+       <div style="flex:0; min-width:auto;">
           <button onclick="window.swapMatches()">Swap</button>
         </div>
       </div>
+    </div>
+
+    <div class="admin-section">
+      <h3>Live Stream</h3>
+      <div class="admin-status">// broadcast the game from your phone to a Twitch channel (Twitch app → Go Live; shoot landscape for a full-width picture). then drop the channel name here and hit Go Live — the player appears below the points table for everyone watching. End Stream removes it completely.</div>
+      <div class="row" style="align-items:flex-end;">
+        <div style="flex:2;">
+          <label>Twitch Channel</label>
+          <input type="text" id="stream_channel" placeholder="e.g. rcpl_live" style="text-transform:lowercase;">
+        </div>
+        <div style="flex:0; min-width:auto;">
+          <button onclick="window.startStream()">Go Live</button>
+        </div>
+        <div style="flex:0; min-width:auto;">
+          <button class="danger" onclick="window.stopStream()">End Stream</button>
+        </div>
+      </div>
+      <div class="admin-status" id="stream_admin_status" style="margin-top:10px;">// offline</div>
     </div>
 
    <div class="admin-section">
@@ -2607,6 +2673,7 @@ let SCHEDULE = [
 let results = {};
 let fairplay = {};
 let bets = {};
+let stream = { live:false, channel:'', platform:'twitch' };
 let currentFilter = 'all';
 let selectedTeamFilter = null;
 let isUiInitialized = false;
@@ -2628,6 +2695,9 @@ const saveLocalFp = () => { try { localStorage.setItem(LS_FP, JSON.stringify(fai
 const loadLocalFp = () => { try { const r = localStorage.getItem(LS_FP); return r ? JSON.parse(r) : null; } catch(e){ return null; } };
 const saveLocalBets = () => { try { localStorage.setItem(LS_BETS, JSON.stringify(bets)); } catch(e){} };
 const loadLocalBets = () => { try { const r = localStorage.getItem(LS_BETS); return r ? JSON.parse(r) : null; } catch(e){ return null; } };
+const LS_STREAM = 'rcpl_s5_stream_v1';
+const saveLocalStream = () => { try { localStorage.setItem(LS_STREAM, JSON.stringify(stream)); } catch(e){} };
+const loadLocalStream = () => { try { const r = localStorage.getItem(LS_STREAM); return r ? JSON.parse(r) : null; } catch(e){ return null; } };
 // ============================== UTILS ==============================
 const fmtOvers = b => Math.floor(b/6) + '.' + (b%6);
 
@@ -2927,6 +2997,84 @@ function cloudSaveBets(){
     if(p && p.catch) p.catch(e => { console.error('bets write failed:', e); window.showToast('bets saved locally only.', 'error'); });
   } catch(e){ console.error('bets write threw:', e); window.showToast('bets save error — local only.', 'error'); }
 }
+
+// ============================== LIVE STREAM (Twitch embed) ==============================
+function applyStream(s){
+  stream = (s && typeof s === 'object')
+    ? { live: !!s.live, channel: (s.channel || '').toString(), platform: s.platform || 'twitch' }
+    : { live:false, channel:'', platform:'twitch' };
+  saveLocalStream();
+  renderStream();
+}
+
+function cloudSaveStream(){
+  saveLocalStream();
+  if(!dbRef) return;
+  try {
+    const p = dbRef.update(sanitize({ stream }));
+    if(p && p.catch) p.catch(e => { console.error('stream write failed:', e); window.showToast('stream saved locally only.', 'error'); });
+  } catch(e){ console.error('stream write threw:', e); window.showToast('stream save error — local only.', 'error'); }
+}
+
+// show the player (and build the Twitch iframe) when live; tear it down completely when not
+function renderStream(){
+  const sec = document.getElementById('stream_section');
+  const frame = document.getElementById('stream_frame');
+  if(!sec || !frame) return;
+  const statusEl = document.getElementById('stream_status');
+  const adminStatus = document.getElementById('stream_admin_status');
+  const chInput = document.getElementById('stream_channel');
+
+  const channel = (stream.channel || '').toLowerCase();
+  const live = !!(stream.live && channel);
+
+  if(live){
+    // only (re)build the iframe when the channel actually changes, so routine cloud
+    // syncs don't reload the player mid-watch
+    if(frame.dataset.channel !== channel){
+      frame.dataset.channel = channel;
+      const parent = location.hostname || 'localhost';
+      frame.innerHTML =
+        `<iframe src="https://player.twitch.tv/?channel=${encodeURIComponent(channel)}&parent=${encodeURIComponent(parent)}&autoplay=true&muted=false"`
+        + ` allowfullscreen allow="autoplay; fullscreen" scrolling="no" frameborder="0"></iframe>`;
+    }
+    sec.style.display = 'block';
+    sec.classList.add('in');          // guarantees visibility even if scroll-reveal tagged it
+    if(statusEl) statusEl.innerHTML = `<span class="live-dot"></span> live · ${channel}`;
+  } else {
+    sec.style.display = 'none';
+    frame.innerHTML = '';             // kills the player so it stops loading / playing
+    frame.dataset.channel = '';
+  }
+
+  if(chInput && document.activeElement !== chInput && stream.channel) chInput.value = stream.channel;
+  if(adminStatus){
+    adminStatus.innerHTML = live
+      ? `// <span style="color:var(--loss); font-weight:700;">● on air</span> · streaming <span class="accent">${channel}</span>`
+      : `// offline`;
+  }
+}
+
+window.startStream = function(){
+  const inp = document.getElementById('stream_channel');
+  let ch = (inp ? inp.value : '').trim().toLowerCase();
+  ch = ch.replace(/^https?:\/\/(www\.)?twitch\.tv\//, '').replace(/[^a-z0-9_]/g, '');   // accept a pasted url too
+  if(!ch){ window.showToast('enter a Twitch channel name first.', 'error'); return; }
+  stream = { live:true, channel:ch, platform:'twitch' };
+  cloudSaveStream();
+  renderStream();
+  window.showToast(`stream live · ${ch}`, 'success');
+  const sec = document.getElementById('stream_section');
+  if(sec) sec.scrollIntoView({ behavior:'smooth', block:'center' });
+};
+
+window.stopStream = function(){
+  if(!stream.live){ window.showToast('no stream is live.', 'error'); return; }
+  stream = { live:false, channel: stream.channel, platform:'twitch' };
+  cloudSaveStream();
+  renderStream();
+  window.showToast('stream ended.', 'success');
+};
 function ingest(raw){
   results = (raw && typeof raw === 'object') ? raw : {};
   Object.keys(results).forEach(k => { if(!results[k]) delete results[k]; });
@@ -2962,6 +3110,7 @@ if(dbRef){
     applyRoster(d && d.roster);
     applyFairplay(d && d.fairplay);
     applyBets(d && d.bets);
+    applyStream(d && d.stream);
     ingest(d && d.results);
   }, err => {
     clearTimeout(_fbTimeout);
