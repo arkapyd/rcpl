@@ -2334,13 +2334,20 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
       </div>
     </div>
 
-    <div class="admin-section">
+   <div class="admin-section">
       <h3>Live Stream</h3>
-      <div class="admin-status">// broadcast the game from your phone to a Twitch channel (Twitch app → Go Live; shoot landscape for a full-width picture). then drop the channel name here and hit Go Live — the player appears below the points table for everyone watching. End Stream removes it completely.</div>
+      <div class="admin-status">// broadcast the game from your phone (Twitch app or YouTube app → Go Live; landscape for a full-width picture). pick the platform, drop in the channel name (Twitch) or the live link / video id (YouTube), and hit Go Live — the player appears below the points table for everyone. End Stream removes it completely.</div>
       <div class="row" style="align-items:flex-end;">
+        <div style="flex:0; min-width:130px;">
+          <label>Platform</label>
+          <select id="stream_platform" onchange="window.streamPlatformHint()">
+            <option value="twitch">Twitch</option>
+            <option value="youtube">YouTube</option>
+          </select>
+        </div>
         <div style="flex:2;">
-          <label>Twitch Channel</label>
-          <input type="text" id="stream_channel" placeholder="e.g. rcpl_live" style="text-transform:lowercase;">
+          <label id="stream_src_label">Twitch Channel</label>
+          <input type="text" id="stream_channel" placeholder="e.g. rcpl_live">
         </div>
         <div style="flex:0; min-width:auto;">
           <button onclick="window.startStream()">Go Live</button>
@@ -2351,7 +2358,6 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
       </div>
       <div class="admin-status" id="stream_admin_status" style="margin-top:10px;">// offline</div>
     </div>
-
    <div class="admin-section">
       <h3 style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
         <span>Managers &amp; Roster</span>
@@ -3016,7 +3022,26 @@ function cloudSaveStream(){
   } catch(e){ console.error('stream write threw:', e); window.showToast('stream save error — local only.', 'error'); }
 }
 
-// show the player (and build the Twitch iframe) when live; tear it down completely when not
+// build the right embed url for the active platform (twitch | youtube)
+function streamEmbedUrl(){
+  const id = (stream.channel || '').trim();
+  if(stream.platform === 'youtube'){
+    // a youtube channel id (UC…) → embed that channel's current live broadcast
+    if(/^UC[\w-]{20,}$/.test(id)){
+      return `https://www.youtube.com/embed/live_stream?channel=${encodeURIComponent(id)}&autoplay=1`;
+    }
+    // otherwise pull an 11-char video id out of a pasted watch / live / youtu.be / embed link
+    let v = id;
+    const m = id.match(/(?:v=|\/live\/|youtu\.be\/|\/embed\/)([\w-]{11})/);
+    if(m) v = m[1];
+    return `https://www.youtube.com/embed/${encodeURIComponent(v)}?autoplay=1&rel=0`;
+  }
+  // default: twitch (parent must match the host domain)
+  const parent = location.hostname || 'localhost';
+  return `https://player.twitch.tv/?channel=${encodeURIComponent(id.toLowerCase())}&parent=${encodeURIComponent(parent)}&autoplay=true&muted=false`;
+}
+
+// show the player (and build the embed) when live; tear it down completely when not
 function renderStream(){
   const sec = document.getElementById('stream_section');
   const frame = document.getElementById('stream_frame');
@@ -3024,50 +3049,69 @@ function renderStream(){
   const statusEl = document.getElementById('stream_status');
   const adminStatus = document.getElementById('stream_admin_status');
   const chInput = document.getElementById('stream_channel');
+  const platSel = document.getElementById('stream_platform');
 
-  const channel = (stream.channel || '').toLowerCase();
+  const platform = (stream.platform === 'youtube') ? 'youtube' : 'twitch';
+  const channel = (stream.channel || '').trim();
   const live = !!(stream.live && channel);
 
   if(live){
-    // only (re)build the iframe when the channel actually changes, so routine cloud
-    // syncs don't reload the player mid-watch
-    if(frame.dataset.channel !== channel){
-      frame.dataset.channel = channel;
-      const parent = location.hostname || 'localhost';
-      frame.innerHTML =
-        `<iframe src="https://player.twitch.tv/?channel=${encodeURIComponent(channel)}&parent=${encodeURIComponent(parent)}&autoplay=true&muted=false"`
-        + ` allowfullscreen allow="autoplay; fullscreen" scrolling="no" frameborder="0"></iframe>`;
+    // rebuild only when platform or source changes, so routine syncs don't reload the player
+    const key = platform + '|' + channel;
+    if(frame.dataset.key !== key){
+      frame.dataset.key = key;
+      frame.innerHTML = `<iframe src="${streamEmbedUrl()}" allowfullscreen allow="autoplay; fullscreen; encrypted-media; picture-in-picture" scrolling="no" frameborder="0"></iframe>`;
     }
     sec.style.display = 'block';
     sec.classList.add('in');          // guarantees visibility even if scroll-reveal tagged it
-    if(statusEl) statusEl.innerHTML = `<span class="live-dot"></span> live · ${channel}`;
+    if(statusEl) statusEl.innerHTML = `<span class="live-dot"></span> live · ${platform}`;
   } else {
     sec.style.display = 'none';
     frame.innerHTML = '';             // kills the player so it stops loading / playing
-    frame.dataset.channel = '';
+    frame.dataset.key = '';
   }
 
+  // echo the admin controls
+  if(platSel && document.activeElement !== platSel){
+    platSel.value = platform;
+    if(window.streamPlatformHint) window.streamPlatformHint();
+  }
   if(chInput && document.activeElement !== chInput && stream.channel) chInput.value = stream.channel;
   if(adminStatus){
     adminStatus.innerHTML = live
-      ? `// <span style="color:var(--loss); font-weight:700;">● on air</span> · streaming <span class="accent">${channel}</span>`
+      ? `// <span style="color:var(--loss); font-weight:700;">● on air</span> · ${platform} · <span class="accent">${channel}</span>`
       : `// offline`;
   }
 }
 
+// admin: swap the field label/placeholder to match the chosen platform
+window.streamPlatformHint = function(){
+  const platSel = document.getElementById('stream_platform');
+  const lbl = document.getElementById('stream_src_label');
+  const inp = document.getElementById('stream_channel');
+  const yt = platSel && platSel.value === 'youtube';
+  if(lbl) lbl.textContent = yt ? 'YouTube Live Link / ID' : 'Twitch Channel';
+  if(inp) inp.placeholder = yt ? 'paste youtube.com/watch?v=… or the video id' : 'e.g. rcpl_live';
+};
+
 window.startStream = function(){
   const inp = document.getElementById('stream_channel');
-  let ch = (inp ? inp.value : '').trim().toLowerCase();
-  ch = ch.replace(/^https?:\/\/(www\.)?twitch\.tv\//, '').replace(/[^a-z0-9_]/g, '');   // accept a pasted url too
-  if(!ch){ window.showToast('enter a Twitch channel name first.', 'error'); return; }
-  stream = { live:true, channel:ch, platform:'twitch' };
+  const platSel = document.getElementById('stream_platform');
+  const platform = (platSel && platSel.value === 'youtube') ? 'youtube' : 'twitch';
+  let src = (inp ? inp.value : '').trim();
+  if(platform === 'twitch'){
+    src = src.toLowerCase().replace(/^https?:\/\/(www\.)?twitch\.tv\//, '').replace(/[^a-z0-9_]/g, '');
+    if(!src){ window.showToast('enter your Twitch channel name.', 'error'); return; }
+  } else if(!src){
+    window.showToast('paste your YouTube live link or video id.', 'error'); return;
+  }
+  stream = { live:true, channel:src, platform };
   cloudSaveStream();
   renderStream();
-  window.showToast(`stream live · ${ch}`, 'success');
+  window.showToast(`stream live · ${platform}`, 'success');
   const sec = document.getElementById('stream_section');
   if(sec) sec.scrollIntoView({ behavior:'smooth', block:'center' });
 };
-
 window.stopStream = function(){
   if(!stream.live){ window.showToast('no stream is live.', 'error'); return; }
   stream = { live:false, channel: stream.channel, platform:'twitch' };
