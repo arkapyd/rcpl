@@ -684,8 +684,10 @@ table:has(#standings_body) thead th{ width:1%; white-space:nowrap; }
 table:has(#standings_body) thead th:nth-child(1),
 table:has(#standings_body) thead th:nth-child(6),
 table:has(#standings_body) thead th:nth-child(8){ width:auto; }
-/* FP hugs the cluster (left-aligned) so its gap opens cleanly to the right */
+/* PTS and FP hug their left edge so each one's gap opens cleanly to the right */
+#standings_body tr > td:nth-child(6),
 #standings_body tr > td:nth-child(8),
+table:has(#standings_body) thead th:nth-child(6),
 table:has(#standings_body) thead th:nth-child(8){ text-align:left; }
 
 /* spread the 7 main columns (TEAM…FP) apart — uniform wider gaps, symmetric around L.
