@@ -922,25 +922,26 @@ table:has(#standings_body) thead th:nth-child(n+2):nth-child(-n+8){
 }
 .schedule-table tbody tr:hover{ background:var(--surface-2); }
 
-/* match-log row crests — faint logos for both teams, revealed on hover.
-   team a bleeds from the left edge, team b from the right; the centre is masked
-   out so the fixture/result text stays clean. same *.png crest files as the
-   points table. tune visibility via the :hover opacity below. */
-.schedule-table tbody tr{ position:relative; isolation:isolate; }
-.schedule-table tbody tr::after{
+/* match-log fixture crests — faint logos for both teams, revealed on hover.
+   confined to the fixture column (2nd cell): team a hugs the cell's left edge,
+   team b the right, centre masked so the "vs" stays clean. same *.png crest
+   files as the points table. tune size via background-size, visibility via
+   the :hover opacity. */
+.schedule-table tbody tr td:nth-child(2){ position:relative; isolation:isolate; }
+.schedule-table tbody tr td:nth-child(2)::after{
   content:''; position:absolute; inset:0; z-index:-1;
   background-image: var(--logo-a, none), var(--logo-b, none);
   background-repeat: no-repeat, no-repeat;
-  background-position: left -18px center, right -18px center;
-  background-size: auto 150%, auto 150%;
+  background-position: left -12px center, right -12px center;
+  background-size: auto 185%, auto 185%;
   opacity:0; pointer-events:none;
   transition: opacity .25s ease;
-  -webkit-mask-image: linear-gradient(90deg, #000 0%, transparent 32%, transparent 68%, #000 100%);
-          mask-image: linear-gradient(90deg, #000 0%, transparent 32%, transparent 68%, #000 100%);
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, transparent 40%, transparent 60%, #000 100%);
+          mask-image: linear-gradient(90deg, #000 0%, transparent 40%, transparent 60%, #000 100%);
 }
-.schedule-table tbody tr:hover::after{ opacity:.18; }
+.schedule-table tbody tr:hover td:nth-child(2)::after{ opacity:.22; }
 @media (prefers-reduced-motion: reduce){
-  .schedule-table tbody tr::after{ transition:none; }
+  .schedule-table tbody tr td:nth-child(2)::after{ transition:none; }
 }
 .schedule-table tr.is-played td{ color:var(--text); }
 .schedule-table tr.is-upcoming td{ color:var(--text-muted); }
