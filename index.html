@@ -686,6 +686,14 @@ table:has(#standings_body) thead th:nth-child(8){ width:auto; }
 #standings_body tr > td:nth-child(8),
 table:has(#standings_body) thead th:nth-child(8){ text-align:left; }
 
+/* spread the 7 main columns (TEAM…FP) apart — uniform wider gaps, symmetric around L.
+   L is the middle column, so equal padding fans the left 3 and right 3 out evenly while
+   L itself doesn't move. each inter-column gap goes 16px → 24px (+8). */
+#standings_body tr > td:nth-child(n+2):nth-child(-n+8),
+table:has(#standings_body) thead th:nth-child(n+2):nth-child(-n+8){
+  padding-left: 12px; padding-right: 12px;
+}
+
 .pos{
   font-family:'JetBrains Mono',monospace;
   color:var(--text-dim);
