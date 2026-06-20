@@ -676,12 +676,14 @@ tbody tr.highlight-row {
 #standings_body tr > td,
 table:has(#standings_body) thead th{ width:1%; white-space:nowrap; }
 
-/* # (1st) and FP (8th) stay flexible → they open gap A and gap B */
+/* #, PTS and FP stay flexible → gaps open after each one. the gap after PTS pulls
+   NRR + FP off the left block; #'s gap and FP's gap flank everything else. */
 #standings_body tr > td:nth-child(1),
+#standings_body tr > td:nth-child(6),
 #standings_body tr > td:nth-child(8),
 table:has(#standings_body) thead th:nth-child(1),
+table:has(#standings_body) thead th:nth-child(6),
 table:has(#standings_body) thead th:nth-child(8){ width:auto; }
-
 /* FP hugs the cluster (left-aligned) so its gap opens cleanly to the right */
 #standings_body tr > td:nth-child(8),
 table:has(#standings_body) thead th:nth-child(8){ text-align:left; }
