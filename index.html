@@ -652,7 +652,7 @@ tbody tr.highlight-row {
 }
 
 /* up-next column */
-.next-row{ display:flex; gap:8px; align-items:center; justify-content:center; flex-wrap:wrap; }
+.next-row{ display:flex; gap:8px; align-items:center; justify-content:center; flex-wrap:nowrap; }
 .next-opp{
   font-family:'JetBrains Mono',monospace;
   font-size:.7rem; font-weight:700; letter-spacing:.05em;
@@ -667,6 +667,24 @@ tbody tr.highlight-row {
 /* hide the rank number while the crest is showing so they don't overlap */
 #standings_body tr:hover .pos,
 #standings_body tr.highlight-row .pos{ opacity: 0; }
+
+/* === standings column regrouping ===
+   target:  #  ⟵gap⟶  TEAM P W L PTS NRR FP  ⟵gap⟶  FORM  UP NEXT
+   every column shrinks to its content (tight clusters); the # and FP columns stay
+   flexible so they pool the leftover width to their RIGHT — that pooled space becomes
+   the gap after # and the gap after FP. pure CSS, no markup changes. */
+#standings_body tr > td,
+table:has(#standings_body) thead th{ width:1%; white-space:nowrap; }
+
+/* # (1st) and FP (8th) stay flexible → they open gap A and gap B */
+#standings_body tr > td:nth-child(1),
+#standings_body tr > td:nth-child(8),
+table:has(#standings_body) thead th:nth-child(1),
+table:has(#standings_body) thead th:nth-child(8){ width:auto; }
+
+/* FP hugs the cluster (left-aligned) so its gap opens cleanly to the right */
+#standings_body tr > td:nth-child(8),
+table:has(#standings_body) thead th:nth-child(8){ text-align:left; }
 
 .pos{
   font-family:'JetBrains Mono',monospace;
