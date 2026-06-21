@@ -1466,9 +1466,15 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 }
 .graph-card:hover .graph-expand{ opacity:1; color:var(--accent); }
 
-/* leaderboard hero row styling */.hero-stat-row {
+/* leaderboard hero row styling — position:relative + overflow:hidden live HERE
+   (a rule guaranteed to parse) so the hover crest is clipped to this row and
+   can't escape up to .container. */
+.hero-stat-row {
   padding: 16px 18px;
   background: linear-gradient(90deg, rgba(255,255,255,0.03), transparent);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
 }
 .hero-stat-row .stat-row-rank {
   color: var(--t1);
@@ -1503,7 +1509,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   font-weight:400;
   font-size:1.05rem;
   letter-spacing:.08em;
-}; }
+}
 
 /* topper: faded team-logo watermark on hover — clipped to the topper's own row
    (like the manager cards). the row's position:relative + overflow:hidden is the
