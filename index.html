@@ -295,6 +295,22 @@ table th.num,
   transition:transform .2s ease, background .25s ease, border-color .25s ease;
 }
 .champ-row:last-child{ border-bottom:none; }
+/* past-champion crest — faint team logo on hover, clipped to the row.
+   position:relative + overflow:hidden makes the row the clip box; isolation +
+   the crest's z-index:-1 keep it behind the text but above the hover fill. */
+.champ-row{ position:relative; overflow:hidden; isolation:isolate; }
+.champ-row::after{
+  content:''; position:absolute; inset:0; z-index:-1;
+  background-image: var(--team-logo, none);
+  background-repeat: no-repeat;
+  background-position: right -24px center;
+  background-size: auto 150%;
+  opacity:0; pointer-events:none;
+  transition: opacity .25s ease;
+  -webkit-mask-image: linear-gradient(90deg, transparent 30%, #000 100%);
+          mask-image: linear-gradient(90deg, transparent 30%, #000 100%);
+}
+.champ-row:not(.is-pending):hover::after{ opacity:.25; }
 .champ-row:not(.is-pending):hover{
   transform:translateX(2px);
   background:var(--champ-color, var(--accent));
@@ -1937,7 +1953,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     <div class="champ-panel">
       <div class="champ-eyebrow">// past champions</div>
       <div class="champ-list">
-       <div class="champ-row" style="--champ-color:#1f5fd6; --champ-2:#d9a93a;">
+       <div class="champ-row" style="--champ-color:#1f5fd6; --champ-2:#d9a93a; --team-logo:url('mi.png');">
           <div class="champ-season">S01</div>
           <div>
             <div class="champ-team" onclick="window.takeoverTeam('mi')">Indians</div>
@@ -1945,7 +1961,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
           </div>
           <div class="champ-trophy">★ champion</div>
         </div>
-        <div class="champ-row" style="--champ-color:#e11d3a; --champ-2:#121212;">
+        <div class="champ-row" style="--champ-color:#e11d3a; --champ-2:#121212; --team-logo:url('rcb.png');">
           <div class="champ-season">S02</div>
           <div>
             <div class="champ-team" onclick="window.takeoverTeam('rcb')">Royal Challengers</div>
@@ -1953,7 +1969,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
           </div>
           <div class="champ-trophy">★ champion</div>
         </div>
-        <div class="champ-row" style="--champ-color:#7c3aed; --champ-2:#e6b93f;">
+        <div class="champ-row" style="--champ-color:#7c3aed; --champ-2:#e6b93f; --team-logo:url('kkr.png');">
           <div class="champ-season">S03</div>
           <div>
             <div class="champ-team" onclick="window.takeoverTeam('kkr')">Knight Riders</div>
@@ -1961,7 +1977,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
           </div>
           <div class="champ-trophy">★ champion</div>
         </div>
-        <div class="champ-row is-defending" style="--champ-color:#e11d3a; --champ-2:#121212;">
+        <div class="champ-row is-defending" style="--champ-color:#e11d3a; --champ-2:#121212; --team-logo:url('rcb.png');">
           <div class="champ-season">S04</div>
           <div>
             <div class="champ-team" onclick="window.takeoverTeam('rcb')">Royal Challengers</div>
