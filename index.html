@@ -1505,21 +1505,24 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   letter-spacing:.08em;
 }; }
 
-/* topper: faded, zoomed team-logo watermark on hover (over the colour fill) */
+/* topper: faded team-logo watermark on hover — clipped to the topper's own row
+   (like the manager cards). the row's position:relative + overflow:hidden is the
+   clip boundary; without it the crest escapes up to .stat-board and fills the
+   whole board. zoom dialled back so it reads as a tidy crest in the row. */
 .hero-stat-row{ position:relative; overflow:hidden; isolation:isolate; }
 .hero-stat-row > *{ position:relative; z-index:1; }
 .hero-stat-row::after{
   content:''; position:absolute; inset:0; z-index:0;
   background-image: var(--team-logo, none);
   background-repeat: no-repeat;
-  background-position: right -20px center;
-  background-size: auto 240%;
+  background-position: right -24px center;
+  background-size: auto 150%;
   opacity:0; pointer-events:none;
   transition: opacity .25s ease;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 75%);
-          mask-image: linear-gradient(90deg, transparent 0%, #000 75%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 30%, #000 100%);
+          mask-image: linear-gradient(90deg, transparent 30%, #000 100%);
 }
-.hero-stat-row:hover::after{ opacity:0.20; }
+.hero-stat-row:hover::after{ opacity:.22; }
 
 /* ============================================================
    MANAGERS — roster grid
