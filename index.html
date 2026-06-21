@@ -1496,6 +1496,14 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 
 /* non-toppers: thinner value numbers so the rank-1 row pops */
 .stat-row:not(.hero-stat-row) .stat-row-value{ font-weight:400; }
+/* non-toppers: drop the heavy Anton team name for thin Manrope so only the
+   rank-1 row carries the display face */
+.stat-row:not(.hero-stat-row) .stat-row-team{
+  font-family:'Manrope',sans-serif;
+  font-weight:400;
+  font-size:1.05rem;
+  letter-spacing:.08em;
+}; }
 
 /* topper: faded, zoomed team-logo watermark on hover (over the colour fill) */
 .hero-stat-row{ position:relative; overflow:hidden; isolation:isolate; }
