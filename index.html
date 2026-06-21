@@ -3666,7 +3666,7 @@ function renderStatLeaders(standings){
   const strip = document.getElementById('stat_strip');
   const totalPlayed = Object.keys(results).length;
   if(totalPlayed === 0){
-    strip.innerHTML = ['highest basra','highest bewm','most wins','hot streak'].map(label => `
+    strip.innerHTML = ['highest basra','highest bewm','most runs','most wickets'].map(label => `
       <div class="stat-card">
         <div class="stat-label">${label}</div>
         <div class="stat-value">—</div>
@@ -3694,16 +3694,8 @@ function renderStatLeaders(standings){
   
   const highestBasra = advancedStats.slice().sort((a,b) => b.basra - a.basra)[0];
   const highestBewm = advancedStats.slice().sort((a,b) => b.bewm - a.bewm)[0];
-  const mostWins = standings.slice().sort((a,b) => b.w - a.w)[0];
-  
-  let bestStreak = { team:'—', streak:0 };
-  standings.forEach(s => {
-    let k = 0;
-    for(let i = s.form.length - 1; i >= 0; i--){
-      if(s.form[i].res === 'W') k++; else break;
-    }
-    if(k > bestStreak.streak) bestStreak = { team:s.team, streak:k };
-  });
+  const mostRuns = standings.slice().sort((a,b) => b.rf - a.rf)[0];
+  const mostWickets = standings.slice().sort((a,b) => b.wkts_taken - a.wkts_taken)[0];
 
   strip.innerHTML = `
     <div class="stat-card">
@@ -3717,14 +3709,14 @@ function renderStatLeaders(standings){
       <div class="stat-sub"><strong>${highestBewm.team.toUpperCase()}</strong> · bowling efficiency.</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">most wins</div>
-      <div class="stat-value">${mostWins.w}</div>
-      <div class="stat-sub"><strong>${mostWins.team.toUpperCase()}</strong> · ${mostWins.pts} pts</div>
+      <div class="stat-label">most runs</div>
+      <div class="stat-value">${mostRuns.p > 0 ? mostRuns.rf : '—'}</div>
+      <div class="stat-sub"><strong>${mostRuns.team.toUpperCase()}</strong> · orange cap</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">hot streak</div>
-      <div class="stat-value">${bestStreak.streak > 0 ? bestStreak.streak + 'W' : '—'}</div>
-      <div class="stat-sub"><strong>${bestStreak.team.toUpperCase()}</strong>${bestStreak.streak > 0 ? ' · current' : ' · no streak yet'}</div>
+      <div class="stat-label">most wickets</div>
+      <div class="stat-value">${mostWickets.p > 0 ? mostWickets.wkts_taken : '—'}</div>
+      <div class="stat-sub"><strong>${mostWickets.team.toUpperCase()}</strong> · purple cap</div>
     </div>`;
   document.getElementById('leader_meta').innerText = `${totalPlayed}/70 · live`;
 }
