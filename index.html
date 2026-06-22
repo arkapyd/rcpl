@@ -2589,7 +2589,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     <div class="modal-subtitle">// how the predictive engine works</div>
     <!-- AFTER -->
     <div style="font-size:.88rem; color:var(--text-muted); line-height:1.6;">
-      <p><strong style="color:var(--accent);">strength:</strong> manager index 50% · form 20% · head-to-head 15% (S1–S4 + live S5) · win% 5% · historical rating 10%, plus an NRR boost. the two teams' strengths form a ratio mapped to fractional odds.</p>
+      <p><strong style="color:var(--accent);">strength:</strong> head-to-head 45% (90% manager rivalry · 10% team rivalry, S1–S4 + live S5) · present form 55% (BASRA, BEWM & current win/loss-streak confidence). the two teams' strengths form a ratio mapped to fractional odds.</p>
       <p><strong style="color:var(--accent);">payouts:</strong> favourite profit = stake ÷ odds · underdog profit = stake × odds · a loss forfeits the whole stake.</p>
       <p style="margin-top:12px; font-style:italic; font-size:.8rem; color:var(--text-dim);">predictive & entertainment only.</p>
     </div>
@@ -4531,38 +4531,64 @@ window.calcBet = function(input, odds, teamA, teamB, fav, isEvens) {
 };
 
 // global helper to calculate dynamic team strength (used for odds and underdog upsets)
+// model: 45% head-to-head (90% manager-vs-manager rivalry, 10% team-vs-team) +
+// 55% present form (BASRA, BEWM, and current win/loss-streak confidence). everything sits
+// on a ~0–100 scale where 50 is neutral; renderOdds takes the ratio of the two strengths.
 window.calcTeamStrength = function(t, opp) {
-  let s = window.currentStandings ? window.currentStandings.find(x => x.team === t) : null;
-  let histPct = HISTORICAL_RATING[t] || 50;
-  
-  let managerId = (MANAGERS[t] || '').toLowerCase();
-  let mgrHistory = SEASON_OUTCOMES[managerId] || [];
-  let liveData = s ? { m: s.p, w: s.w } : null;
-  let mgrStats = computeManagerIndex(mgrHistory, liveData);
-  let normMgrIndex = Math.min(100, mgrStats.index);
-  if(mgrStats.total_m === 0) normMgrIndex = 50;
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const battingInnings = getBattingInnings();
 
-  let h2h = getH2H(t, opp);
-  let h2hGames = h2h.aWins + h2h.bWins;
-  let h2hPct = h2hGames > 0 ? (h2h.aWins / h2hGames) * 100 : 50;
+  // present-form metrics for one team (neutral if it hasn't played yet)
+  const formMetrics = team => {
+    const s = window.currentStandings ? window.currentStandings.find(x => x.team === team) : null;
+    if(!s || s.p === 0) return { played:false, basra:0, bewm:0, streakType:null, streakLen:0 };
+    const battedInns = battingInnings[team] || 0;
+    const batAvg = battedInns > 0 ? (s.rf / battedInns) : 0;
+    const sr = s.of_balls > 0 ? (s.rf / s.of_balls) * 100 : 0;
+    const basra = batAvg + sr;
+    const econ = s.oa_balls > 0 ? (s.ra / (s.oa_balls / 6)) : 0;
+    const wpm = s.p > 0 ? ((s.wkts_taken || 0) / s.p) : 0;
+    const bewm = 10 + (0.3 * wpm) - (0.7 * econ);
+    // immediate streak — consecutive identical results from the most recent backward
+    const ordered = s.form.filter(x => x.res !== 'NA').sort((a,b) => (a.ts||0) - (b.ts||0));
+    let streakType = null, streakLen = 0;
+    if(ordered.length){
+      streakType = ordered[ordered.length - 1].res;
+      for(let i = ordered.length - 1; i >= 0 && ordered[i].res === streakType; i--) streakLen++;
+    }
+    return { played:true, basra, bewm, streakType, streakLen };
+  };
 
-  if(!s || s.p === 0) {
-    return (normMgrIndex * 0.50) + (histPct * 0.35) + (h2hPct * 0.15);
+  const me = formMetrics(t);
+  const them = formMetrics(opp);
+
+  // ---- head-to-head block (max 45%) — 90% manager rivalry, 10% team rivalry ----
+  const mgrA = (MANAGERS[t] || '').toLowerCase();
+  const mgrB = (MANAGERS[opp] || '').toLowerCase();
+  const mh = getManagerH2H(mgrA, mgrB);
+  const mhGames = mh.aWins + mh.bWins;
+  const mgrH2hPct = mhGames > 0 ? (mh.aWins / mhGames) * 100 : 50;
+
+  const th = getH2H(t, opp);
+  const thGames = th.aWins + th.bWins;
+  const teamH2hPct = thGames > 0 ? (th.aWins / thGames) * 100 : 50;
+
+  const h2hPct = (mgrH2hPct * 0.90) + (teamH2hPct * 0.10);
+
+  // ---- present-form block (55%) — BASRA + BEWM + streak confidence ----
+  let basraPct = 50, bewmPct = 50;
+  if(me.played && them.played){
+    basraPct = clamp(50 + (me.basra - them.basra) * 1.5, 0, 100); // ~±15 for a 10-pt BASRA gap
+    bewmPct  = clamp(50 + (me.bewm  - them.bewm)  * 4.0, 0, 100); // ~±12 for a 3-pt BEWM gap
   }
+  let confidence = 50;
+  if(me.streakType === 'W') confidence = Math.min(85, 50 + me.streakLen * 12);
+  else if(me.streakType === 'L') confidence = Math.max(15, 50 - me.streakLen * 12);
+  const formPct = (basraPct * 0.40) + (bewmPct * 0.40) + (confidence * 0.20);
 
-  let winPct = (s.w / s.p) * 100;
-  let recent = s.form.filter(x => x.res !== 'NA');
-  let formPct = 50;
-  if(recent.length > 0){
-    let w = recent.filter(x => x.res === 'W').length;
-    let t_res = recent.filter(x => x.res === 'T').length;
-    formPct = ((w + (t_res*0.5)) / recent.length) * 100;
-  }
-
-  let nrrBoost = Math.max(-10, Math.min(10, s.nrr * 2));
-  return (normMgrIndex * 0.50) + (formPct * 0.20) + (h2hPct * 0.15) + (winPct * 0.05) + (histPct * 0.10) + nrrBoost;
+  // ---- blend: 45% head-to-head + 55% present form ----
+  return (h2hPct * 0.45) + (formPct * 0.55);
 };
-
 // global helper to calculate strictly S5 Value (V$) incorporating uniform form, odds upsets, and victory margins
 window.calcS5Value = function(team) {
   let s = window.currentStandings ? window.currentStandings.find(x => x.team === team) : null;
