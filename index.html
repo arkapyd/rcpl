@@ -2169,7 +2169,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     </div>
 
     <div id="stats_exhaustive" style="display:none; overflow-x:auto;" class="table-wrap">
-      <table style="width:100%; min-width:1050px; border-collapse:collapse; font-size:.85rem;">
+      <table style="width:100%; min-width:1120px; border-collapse:collapse; font-size:.85rem;">
         <thead>
           <tr>
             <th>Team</th>
@@ -2183,7 +2183,8 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
             <th class="num">Wickets Taken</th>
             <th class="num">Economy</th>
             <th class="num">Wickets/Match</th>
-           <th class="num">BEWM</th>
+            <th class="num">BEWM</th>
+            <th class="num" title="Innings of 50+ runs">50s</th>
             <th class="num" style="color:var(--win);" title="S5 Form & Upset Value">S5 V$</th>
           </tr>
         </thead>
@@ -2205,6 +2206,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
            <th class="num">Economy</th>
             <th class="num" title="runs scored ÷ wickets lost · S1–S4 (if recorded) + live S5">RPW</th>
             <th class="num" title="total runs ÷ completed innings · S5 exact (all out / full overs); S1–S4 approximated by matches played">Bat. Avg</th>
+            <th class="num" title="50+ scores · S5 live (historical seasons if recorded)">50s</th>
             <th class="num" style="color:var(--win);" title="All-Time Franchise Value (Base Legacy + Live S5 V$)">Total V$</th>
           </tr>
         </thead>
@@ -3783,9 +3785,9 @@ function renderStatLeaders(standings){
     card('most wickets', "window.jumpToExhaustiveSort(8, 'desc')",
       mostWickets.p > 0 ? mostWickets.wkts_taken : '—',
       `<strong>${mostWickets.team.toUpperCase()}</strong> · purple cap`, 'view full rankings') +
-    card('most 50s', "window.jumpToMatchLog()",
+    card('most 50s', "window.jumpToExhaustiveSort(12, 'desc')",
       mostFifties.fifties > 0 ? mostFifties.fifties : '—',
-      mostFifties.fifties > 0 ? `<strong>${mostFifties.team.toUpperCase()}</strong> · fifty-plus innings.` : 'none yet', 'see the match log');
+      mostFifties.fifties > 0 ? `<strong>${mostFifties.team.toUpperCase()}</strong> · fifty-plus innings.` : 'none yet', 'view full rankings');
 
   document.getElementById('leader_meta').innerText = `${totalPlayed}/70 · live`;
 }
@@ -4098,7 +4100,7 @@ function renderExhaustiveStats(){
   if(!tbody) return;
   
   if(Object.keys(results).length === 0){
-    tbody.innerHTML = '<tr><td colspan="13" class="feed-empty">first match pending. data crunching on standby.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="14" class="feed-empty">first match pending. data crunching on standby.</td></tr>';
     return;
   }
   
@@ -4139,6 +4141,7 @@ function renderExhaustiveStats(){
         <td class="num">${econ.toFixed(2)}</td>
         <td class="num">${wpm.toFixed(2)}</td>
         <td class="num" style="font-weight:700; color:var(--text);">${m === 0 ? '—' : bewm.toFixed(2)}</td>
+        <td class="num">${countFifties(s.team)}</td>
         <td class="num" style="color:${vColor}; font-weight:800; font-size:1rem;">${vSign}${value.toFixed(2)}</td>
       </tr>`;
   });
@@ -4247,7 +4250,10 @@ function renderCareerStats(){
     // Fetch total live franchise value
     let totalValue = window.calcTotalCareerValue(t);
 
-    return { t, m, w, l, winPctNum, winPct, runs, wkts, eco, rpwStr, batAvgStr, totalValue };
+    // 50s — S5 live (from results) + optional historical count on CAREER_STATS.fifties
+    let fifties = ((s.fifties != null) ? s.fifties : 0) + countFifties(t);
+
+    return { t, m, w, l, winPctNum, winPct, runs, wkts, eco, rpwStr, batAvgStr, fifties, totalValue };
   });
 
   // 2. Sort by combined Win % first, then combined Wins
@@ -4270,6 +4276,7 @@ function renderCareerStats(){
         <td class="num">${stat.eco.toFixed(2)}</td>
         <td class="num" style="font-weight:700;">${stat.rpwStr}</td>
         <td class="num" style="font-weight:700;">${stat.batAvgStr}</td>
+        <td class="num">${stat.fifties}</td>
         <td class="num" style="font-weight:800; color:var(--win);">${stat.totalValue.toFixed(2)}</td>
       </tr>`;
   });
