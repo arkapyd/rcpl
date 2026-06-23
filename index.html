@@ -524,9 +524,21 @@ table th.num,
 /* stat strip */
 .stat-strip{
   display:grid;
-  grid-template-columns:repeat(2,1fr);
+  grid-template-columns:repeat(3,1fr);
   gap:14px;
 }
+
+/* clickable S5 leader cards — drill into the relevant table/section */
+.stat-card.clickable-card{ cursor:pointer; }
+.stat-card .stat-jump{
+  position:absolute; top:15px; right:15px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.95rem; line-height:1;
+  color:var(--text-dim); opacity:.4;
+  transition:opacity .2s, color .2s;
+  pointer-events:none;
+}
+.stat-card.clickable-card:hover .stat-jump{ opacity:1; color:var(--accent); }
 .stat-card{
   background:var(--surface);
   border:1px solid var(--border);
@@ -2862,6 +2874,27 @@ window.jumpToExhaustiveSort = function(colIndex, dir) {
   if(header) header.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
+// win-streak leader → jump to the points table (the Form column shows live streaks)
+window.jumpToStandingsForm = function(){
+  const body = document.getElementById('standings_body');
+  const section = body ? body.closest('section') : null;
+  if(section) section.scrollIntoView({ behavior:'smooth', block:'start' });
+  if(body){
+    const cells = body.querySelectorAll('tr > :nth-child(9)'); // 9th col = Form
+    cells.forEach(c => { c.classList.remove('flash-col'); void c.offsetWidth; c.classList.add('flash-col'); });
+    setTimeout(() => cells.forEach(c => c.classList.remove('flash-col')), 1000);
+  }
+};
+
+// most-50s leader → jump to the match log, filtered to played matches (where scores live)
+window.jumpToMatchLog = function(){
+  if(window.setFilter) window.setFilter('played');
+  const body = document.getElementById('schedule_body');
+  const section = body ? body.closest('section') : null;
+  if(section) section.scrollIntoView({ behavior:'smooth', block:'start' });
+};
+};
+
 window.openSingleGraph = function(metric){
   const def = CHART_DEFS[metric];
   if(!def) return;
@@ -3693,7 +3726,8 @@ function renderStatLeaders(standings){
   const strip = document.getElementById('stat_strip');
   const totalPlayed = Object.keys(results).length;
   if(totalPlayed === 0){
-    strip.innerHTML = ['highest basra','highest bewm','most runs','most wickets'].map(label => `
+    const labels = ['highest basra','highest bewm','win streak','most runs','most wickets','most 50s'];
+    strip.innerHTML = labels.map(label => `
       <div class="stat-card">
         <div class="stat-label">${label}</div>
         <div class="stat-value">—</div>
@@ -3702,7 +3736,7 @@ function renderStatLeaders(standings){
     document.getElementById('leader_meta').innerText = '— · live';
     return;
   }
-  
+
   const battingInnings = getBattingInnings();
   let advancedStats = standings.map(s => {
     let m = s.p;
@@ -3710,41 +3744,50 @@ function renderStatLeaders(standings){
     let batAvg = battedInns > 0 ? (s.rf / battedInns) : 0;
     let sr = s.of_balls > 0 ? (s.rf / s.of_balls) * 100 : 0;
     let basra = batAvg + sr;
-    
+
     let wkts = s.wkts_taken || 0;
     let econ = s.oa_balls > 0 ? (s.ra / (s.oa_balls / 6)) : 0;
     let wpm = m > 0 ? (wkts / m) : 0;
     let bewm = m > 0 ? (10 + (0.3 * wpm) - (0.7 * econ)) : 0;
-    
-    return { ...s, basra, bewm };
-  });
-  
-  const highestBasra = advancedStats.slice().sort((a,b) => b.basra - a.basra)[0];
-  const highestBewm = advancedStats.slice().sort((a,b) => b.bewm - a.bewm)[0];
-  const mostRuns = standings.slice().sort((a,b) => b.rf - a.rf)[0];
-  const mostWickets = standings.slice().sort((a,b) => b.wkts_taken - a.wkts_taken)[0];
 
-  strip.innerHTML = `
-    <div class="stat-card">
-      <div class="stat-label">highest basra</div>
-      <div class="stat-value">${highestBasra.p > 0 ? highestBasra.basra.toFixed(2) : '—'}</div>
-      <div class="stat-sub"><strong>${highestBasra.team.toUpperCase()}</strong> · batting brutishness.</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">highest bewm</div>
-      <div class="stat-value">${highestBewm.p > 0 ? highestBewm.bewm.toFixed(2) : '—'}</div>
-      <div class="stat-sub"><strong>${highestBewm.team.toUpperCase()}</strong> · bowling efficiency.</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">most runs</div>
-      <div class="stat-value">${mostRuns.p > 0 ? mostRuns.rf : '—'}</div>
-      <div class="stat-sub"><strong>${mostRuns.team.toUpperCase()}</strong> · orange cap</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">most wickets</div>
-      <div class="stat-value">${mostWickets.p > 0 ? mostWickets.wkts_taken : '—'}</div>
-      <div class="stat-sub"><strong>${mostWickets.team.toUpperCase()}</strong> · purple cap</div>
+    return { ...s, basra, bewm, winStreak: currentWinStreak(s.form), fifties: countFifties(s.team) };
+  });
+
+  const highestBasra  = advancedStats.slice().sort((a,b) => b.basra - a.basra)[0];
+  const highestBewm   = advancedStats.slice().sort((a,b) => b.bewm - a.bewm)[0];
+  const mostRuns      = advancedStats.slice().sort((a,b) => b.rf - a.rf)[0];
+  const mostWickets   = advancedStats.slice().sort((a,b) => b.wkts_taken - a.wkts_taken)[0];
+  const bestStreak    = advancedStats.slice().sort((a,b) => b.winStreak - a.winStreak)[0];
+  const mostFifties   = advancedStats.slice().sort((a,b) => b.fifties - a.fifties)[0];
+
+  // basra/bewm/runs/wickets → exhaustive stats (sorted col) · streak → points table · 50s → match log
+  const card = (label, action, value, sub, tip) => `
+    <div class="stat-card clickable-card" onclick="${action}" title="${tip}">
+      <div class="stat-label">${label}<span class="stat-jump">⇲</span></div>
+      <div class="stat-value">${value}</div>
+      <div class="stat-sub">${sub}</div>
     </div>`;
+
+  strip.innerHTML =
+    card('highest basra', "window.jumpToExhaustiveSort(6, 'desc')",
+      highestBasra.p > 0 ? highestBasra.basra.toFixed(2) : '—',
+      `<strong>${highestBasra.team.toUpperCase()}</strong> · batting brutishness.`, 'view full rankings') +
+    card('highest bewm', "window.jumpToExhaustiveSort(11, 'desc')",
+      highestBewm.p > 0 ? highestBewm.bewm.toFixed(2) : '—',
+      `<strong>${highestBewm.team.toUpperCase()}</strong> · bowling efficiency.`, 'view full rankings') +
+    card('win streak', "window.jumpToStandingsForm()",
+      bestStreak.winStreak > 0 ? bestStreak.winStreak : '—',
+      bestStreak.winStreak > 0 ? `<strong>${bestStreak.team.toUpperCase()}</strong> · ${bestStreak.winStreak} on the bounce.` : 'no active streak', 'see the points table') +
+    card('most runs', "window.jumpToExhaustiveSort(1, 'desc')",
+      mostRuns.p > 0 ? mostRuns.rf : '—',
+      `<strong>${mostRuns.team.toUpperCase()}</strong> · orange cap`, 'view full rankings') +
+    card('most wickets', "window.jumpToExhaustiveSort(8, 'desc')",
+      mostWickets.p > 0 ? mostWickets.wkts_taken : '—',
+      `<strong>${mostWickets.team.toUpperCase()}</strong> · purple cap`, 'view full rankings') +
+    card('most 50s', "window.jumpToMatchLog()",
+      mostFifties.fifties > 0 ? mostFifties.fifties : '—',
+      mostFifties.fifties > 0 ? `<strong>${mostFifties.team.toUpperCase()}</strong> · fifty-plus innings.` : 'none yet', 'see the match log');
+
   document.getElementById('leader_meta').innerText = `${totalPlayed}/70 · live`;
 }
 
@@ -4030,6 +4073,25 @@ function getBattingInnings(){
     if((r.w2 || 0) >= 10 || (r.b2 || 0) >= OVERS_PER_INNINGS*6) cnt[r.t2] = (cnt[r.t2] || 0) + 1;
   });
   return cnt;
+}
+
+// current win streak (trailing consecutive wins) from a standings form list
+function currentWinStreak(form){
+  const ordered = (form || []).filter(x => x.res !== 'NA').sort((a,b) => (a.ts||0) - (b.ts||0));
+  let n = 0;
+  for(let i = ordered.length - 1; i >= 0; i--){ if(ordered[i].res === 'W') n++; else break; }
+  return n;
+}
+
+// count of a team's main innings of 50+ runs across played matches
+function countFifties(team){
+  let c = 0;
+  Object.values(results).forEach(r => {
+    if(!r || !r.t1 || !r.t2) return;
+    if(r.t1 === team && (r.r1 || 0) >= 50) c++;
+    if(r.t2 === team && (r.r2 || 0) >= 50) c++;
+  });
+  return c;
 }
 
 function renderExhaustiveStats(){
