@@ -2202,6 +2202,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
             <th class="num">L</th>
             <th class="num">Win %</th>
             <th class="num">Runs</th>
+            <th class="num" title="Highest Score · S1–S4 + live S5">HS</th>
             <th class="num">Wickets</th>
            <th class="num">Economy</th>
             <th class="num" title="runs scored ÷ wickets lost · S1–S4 (if recorded) + live S5">RPW</th>
@@ -2272,8 +2273,9 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
             <th class="num">L</th>
             <th class="num" style="color:var(--accent);">Win %</th>
             <th class="num">Runs</th>
+            <th class="num" title="Highest Score · S1–S4 + live S5">HS</th>
             <th class="num">Wickets</th>
-           <th class="num">Economy</th>
+            <th class="num">Economy</th>
             <th class="num" style="color:var(--accent);" title="runs scored ÷ wickets lost · S1–S4 (if recorded) + live S5">RPW</th>
             <th class="num" style="color:var(--accent);" title="total runs ÷ completed innings · S5 exact (all out / full overs); S1–S4 approximated by matches played">Bat. Avg</th>
             <th class="num" style="color:var(--win);" title="All-Time Franchise Value (Base Legacy + Live S5 V$)">Total V$</th>
@@ -4211,8 +4213,8 @@ function renderCareerStats(){
   
   // 1. Calculate live combined stats for sorting and rendering
   let combinedStats = TEAMS.map(t => {
-    let s = CAREER_STATS[t] || { m:0, w:0, runs:0, wkts:0, eco:0 };
-    const s5 = (window.currentStandings || []).find(x => x.team === t) || { p:0, w:0, l:0, rf:0, wkts_taken:0, ra:0, oa_balls:0, wkts_lost:0 };
+    let s = CAREER_STATS[t] || { m:0, w:0, runs:0, wkts:0, eco:0, hs:0 };
+    const s5 = (window.currentStandings || []).find(x => x.team === t) || { p:0, w:0, l:0, rf:0, wkts_taken:0, ra:0, oa_balls:0, wkts_lost:0, hs:0 };
     
     // Combine base counting stats
     let m = s.m + s5.p;
@@ -4222,6 +4224,9 @@ function renderCareerStats(){
     let winPct = m > 0 ? (winPctNum * 100).toFixed(1) + '%' : '0.0%';
     let runs = s.runs + s5.rf;
     let wkts = s.wkts + s5.wkts_taken;
+    
+    // Evaluate High Score (Highest between Legacy S1-4 vs Live S5)
+    let hs = Math.max((s.hs || 0), (s5.hs || 0));
     
     let histOvers = s.m * OVERS_PER_INNINGS;
     let histRunsConceded = s.eco * histOvers;
@@ -4237,11 +4242,7 @@ function renderCareerStats(){
     }
     const rpwStr = rpwWL > 0 ? (rpwRuns / rpwWL).toFixed(2) : '—';
     
-   // Bat. Avg — total runs ÷ completed innings, S1–S4 + live S5.
-    // S1–S4 stored only season aggregates (no per-innings detail), so its completed-innings
-    // count is proxied by matches played (CAREER_STATS.m) — each historical match = one innings.
-    // S5 uses the exact count (all out / full overs). A precise `battedInns` on a CAREER_STATS
-    // entry overrides the proxy for that team.
+    // Bat. Avg — total runs ÷ completed innings
     let histBatInns = (s.battedInns != null) ? s.battedInns : (s.m || 0);
     let batRuns = (s.runs || 0) + s5.rf;
     let batInns = histBatInns + (s5BatInns[t] || 0);
@@ -4253,7 +4254,7 @@ function renderCareerStats(){
     // 50s — S5 live (from results) + optional historical count on CAREER_STATS.fifties
     let fifties = ((s.fifties != null) ? s.fifties : 0) + countFifties(t);
 
-    return { t, m, w, l, winPctNum, winPct, runs, wkts, eco, rpwStr, batAvgStr, fifties, totalValue };
+    return { t, m, w, l, winPctNum, winPct, runs, hs, wkts, eco, rpwStr, batAvgStr, fifties, totalValue };
   });
 
   // 2. Sort by combined Win % first, then combined Wins
@@ -4272,6 +4273,7 @@ function renderCareerStats(){
         <td class="num">${stat.l}</td>
         <td class="num" style="font-weight:700; color:var(--text);">${stat.winPct}</td>
         <td class="num">${stat.runs}</td>
+        <td class="num" style="font-weight:700; color:var(--accent);">${stat.hs}</td>
         <td class="num">${stat.wkts}</td>
         <td class="num">${stat.eco.toFixed(2)}</td>
         <td class="num" style="font-weight:700;">${stat.rpwStr}</td>
