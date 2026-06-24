@@ -1088,73 +1088,15 @@ table:has(#standings_body) thead th:nth-child(n+2):nth-child(-n+8){
 .odd-val{ text-align:center; font-size:2.2rem; font-family:'Anton',sans-serif; color:var(--text); margin:10px 0; line-height:1; white-space:nowrap; }
 .odd-fav{ text-align:center; font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.1em; }
 
-/* playoff scenarios grid */
+/* playoff scenarios grid (matches manager grid structure) */
 .playoff-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
 }
-@media (max-width: 900px) { .playoff-grid { grid-template-columns: 1fr; } }
-.scenario-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--card-color, var(--accent));
-  border-radius: 6px;
-  padding: 18px;
-  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s, background 0.25s;
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-}
-.scenario-card > * { position: relative; z-index: 1; }
-/* Faded team-logo watermark on hover */
-.scenario-card::after {
-  content: ''; position: absolute; inset: 0; z-index: 0;
-  background-image: var(--team-logo, none);
-  background-repeat: no-repeat;
-  background-position: right -24px bottom -22px;
-  background-size: auto 150%;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.25s ease;
-  -webkit-mask-image: linear-gradient(135deg, transparent 35%, #000 100%);
-          mask-image: linear-gradient(135deg, transparent 35%, #000 100%);
-}
-.scenario-card:hover::after { opacity: 0.86; }
-/* Shift specific crests right so they don't clip the text */
-.scenario-card[style*="rcb.png"]::after,
-.scenario-card[style*="srh.png"]::after { background-position: right -70px bottom -22px; }
+@media (max-width: 1100px) { .playoff-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 700px) { .playoff-grid { grid-template-columns: repeat(2, 1fr); } }
 
-/* The color fill logic on hover */
-.scenario-card:hover {
-  transform: translateY(-2px);
-  background: var(--card-color, var(--accent));
-  border-color: var(--card-color, var(--accent));
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-}
-.scenario-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px dashed var(--border-bright);
-  transition: border-color 0.25s ease;
-}
-.scenario-card:hover .scenario-header {
-  border-bottom-color: rgba(255, 255, 255, 0.2);
-}
-.scenario-team {
-  font-family: 'Anton', sans-serif;
-  font-size: 1.45rem;
-  letter-spacing: 0.06em;
-  color: var(--card-color, var(--accent));
-  text-transform: uppercase;
-  line-height: 1;
-  transition: color 0.25s ease;
-}
-.scenario-card:hover .scenario-team {
-  color: var(--card-color-2, #fff);
-}
 .scenario-status {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.7rem;
@@ -1170,23 +1112,12 @@ table:has(#standings_body) thead th:nth-child(n+2):nth-child(-n+8){
 .status-longshot { background: rgba(234,88,12,0.12); color: #fb923c; border: 1px solid rgba(234,88,12,0.35); }
 .status-eliminated { background: rgba(239,68,68,0.1); color: var(--loss); border: 1px solid rgba(239,68,68,0.3); }
 
-/* Make the status pill pop cleanly over the team's background color */
-.scenario-card:hover .scenario-status {
+/* Integrate status pill cleanly into the manager-card hover state */
+.manager-card:hover .scenario-status {
   background: rgba(0, 0, 0, 0.3);
   border-color: rgba(255, 255, 255, 0.25);
   color: #fff;
 }
-
-.scenario-text {
-  font-size: 0.88rem;
-  color: var(--text-muted);
-  line-height: 1.6;
-  transition: color 0.25s ease;
-}
-.scenario-text strong { color: var(--text); font-weight: 700; transition: color 0.25s ease; }
-/* Invert description text to white against the colored background */
-.scenario-card:hover .scenario-text { color: rgba(255, 255, 255, 0.85); }
-.scenario-card:hover .scenario-text strong { color: #ffffff; }
 /* admin */
 .admin-wrap{
   display:none;
@@ -2806,7 +2737,14 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     <div id="manager_bet_body" style="margin-top:16px; max-height:60vh; overflow-y:auto; padding-right:8px;"></div>
   </div>
 </div>
-
+<div id="scenario_modal" class="modal-overlay">
+  <div class="modal-content mgr-modal">
+    <span class="modal-close" onclick="document.getElementById('scenario_modal').classList.remove('show')">&times;</span>
+    <h2 class="modal-title" id="scenario_modal_team">—</h2>
+    <div class="modal-subtitle" id="scenario_modal_status">// playoff status</div>
+    <div id="scenario_modal_body" style="margin-top:16px; font-size: .95rem; line-height: 1.6; color: var(--text-muted);"></div>
+  </div>
+</div>
 <div id="odds_info_modal" class="modal-overlay">
   <div class="modal-content">
     <span class="modal-close" onclick="document.getElementById('odds_info_modal').classList.remove('show')">&times;</span>
@@ -3142,7 +3080,8 @@ window.renderPlayoffScenarios = function() {
 
   const fmtPct = p => (p >= 0.9995) ? '99.9%+' : (p > 0 && p < 0.001) ? '<0.1%' : (p * 100).toFixed(1) + '%';
 
-  // ---- render, in current table order ----
+ // ---- render, in current table order ----
+  window._scenarioTexts = {}; // Cache the generated text for the modal
   let html = '';
   standings.forEach(s => {
     const t = s.team;
@@ -3185,13 +3124,15 @@ window.renderPlayoffScenarios = function() {
       text = `${lead} Points window ${minPts[t]}–${maxPts[t]}; ${need}. NRR can still decide a tie at the cut.`;
     }
 
+    // Map data
+    window._scenarioTexts[t] = { status, statusClass, text };
+
+    // Card repurposing .manager-card style
     html += `
-      <div class="scenario-card" style="--card-color:${TEAM_COLORS[t] || 'var(--accent)'}; --card-color-2:${TEAM_COLORS_2[t] || TEAM_COLORS[t]}; --team-logo:url('${t}.png');">
-        <div class="scenario-header">
-          <div class="scenario-team">${t}</div>
-          <div class="scenario-status ${statusClass}">${status}</div>
-        </div>
-        <div class="scenario-text">${text}</div>
+      <div class="manager-card" data-team="${t}" style="--mgr-color:${TEAM_COLORS[t] || 'var(--accent)'}; --mgr-2:${TEAM_COLORS_2[t] || TEAM_COLORS[t]}; --team-logo:url('${t}.png');" onclick="window.openScenarioModal('${t}')">
+        <div class="mgr-eyebrow">// playoff scenario</div>
+        <h3 class="mgr-name" style="font-size:2rem; margin-bottom:12px;">${t.toUpperCase()}</h3>
+        <div class="scenario-status ${statusClass}" style="display:block; text-align:center;">${status}</div>
       </div>
     `;
   });
@@ -3199,6 +3140,30 @@ window.renderPlayoffScenarios = function() {
   feed.innerHTML = html;
 };
 
+// Modal populator function
+window.openScenarioModal = function(team) {
+  const data = window._scenarioTexts[team];
+  if (!data) return;
+  const tColor = TEAM_COLORS[team] || 'var(--accent)';
+  
+  const titleEl = document.getElementById('scenario_modal_team');
+  if(titleEl) {
+    titleEl.innerText = team.toUpperCase();
+    titleEl.style.color = tColor;
+  }
+  
+  const statusEl = document.getElementById('scenario_modal_status');
+  if(statusEl) {
+    statusEl.innerHTML = `<span class="scenario-status ${data.statusClass}" style="display:inline-block; margin-top:6px;">${data.status}</span>`;
+  }
+  
+  const bodyEl = document.getElementById('scenario_modal_body');
+  if(bodyEl) {
+    bodyEl.innerHTML = `<div style="color:var(--text);">${data.text}</div>`;
+  }
+  
+  document.getElementById('scenario_modal').classList.add('show');
+};
 window.takeoverTeam = function(team){
   _isPlayoffsMode = false;
   document.body.classList.remove('playoffs-mode-active');
