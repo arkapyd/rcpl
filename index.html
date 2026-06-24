@@ -1975,11 +1975,94 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 }
 
 /* ============================================================
-   PLAYOFF BRACKET GRID (2x2)
+   PLAYOFF BRACKET — FLOWCHART
    ============================================================ */
-.bracket-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 10px; }
-@media (max-width: 900px) { .bracket-grid { grid-template-columns: 1fr; } }
-.p-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px; transition: transform 0.25s ease; }
+.flow-board {
+  position: relative;
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 64px 28px;
+  align-items: start;
+}
+.flow-q1    { grid-column: 1; grid-row: 1; }
+.flow-elim  { grid-column: 3; grid-row: 1; }
+.flow-q2    { grid-column: 2; grid-row: 2; }
+.flow-final { grid-column: 2; grid-row: 3; }
+
+/* connector overlay (behind cards) */
+.flow-lines {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: visible;
+}
+.flow-labels {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* dim static track under each animated wire */
+.flow-track {
+  fill: none;
+  stroke: rgba(var(--accent-rgb), 0.16);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+/* glowing energy flowing toward the destination */
+.flow-path {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 8 8;
+  filter: drop-shadow(0 0 4px rgba(var(--accent-rgb), 0.85));
+  animation: flow-dash 0.85s linear infinite;
+}
+.flow-path.gold {
+  stroke: #fbbf24;
+  filter: drop-shadow(0 0 5px rgba(251,191,36,0.9));
+}
+@keyframes flow-dash {
+  to { stroke-dashoffset: -16; }
+}
+.flow-dot {
+  fill: var(--accent);
+  filter: drop-shadow(0 0 4px rgba(var(--accent-rgb), 0.95));
+}
+.flow-dot.gold {
+  fill: #fbbf24;
+  filter: drop-shadow(0 0 5px rgba(251,191,36,0.95));
+}
+@media (prefers-reduced-motion: reduce) {
+  .flow-path { animation: none; }
+}
+
+/* W / L flow labels */
+.flow-chip {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem; font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  background: var(--bg);
+  border: 1px solid rgba(var(--accent-rgb), 0.6);
+  border-radius: 999px;
+  padding: 2px 9px;
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.4);
+  white-space: nowrap;
+}
+.flow-chip.gold {
+  color: #fbbf24;
+  border-color: rgba(251,191,36,0.6);
+  box-shadow: 0 0 10px rgba(251,191,36,0.45);
+}
+
+/* cards (kept as-is, now layered above the wires) */
+.p-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px; position: relative; z-index: 1; transition: transform 0.25s ease; }
 .p-card:hover { transform: translateY(-2px); }
 .p-card.accent { border-color: rgba(var(--accent-rgb), 0.5); background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.08) 0%, transparent 60%); }
 .p-card.gold { border-color: rgba(251,191,36,0.5); background: linear-gradient(135deg, rgba(251,191,36,0.12) 0%, transparent 60%); }
@@ -1991,7 +2074,12 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 .p-seed { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--text-dim); width: 50px; text-transform: uppercase; letter-spacing: 0.1em; }
 .p-team { font-family: 'Anton', sans-serif; font-size: 1.15rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
 .p-card.gold .p-team { color: var(--text); }
-</style>
+
+/* narrow screens: stack the cards; seed labels (L Q1, W Elim…) carry the routing */
+@media (max-width: 720px) {
+  .flow-board { display: flex; flex-direction: column; gap: 16px; }
+  .flow-lines, .flow-labels { display: none; }
+}</style>
 </head>
 <body>
 
@@ -2210,36 +2298,42 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
         </h2>
         <div class="section-meta">road to the championship</div>
       </div>
-      <div class="bracket-grid">
-        <div class="p-card accent">
+      <div class="flow-board" id="flow_board">
+        <svg class="flow-lines" id="flow_lines" preserveAspectRatio="none"></svg>
+        <div class="flow-labels" id="flow_labels"></div>
+
+        <div class="p-card accent flow-q1" id="flow_q1">
           <div class="p-title">Qualifier 1</div>
           <div class="p-matchup">
             <div class="p-row"><span class="p-seed">Rank 1</span><span class="p-team">TBD</span></div>
             <div class="p-row"><span class="p-seed">Rank 2</span><span class="p-team">TBD</span></div>
           </div>
         </div>
-        <div class="p-card">
+
+        <div class="p-card flow-elim" id="flow_elim">
           <div class="p-title" style="color:var(--text-muted);">Eliminator</div>
           <div class="p-matchup">
             <div class="p-row"><span class="p-seed">Rank 3</span><span class="p-team">TBD</span></div>
             <div class="p-row"><span class="p-seed">Rank 4</span><span class="p-team">TBD</span></div>
           </div>
         </div>
-        <div class="p-card accent">
+
+        <div class="p-card accent flow-q2" id="flow_q2">
           <div class="p-title">Qualifier 2</div>
           <div class="p-matchup">
             <div class="p-row"><span class="p-seed">L Q1</span><span class="p-team">TBD</span></div>
             <div class="p-row"><span class="p-seed">W Elim</span><span class="p-team">TBD</span></div>
           </div>
         </div>
-        <div class="p-card gold">
+
+        <div class="p-card gold flow-final" id="flow_final">
           <div class="p-title">Championship Final</div>
           <div class="p-matchup">
             <div class="p-row"><span class="p-seed">W Q1</span><span class="p-team">TBD</span></div>
             <div class="p-row"><span class="p-seed">W Q2</span><span class="p-team">TBD</span></div>
           </div>
         </div>
-      </div>
+      </div>    
     </div>
   </section>
 
@@ -2968,6 +3062,7 @@ window.togglePlayoffsMode = function() {
     selectedTeamFilter = null;
     updateUI();
     window.renderPlayoffScenarios();
+    setTimeout(window.renderPlayoffFlow, 60);
     window.showToast('Playoffs Mode Activated', 'success');
     if(poSec) poSec.scrollIntoView({ behavior:'smooth', block:'start' });
   } else {
@@ -3164,6 +3259,97 @@ window.openScenarioModal = function(team) {
   
   document.getElementById('scenario_modal').classList.add('show');
 };
+
+// ============================== PLAYOFF FLOWCHART (connectors) ==============================
+window.renderPlayoffFlow = function(){
+  const board = document.getElementById('flow_board');
+  const svg = document.getElementById('flow_lines');
+  const labels = document.getElementById('flow_labels');
+  if(!board || !svg || !labels) return;
+  // bail if the bracket isn't on screen yet (hidden = zero box)
+  if(board.offsetParent === null || board.clientWidth === 0) return;
+
+  // narrow screens stack the cards; the in-card seed labels carry the routing
+  if(window.matchMedia('(max-width: 720px)').matches){
+    svg.innerHTML = '';
+    labels.innerHTML = '';
+    return;
+  }
+
+  const q1 = document.getElementById('flow_q1');
+  const el = document.getElementById('flow_elim');
+  const q2 = document.getElementById('flow_q2');
+  const fin = document.getElementById('flow_final');
+  if(!q1 || !el || !q2 || !fin) return;
+
+  const cont = board.getBoundingClientRect();
+  const box = node => {
+    const r = node.getBoundingClientRect();
+    const left = r.left - cont.left, top = r.top - cont.top;
+    return { left, top, right: r.right - cont.left, bottom: r.bottom - cont.top, w: r.width, h: r.height, cx: left + r.width / 2, cy: top + r.height / 2 };
+  };
+  const A = box(q1), E = box(el), Q = box(q2), F = box(fin);
+
+  const W = board.clientWidth, H = board.clientHeight;
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+
+  const gutter = Math.max(10, Math.min(A.left, F.left) - 32);
+
+  // 1 · Q1 winner -> Final (sweeps down the left gutter) — gold championship route
+  const c1sx = A.left + A.w * 0.30, c1sy = A.bottom;
+  const c1ex = F.left,              c1ey = F.cy;
+  const c1 = 'M ' + c1sx + ' ' + c1sy +
+             ' C ' + gutter + ' ' + (c1sy + (c1ey - c1sy) * 0.45) +
+             ' ' + gutter + ' ' + (c1ey - (c1ey - c1sy) * 0.12) +
+             ' ' + c1ex + ' ' + c1ey;
+
+  // 2 · Q1 loser -> Qualifier 2
+  const c2sx = A.right - A.w * 0.30, c2sy = A.bottom;
+  const c2ex = Q.left + Q.w * 0.32,  c2ey = Q.top;
+  const c2my = (c2sy + c2ey) / 2;
+  const c2 = 'M ' + c2sx + ' ' + c2sy + ' C ' + c2sx + ' ' + c2my + ' ' + c2ex + ' ' + c2my + ' ' + c2ex + ' ' + c2ey;
+
+  // 3 · Eliminator winner -> Qualifier 2
+  const c3sx = E.cx,                 c3sy = E.bottom;
+  const c3ex = Q.right - Q.w * 0.32, c3ey = Q.top;
+  const c3my = (c3sy + c3ey) / 2;
+  const c3 = 'M ' + c3sx + ' ' + c3sy + ' C ' + c3sx + ' ' + c3my + ' ' + c3ex + ' ' + c3my + ' ' + c3ex + ' ' + c3ey;
+
+  // 4 · Q2 winner -> Final — gold championship route
+  const c4sx = Q.cx, c4sy = Q.bottom;
+  const c4ex = F.cx, c4ey = F.top;
+  const c4my = (c4sy + c4ey) / 2;
+  const c4 = 'M ' + c4sx + ' ' + c4sy + ' C ' + c4sx + ' ' + c4my + ' ' + c4ex + ' ' + c4my + ' ' + c4ex + ' ' + c4ey;
+
+  const seg = (d, gold) =>
+    '<path class="flow-track" d="' + d + '"></path>' +
+    '<path class="flow-path' + (gold ? ' gold' : '') + '" d="' + d + '"></path>';
+  const dot = (x, y, gold) =>
+    '<circle class="flow-dot' + (gold ? ' gold' : '') + '" cx="' + x + '" cy="' + y + '" r="4"></circle>';
+
+  svg.innerHTML =
+    seg(c1, true) + seg(c2, false) + seg(c3, false) + seg(c4, true) +
+    dot(c1ex, c1ey, true) + dot(c2ex, c2ey, false) + dot(c3ex, c3ey, false) + dot(c4ex, c4ey, true);
+
+  const chip = (x, y, text, gold) =>
+    '<span class="flow-chip' + (gold ? ' gold' : '') + '" style="left:' + x + 'px; top:' + y + 'px;">' + text + '</span>';
+  labels.innerHTML =
+    chip(c1sx - 14, c1sy + 16, 'W', true) +
+    chip(c2sx + 14, c2sy + 16, 'L', false) +
+    chip(c3sx, c3sy + 18, 'W', false) +
+    chip(c4sx + 14, c4sy + 14, 'W', true);
+};
+
+// redraw connectors on resize while the bracket is visible
+let _flowResizeTimer = null;
+window.addEventListener('resize', function(){
+  clearTimeout(_flowResizeTimer);
+  _flowResizeTimer = setTimeout(function(){
+    const bv = document.getElementById('playoff_bracket_view');
+    if(bv && bv.style.display !== 'none') window.renderPlayoffFlow();
+  }, 150);
+});
+
 window.takeoverTeam = function(team){
   _isPlayoffsMode = false;
   document.body.classList.remove('playoffs-mode-active');
