@@ -2042,6 +2042,38 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   /* footer stacks */
   .foot{ flex-direction:column; gap:8px; align-items:flex-start; }
 }
+/* ============================================================
+   PLAYOFF BRACKET FLOW
+   ============================================================ */
+.playoff-flow { position: relative; padding-left: 28px; margin-top: 10px; }
+.playoff-flow::before {
+  content: ''; position: absolute; top: 14px; bottom: 30px; left: 8px;
+  width: 2px; background: linear-gradient(180deg, var(--accent), var(--border), #fbbf24);
+  opacity: 0.6;
+}
+.p-node { position: relative; margin-bottom: 20px; transition: transform 0.25s ease; }
+.p-node:hover { transform: translateX(4px); }
+.p-node:last-child { margin-bottom: 0; }
+.p-node::before {
+  content: ''; position: absolute; left: -24px; top: 18px;
+  width: 10px; height: 10px; border-radius: 50%; background: var(--bg); border: 2px solid var(--accent);
+  box-shadow: 0 0 10px var(--accent); z-index: 2;
+}
+.p-node.gold::before { border-color: #fbbf24; box-shadow: 0 0 14px rgba(251, 191, 36, 0.6); }
+
+.p-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; position: relative; overflow: hidden; }
+.p-card.accent { border-color: rgba(var(--accent-rgb), 0.5); background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.08) 0%, transparent 60%); }
+.p-card.gold { border-color: rgba(251,191,36,0.5); background: linear-gradient(135deg, rgba(251,191,36,0.12) 0%, transparent 60%); }
+
+.p-title { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.18em; color: var(--accent); margin-bottom: 12px; text-transform: uppercase; font-weight: 700; }
+.p-card.gold .p-title { color: #fbbf24; text-shadow: 0 0 8px rgba(251,191,36,0.4); }
+
+.p-matchup { display: flex; flex-direction: column; gap: 6px; }
+.p-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; }
+.p-card.gold .p-row { border-color: rgba(251,191,36,0.2); }
+.p-seed { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--text-dim); width: 50px; text-transform: uppercase; letter-spacing: 0.1em; }
+.p-team { font-family: 'Anton', sans-serif; font-size: 1.15rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.p-card.gold .p-team { color: var(--text); }
 </style>
 </head>
 <body>
@@ -2238,11 +2270,60 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
 
   <section class="section split">
     <div>
-      <div class="section-head">
-        <h2 class="section-title"><span class="num-pre">04</span>Previous Fixtures</h2>
-        <div class="section-meta" id="results_meta">—</div>
+            <div id="prev_fixtures_block">
+        <div class="section-head">
+          <h2 class="section-title"><span class="num-pre">04</span>Previous Fixtures</h2>
+          <div class="section-meta" id="results_meta">—</div>
+        </div>
+        <div class="feed" id="results_feed"></div>
       </div>
-      <div class="feed" id="results_feed"></div>
+
+            <div id="playoff_bracket_block" style="display:none;">
+        <div class="section-head">
+          <h2 class="section-title" style="color:var(--accent); text-shadow: 0 0 14px rgba(var(--accent-rgb),0.6);"><span class="num-pre" style="color:var(--accent);">◆</span>Playoff Bracket</h2>
+          <div class="section-meta">road to the championship</div>
+        </div>
+        <div style="background:transparent; border:none; padding:10px 0;">
+          <div class="playoff-flow">
+            <div class="p-node">
+              <div class="p-card accent">
+                <div class="p-title">Qualifier 1</div>
+                <div class="p-matchup">
+                  <div class="p-row"><span class="p-seed">Rank 1</span><span class="p-team">TBD</span></div>
+                  <div class="p-row"><span class="p-seed">Rank 2</span><span class="p-team">TBD</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="p-node">
+              <div class="p-card">
+                <div class="p-title" style="color:var(--text-muted);">Eliminator</div>
+                <div class="p-matchup">
+                  <div class="p-row"><span class="p-seed">Rank 3</span><span class="p-team">TBD</span></div>
+                  <div class="p-row"><span class="p-seed">Rank 4</span><span class="p-team">TBD</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="p-node">
+              <div class="p-card accent">
+                <div class="p-title">Qualifier 2</div>
+                <div class="p-matchup">
+                  <div class="p-row"><span class="p-seed">L Q1</span><span class="p-team">TBD</span></div>
+                  <div class="p-row"><span class="p-seed">W Elim</span><span class="p-team">TBD</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="p-node gold">
+              <div class="p-card gold">
+                <div class="p-title">Championship Final</div>
+                <div class="p-matchup">
+                  <div class="p-row"><span class="p-seed">W Q1</span><span class="p-team">TBD</span></div>
+                  <div class="p-row"><span class="p-seed">W Q2</span><span class="p-team">TBD</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div>
       <div class="section-head">
@@ -2947,6 +3028,8 @@ window.togglePlayoffsMode = function() {
   const mgrsSec = document.getElementById('managers_section');
   const statsSec = document.getElementById('stats_section');
   const poSec = document.getElementById('playoffs_section');
+  const prevBlock = document.getElementById('prev_fixtures_block');
+  const bracketBlock = document.getElementById('playoff_bracket_block');
 
   if (_isPlayoffsMode) {
     document.body.classList.add('playoffs-mode-active');
@@ -2962,6 +3045,10 @@ window.togglePlayoffsMode = function() {
     if(mgrsSec) mgrsSec.style.display = 'none';
     if(statsSec) statsSec.style.display = 'none';
     if(poSec) poSec.style.display = 'block';
+
+    // Show bracket graphic, hide previous log
+    if(prevBlock) prevBlock.style.display = 'none';
+    if(bracketBlock) bracketBlock.style.display = 'block';
     
     selectedTeamFilter = null;
     updateUI();
@@ -2971,6 +3058,39 @@ window.togglePlayoffsMode = function() {
   } else {
     window.resetTakeover();
   }
+};
+
+window.resetTakeover = function(){
+  _isPlayoffsMode = false;
+  document.body.classList.remove('playoffs-mode-active');
+  
+  // 1. Grab all the togglable sections
+  const oddsSec = document.getElementById('odds_section');
+  const mgrsSec = document.getElementById('managers_section');
+  const statsSec = document.getElementById('stats_section');
+  const poSec = document.getElementById('playoffs_section');
+  const prevBlock = document.getElementById('prev_fixtures_block');
+  const bracketBlock = document.getElementById('playoff_bracket_block');
+  
+  // 2. Restore standard visibility (Turn Stats/Odds/Mgrs back ON, Playoffs OFF)
+  if(oddsSec) oddsSec.style.display = 'block';
+  if(mgrsSec) mgrsSec.style.display = 'block';
+  if(statsSec) statsSec.style.display = 'block';
+  if(poSec) poSec.style.display = 'none';
+
+  // Revert left column to normal
+  if(prevBlock) prevBlock.style.display = 'block';
+  if(bracketBlock) bracketBlock.style.display = 'none';
+
+  // 3. Revert to standard "Floodlight" blue theme
+  document.documentElement.style.setProperty('--accent', '#86acd8');
+  document.documentElement.style.setProperty('--accent-rgb', '134, 172, 216');
+  document.documentElement.style.setProperty('--accent-2', '#3d6fb0');
+  document.documentElement.style.setProperty('--accent-2-rgb', '61, 111, 176');
+  
+  selectedTeamFilter = null;
+  updateUI();
+  window.showToast('theme reset', 'success');
 };
    
 window.renderPlayoffScenarios = function() {
