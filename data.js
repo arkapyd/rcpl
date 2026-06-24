@@ -63,18 +63,18 @@ const HISTORICAL_RATING = {
 // Career m/w = complete S1–S4 (group + playoffs). runs/wkts/eco span S1–S4 too, with two
 // known gaps: S1 wickets were never recorded (so wkts omits S1 for the 8 original teams),
 // and S4 detail comes from a partial export (snapshot, missing ~10 league games + the Final).
-// Added new tracking columns: battedInns (defaults to m), wktsLost (for RPW), and fifties.
+// Added new tracking columns: battedInns (defaults to m), wktsLost (for RPW), fifties, and hs (High Score).
 const CAREER_STATS = {
-  pbks: { m:63, w:50, runs:2774, wkts:346, eco:7.87,  nrr: 3.268,  battedInns:63, wktsLost:null, fifties:19 },
-  kkr:  { m:62, w:42, runs:2393, wkts:223, eco:8.16,  nrr: 1.372,  battedInns:62, wktsLost:null, fifties:18 },
-  rcb:  { m:64, w:45, runs:2749, wkts:227, eco:8.05,  nrr: 2.094,  battedInns:64, wktsLost:null, fifties:14 },
-  mi:   { m:63, w:33, runs:2392, wkts:235, eco:8.58,  nrr: 0.304,  battedInns:63, wktsLost:null, fifties:8 },
-  dc:   { m:56, w:27, runs:1723, wkts:141, eco:9.34,  nrr:-1.179,  battedInns:56, wktsLost:null, fifties:8 },
-  rr:   { m:57, w:20, runs:1888, wkts:173, eco:8.99,  nrr:-1.246,  battedInns:57, wktsLost:null, fifties:4 },
-  csk:  { m:56, w:12, runs:1416, wkts:209, eco:8.80,  nrr:-2.519,  battedInns:56, wktsLost:null, fifties:3 },
-  srh:  { m:56, w:14, runs:1545, wkts:158, eco:10.00, nrr:-3.302,  battedInns:56, wktsLost:null, fifties:3 },
-  lsg:  { m:17, w:11, runs: 626, wkts: 71, eco:8.00,  nrr: 1.884,  battedInns:17, wktsLost:null, fifties:0 },
-  gt:   { m:14, w:4,  runs: 470, wkts: 36, eco:9.55,  nrr:-1.650,  battedInns:14, wktsLost:null, fifties:0 }
+  pbks: { m:63, w:50, runs:2774, wkts:346, eco:7.87, nrr: 3.268, battedInns:63, wktsLost:null, fifties:19, hs:89 },
+  kkr:  { m:62, w:42, runs:2393, wkts:223, eco:8.16, nrr: 1.372, battedInns:62, wktsLost:null, fifties:18, hs:72 },
+  rcb:  { m:64, w:45, runs:2749, wkts:227, eco:8.05, nrr: 2.094, battedInns:64, wktsLost:null, fifties:14, hs:72 },
+  mi:   { m:63, w:33, runs:2392, wkts:235, eco:8.58, nrr: 0.304, battedInns:63, wktsLost:null, fifties:8,  hs:65 },
+  dc:   { m:56, w:27, runs:1723, wkts:141, eco:9.34, nrr:-1.179, battedInns:56, wktsLost:null, fifties:8,  hs:73 },
+  rr:   { m:57, w:20, runs:1888, wkts:173, eco:8.99, nrr:-1.246, battedInns:57, wktsLost:null, fifties:4,  hs:78 },
+  csk:  { m:56, w:12, runs:1416, wkts:209, eco:8.80, nrr:-2.519, battedInns:56, wktsLost:null, fifties:3,  hs:65 },
+  srh:  { m:56, w:14, runs:1545, wkts:158, eco:10.00,nrr:-3.302, battedInns:56, wktsLost:null, fifties:3,  hs:53 },
+  lsg:  { m:17, w:11, runs: 626, wkts: 71, eco:8.00, nrr: 1.884, battedInns:17, wktsLost:null, fifties:0,  hs:0  },
+  gt:   { m:14, w:4,  runs: 470, wkts: 36, eco:9.55, nrr:-1.650, battedInns:14, wktsLost:null, fifties:0,  hs:0  }
 };
 // ============================== HEAD-TO-HEAD (S1–S4 cumulative) ==============================
 // Wins by the row team over the column team across S1–S4 (group stage + playoffs).
