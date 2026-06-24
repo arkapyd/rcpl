@@ -2209,12 +2209,12 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     </div>
   </section>
 
-  <section class="section">
+  <section class="section" id="stats_section">
     <div class="section-head" style="flex-direction:column; align-items:flex-start; gap:8px;">
      <div style="display:flex; justify-content:space-between; width:100%; align-items:baseline; flex-wrap:wrap; gap:8px;">
         <h2 class="section-title" style="display:flex; align-items:baseline; gap:18px; flex-wrap:wrap;">
           <span class="num-pre">06</span>
-          <span class="stat-group-title active" onclick="window.switchStatsGroup('seasonal')">Season Statistics</span>
+           <span class="stat-group-title active" onclick="window.switchStatsGroup('seasonal')">Season Statistics</span>
           <span class="stat-group-title" onclick="window.switchStatsGroup('career')">Career Statistics</span>
         </h2>
         <div class="section-meta" id="stats_meta">team-level · across played matches</div>
@@ -2901,6 +2901,7 @@ window.togglePlayoffsMode = function() {
   _isPlayoffsMode = !_isPlayoffsMode;
   const oddsSec = document.getElementById('odds_section');
   const mgrsSec = document.getElementById('managers_section');
+  const statsSec = document.getElementById('stats_section');
   const poSec = document.getElementById('playoffs_section');
 
   if (_isPlayoffsMode) {
@@ -2915,6 +2916,7 @@ window.togglePlayoffsMode = function() {
     // Hide standard elements, show Playoff Engine
     if(oddsSec) oddsSec.style.display = 'none';
     if(mgrsSec) mgrsSec.style.display = 'none';
+    if(statsSec) statsSec.style.display = 'none';
     if(poSec) poSec.style.display = 'block';
     
     selectedTeamFilter = null;
@@ -2926,7 +2928,7 @@ window.togglePlayoffsMode = function() {
     window.resetTakeover();
   }
 };
-
+   
 window.renderPlayoffScenarios = function() {
   const feed = document.getElementById('playoff_scenarios_feed');
   if (!feed) return;
@@ -2935,11 +2937,6 @@ window.renderPlayoffScenarios = function() {
 
   const totalMatches = 14; // Every team plays 14 matches total
   
-  // Calculate the current points threshold of the 4th and 5th place teams
-  const fourthPts = st.length >= 4 ? st[3].pts : 0;
-  const fifth = st.length >= 5 ? st[4] : null;
-  const fifthMaxPts = fifth ? (fifth.pts + ((totalMatches - fifth.p) * 2)) : 0;
-
   let html = '';
   st.forEach(s => {
     const rem = totalMatches - s.p;
@@ -2948,34 +2945,27 @@ window.renderPlayoffScenarios = function() {
     let status = '', statusClass = '', text = '';
 
     if (rem === 0) {
-      if (s.pts >= fourthPts && s.pos <= 4) { 
+      if (s.pos <= 4) { 
         status = 'Clinched'; statusClass = 'status-clinched'; 
-        text = `Secured a playoff berth with <strong>${s.pts} points</strong>.`; 
+        text = `Secured a playoff berth finishing #${s.pos} with <strong>${s.pts} points</strong>.`; 
       } else { 
         status = 'Eliminated'; statusClass = 'status-eliminated'; 
-        text = `Season completed. Failed to qualify.`; 
+        text = `Season completed. Finished #${s.pos} with ${s.pts} points, failing to qualify.`; 
       }
     } else {
-      if (s.pts > fifthMaxPts) {
-        // Points are strictly higher than 5th place can mathematically reach
+      if (s.pts >= 18) {
         status = 'Clinched'; statusClass = 'status-clinched';
-        text = `<strong>Q-Mark secured.</strong> Cannot be mathematically caught by the 5th place team. Playing purely for upper-bracket seeding.`;
-      } else if (maxPts < fourthPts) {
-        // Can't even reach the current 4th place baseline
+        text = `<strong>Q-Mark secured.</strong> Reached the 18-point threshold for guaranteed qualification. Playing for upper-bracket seeding.`;
+      } else if (maxPts < 12) {
         status = 'Eliminated'; statusClass = 'status-eliminated';
-        text = `<strong>Mathematically eliminated.</strong> Even winning all ${rem} remaining matches leaves them at ${maxPts} points, short of the threshold.`;
+        text = `<strong>Mathematically eliminated.</strong> Can only reach a maximum of ${maxPts} points, which falls short of the minimum 12-point threshold needed for any tiebreaker scenario.`;
       } else {
-        // In the Bubble / In the Hunt
         status = 'In The Hunt'; statusClass = 'status-bubble';
-        let needed = Math.max(0, fourthPts - s.pts);
-        let winsNeeded = Math.ceil(needed / 2);
-        
-        if (s.pos <= 4) {
-           text = `Currently in the top 4. Need to maintain NRR cushion or secure <strong>${Math.max(1, winsNeeded)} more win(s)</strong> out of ${rem} to officially shut out the chasing pack.`;
-        } else if (winsNeeded <= rem) {
-           text = `Sitting outside the top 4. Needs at least <strong>${winsNeeded} win(s)</strong> from their final ${rem} fixtures to reach the current ${fourthPts}-point cutoff.`;
+        if (maxPts >= 18) {
+          let neededFor18 = Math.ceil((18 - s.pts) / 2);
+          text = `Controls their own destiny. Needs <strong>${neededFor18} more win(s)</strong> out of ${rem} to hit the 18-point guarantee. Finishing below 18 points will leave them reliant on NRR and other match results.`;
         } else {
-           text = `<strong>Needs a miracle.</strong> Must win all ${rem} matches and rely heavily on NRR swings and collapses from the teams above them.`;
+          text = `<strong>Must rely on scenarios and NRR.</strong> Can only reach a maximum of ${maxPts} points. Must maximize wins from their remaining ${rem} fixture(s) and hope favorable Net Run Rate and league results push them into the Top 4.`;
         }
       }
     }
@@ -2998,9 +2988,11 @@ window.takeoverTeam = function(team){
   document.body.classList.remove('playoffs-mode-active');
   const oddsSec = document.getElementById('odds_section');
   const mgrsSec = document.getElementById('managers_section');
+  const statsSec = document.getElementById('stats_section');
   const poSec = document.getElementById('playoffs_section');
   if(oddsSec) oddsSec.style.display = 'block';
   if(mgrsSec) mgrsSec.style.display = 'block';
+  if(statsSec) statsSec.style.display = 'block';
   if(poSec) poSec.style.display = 'none';
   const hex = TEAM_COLORS[team] || '#86acd8';
   let hex2 = TEAM_COLORS_2[team] || '#3d6fb0';
@@ -3026,11 +3018,25 @@ window.takeoverTeam = function(team){
 window.resetTakeover = function(){
   _isPlayoffsMode = false;
   document.body.classList.remove('playoffs-mode-active');
+  
+  // 1. Grab all the togglable sections
+  const oddsSec = document.getElementById('odds_section');
+  const mgrsSec = document.getElementById('managers_section');
+  const statsSec = document.getElementById('stats_section');
+  const poSec = document.getElementById('playoffs_section');
+  
+  // 2. Restore standard visibility (Turn Stats/Odds/Mgrs back ON, Playoffs OFF)
+  if(oddsSec) oddsSec.style.display = 'block';
+  if(mgrsSec) mgrsSec.style.display = 'block';
+  if(statsSec) statsSec.style.display = 'block';
+  if(poSec) poSec.style.display = 'none';
 
+  // 3. Revert to standard "Floodlight" blue theme
   document.documentElement.style.setProperty('--accent', '#86acd8');
   document.documentElement.style.setProperty('--accent-rgb', '134, 172, 216');
   document.documentElement.style.setProperty('--accent-2', '#3d6fb0');
   document.documentElement.style.setProperty('--accent-2-rgb', '61, 111, 176');
+  
   selectedTeamFilter = null;
   updateUI();
   window.showToast('theme reset', 'success');
