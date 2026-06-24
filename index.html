@@ -1087,6 +1087,62 @@ table:has(#standings_body) thead th:nth-child(n+2):nth-child(-n+8){
 .odd-card-teams{ display:flex; justify-content:space-between; align-items:center; font-family:'Anton',sans-serif; font-size:1.15rem; letter-spacing:0.05em; }
 .odd-val{ text-align:center; font-size:2.2rem; font-family:'Anton',sans-serif; color:var(--text); margin:10px 0; line-height:1; white-space:nowrap; }
 .odd-fav{ text-align:center; font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.1em; }
+
+/* playoff scenarios grid */
+.playoff-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+@media (max-width: 900px) { .playoff-grid { grid-template-columns: 1fr; } }
+.scenario-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  padding: 18px;
+  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+}
+.scenario-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.15);
+}
+.scenario-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--border-bright);
+}
+.scenario-team {
+  font-family: 'Anton', sans-serif;
+  font-size: 1.45rem;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  text-transform: uppercase;
+  line-height: 1;
+}
+.scenario-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+.status-clinched { background: rgba(132,204,22,0.1); color: var(--win); border: 1px solid rgba(132,204,22,0.3); }
+.status-bubble { background: rgba(250,204,21,0.1); color: var(--tie); border: 1px solid rgba(250,204,21,0.3); }
+.status-eliminated { background: rgba(239,68,68,0.1); color: var(--loss); border: 1px solid rgba(239,68,68,0.3); }
+.scenario-text {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.scenario-text strong { color: var(--text); font-weight: 700; }
+
 /* admin */
 .admin-wrap{
   display:none;
@@ -2343,7 +2399,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     </div>
   </section>
 
- <section class="section">
+ <section class="section" id="odds_section">
     <div class="section-head">
       <div style="display:flex; justify-content:space-between; width:100%; align-items:baseline;">
         <h2 class="section-title" style="display:flex; align-items:center; gap:10px;">
@@ -2357,7 +2413,15 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     <div class="odds-grid" id="odds_feed"></div>
   </section>
 
-  <section class="section">
+  <section class="section" id="playoffs_section" style="display:none;">
+    <div class="section-head">
+      <h2 class="section-title" style="color:var(--accent); text-shadow: 0 0 14px rgba(var(--accent-rgb),0.6);"><span class="num-pre" style="color:var(--accent);">◆</span>Playoff Scenarios</h2>
+      <div class="section-meta">road to the championship · live qualification engine</div>
+    </div>
+    <div class="playoff-grid" id="playoff_scenarios_feed"></div>
+  </section>
+
+  <section class="section" id="managers_section">
     <div class="section-head">
       <h2 class="section-title"><span class="num-pre">08</span>Team Managers</h2>
       <div class="section-meta">ten teams · ten managers</div>
@@ -2833,27 +2897,113 @@ window.showToast = function(msg, type = 'default'){
 
 let _isPlayoffsMode = false;
 
+let _isPlayoffsMode = false;
+
 window.togglePlayoffsMode = function() {
   _isPlayoffsMode = !_isPlayoffsMode;
+  const oddsSec = document.getElementById('odds_section');
+  const mgrsSec = document.getElementById('managers_section');
+  const poSec = document.getElementById('playoffs_section');
+
   if (_isPlayoffsMode) {
     document.body.classList.add('playoffs-mode-active');
-    // Electric Crimson: #ff003c, Secondary: #b3002a
+    
+    // Switch to Electric Crimson
     document.documentElement.style.setProperty('--accent', '#ff003c');
     document.documentElement.style.setProperty('--accent-rgb', '255, 0, 60');
     document.documentElement.style.setProperty('--accent-2', '#b3002a');
     document.documentElement.style.setProperty('--accent-2-rgb', '179, 0, 42');
+    
+    // Hide standard elements, show Playoff Engine
+    if(oddsSec) oddsSec.style.display = 'none';
+    if(mgrsSec) mgrsSec.style.display = 'none';
+    if(poSec) poSec.style.display = 'block';
+    
     selectedTeamFilter = null;
     updateUI();
+    window.renderPlayoffScenarios(); // Compute scenarios dynamically
     window.showToast('Playoffs Mode Activated', 'success');
+    if(poSec) poSec.scrollIntoView({ behavior:'smooth', block:'start' });
   } else {
     window.resetTakeover();
   }
 };
 
+window.renderPlayoffScenarios = function() {
+  const feed = document.getElementById('playoff_scenarios_feed');
+  if (!feed) return;
+  const st = window.currentStandings || [];
+  if (st.length === 0) return;
+
+  const totalMatches = 14; // Every team plays 14 matches total
+  
+  // Calculate the current points threshold of the 4th and 5th place teams
+  const fourthPts = st.length >= 4 ? st[3].pts : 0;
+  const fifth = st.length >= 5 ? st[4] : null;
+  const fifthMaxPts = fifth ? (fifth.pts + ((totalMatches - fifth.p) * 2)) : 0;
+
+  let html = '';
+  st.forEach(s => {
+    const rem = totalMatches - s.p;
+    const maxPts = s.pts + (rem * 2);
+    
+    let status = '', statusClass = '', text = '';
+
+    if (rem === 0) {
+      if (s.pts >= fourthPts && s.pos <= 4) { 
+        status = 'Clinched'; statusClass = 'status-clinched'; 
+        text = `Secured a playoff berth with <strong>${s.pts} points</strong>.`; 
+      } else { 
+        status = 'Eliminated'; statusClass = 'status-eliminated'; 
+        text = `Season completed. Failed to qualify.`; 
+      }
+    } else {
+      if (s.pts > fifthMaxPts) {
+        // Points are strictly higher than 5th place can mathematically reach
+        status = 'Clinched'; statusClass = 'status-clinched';
+        text = `<strong>Q-Mark secured.</strong> Cannot be mathematically caught by the 5th place team. Playing purely for upper-bracket seeding.`;
+      } else if (maxPts < fourthPts) {
+        // Can't even reach the current 4th place baseline
+        status = 'Eliminated'; statusClass = 'status-eliminated';
+        text = `<strong>Mathematically eliminated.</strong> Even winning all ${rem} remaining matches leaves them at ${maxPts} points, short of the threshold.`;
+      } else {
+        // In the Bubble / In the Hunt
+        status = 'In The Hunt'; statusClass = 'status-bubble';
+        let needed = Math.max(0, fourthPts - s.pts);
+        let winsNeeded = Math.ceil(needed / 2);
+        
+        if (s.pos <= 4) {
+           text = `Currently in the top 4. Need to maintain NRR cushion or secure <strong>${Math.max(1, winsNeeded)} more win(s)</strong> out of ${rem} to officially shut out the chasing pack.`;
+        } else if (winsNeeded <= rem) {
+           text = `Sitting outside the top 4. Needs at least <strong>${winsNeeded} win(s)</strong> from their final ${rem} fixtures to reach the current ${fourthPts}-point cutoff.`;
+        } else {
+           text = `<strong>Needs a miracle.</strong> Must win all ${rem} matches and rely heavily on NRR swings and collapses from the teams above them.`;
+        }
+      }
+    }
+
+    html += `
+      <div class="scenario-card">
+        <div class="scenario-header">
+          <div class="scenario-team" style="color:${TEAM_COLORS[s.team] || 'var(--accent)'};">${s.team}</div>
+          <div class="scenario-status ${statusClass}">${status}</div>
+        </div>
+        <div class="scenario-text">${text}</div>
+      </div>
+    `;
+  });
+  feed.innerHTML = html;
+};
+
 window.takeoverTeam = function(team){
   _isPlayoffsMode = false;
   document.body.classList.remove('playoffs-mode-active');
-
+  const oddsSec = document.getElementById('odds_section');
+  const mgrsSec = document.getElementById('managers_section');
+  const poSec = document.getElementById('playoffs_section');
+  if(oddsSec) oddsSec.style.display = 'block';
+  if(mgrsSec) mgrsSec.style.display = 'block';
+  if(poSec) poSec.style.display = 'none';
   const hex = TEAM_COLORS[team] || '#86acd8';
   let hex2 = TEAM_COLORS_2[team] || '#3d6fb0';
   const r = parseInt(hex.slice(1,3),16),
