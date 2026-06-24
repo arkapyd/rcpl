@@ -2033,7 +2033,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   .section-title, .combo-title{ font-size:1.25rem; letter-spacing:.1em; }
 
   /* tables scroll sideways instead of crushing columns */
-   overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .table-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
 
   /* modals fit small screens */
   .modal-content{ padding:20px 16px; }
@@ -2042,7 +2042,8 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   /* footer stacks */
   .foot{ flex-direction:column; gap:8px; align-items:flex-start; }
 }
-   /* ============================================================
+
+/* ============================================================
    PLAYOFF BRACKET GRID (2x2)
    ============================================================ */
 .bracket-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 10px; }
