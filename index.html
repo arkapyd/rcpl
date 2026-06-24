@@ -1167,6 +1167,7 @@ table:has(#standings_body) thead th:nth-child(n+2):nth-child(-n+8){
 }
 .status-clinched { background: rgba(132,204,22,0.1); color: var(--win); border: 1px solid rgba(132,204,22,0.3); }
 .status-bubble { background: rgba(250,204,21,0.1); color: var(--tie); border: 1px solid rgba(250,204,21,0.3); }
+.status-longshot { background: rgba(234,88,12,0.12); color: #fb923c; border: 1px solid rgba(234,88,12,0.35); }
 .status-eliminated { background: rgba(239,68,68,0.1); color: var(--loss); border: 1px solid rgba(239,68,68,0.3); }
 
 /* Make the status pill pop cleanly over the team's background color */
@@ -2459,7 +2460,7 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
   <section class="section" id="playoffs_section" style="display:none;">
     <div class="section-head">
       <h2 class="section-title" style="color:var(--accent); text-shadow: 0 0 14px rgba(var(--accent-rgb),0.6);"><span class="num-pre" style="color:var(--accent);">◆</span>Playoff Scenarios</h2>
-      <div class="section-meta">road to the championship · live qualification engine</div>
+      <div class="section-meta">every remaining result simulated · ties split on current NRR</div>
     </div>
     <div class="playoff-grid" id="playoff_scenarios_feed"></div>
   </section>
@@ -2975,54 +2976,131 @@ window.togglePlayoffsMode = function() {
 window.renderPlayoffScenarios = function() {
   const feed = document.getElementById('playoff_scenarios_feed');
   if (!feed) return;
-  const st = window.currentStandings || [];
-  if (st.length === 0) return;
+  const standings = window.currentStandings || [];
+  if (standings.length === 0) return;
 
-  const totalMatches = 14; // Every team plays 14 matches total
-  
+  const SPOTS = 4;                       // top-4 advance
+  const teams = standings.map(s => s.team);
+  const n = teams.length;
+
+  // snapshot current points / NRR / wins / table rank (standings are pre-sorted)
+  const curPts = {}, curW = {}, nrr = {}, curRank = {};
+  standings.forEach((s, i) => { curPts[s.team] = s.pts; curW[s.team] = s.w; nrr[s.team] = s.nrr || 0; curRank[s.team] = i + 1; });
+
+  // remaining fixtures straight from the live schedule
+  const remGames = SCHEDULE
+    .filter(f => !results[f.id] && teams.includes(f.a) && teams.includes(f.b))
+    .map(f => ({ a: f.a, b: f.b }));
+  const remCount = {}; teams.forEach(t => remCount[t] = 0);
+  remGames.forEach(g => { remCount[g.a]++; remCount[g.b]++; });
+
+  const maxPts = {}, minPts = {};
+  teams.forEach(t => { maxPts[t] = curPts[t] + 2 * remCount[t]; minPts[t] = curPts[t]; });
+  const seasonOver = remGames.length === 0;
+
+  // ---- exact bounds (always correct, NRR-independent) ----
+  // CLINCHED: fewer than SPOTS rivals can even reach my current points, so even losing
+  //   out leaves >= (n - SPOTS) teams below me -> a top-4 finish is locked.
+  // OUT: SPOTS rivals already sit above my maximum -> can't crack the top 4 on points.
+  const clinched = {}, deadOnPts = {};
+  teams.forEach(t => {
+    let canCatch = 0, aboveCeiling = 0;
+    teams.forEach(o => {
+      if (o === t) return;
+      if (maxPts[o] >= curPts[t]) canCatch++;
+      if (curPts[o] > maxPts[t]) aboveCeiling++;
+    });
+    clinched[t] = canCatch < SPOTS;
+    deadOnPts[t] = aboveCeiling >= SPOTS;
+  });
+
+  // ---- monte-carlo across every remaining result (each match a 50/50) ----
+  // final order = points, then CURRENT NRR -> a points logjam is settled on NRR, which is
+  // why a weak-NRR side stuck at the cut (the PBKS case) almost never gets through.
+  const SIMS = seasonOver ? 1 : 20000;
+  const qualHits = {};
+  const condQ = {}, condT = {};          // condQ[t][k]/condT[t][k]: sims where t won k of its games (qualified / total)
+  teams.forEach(t => { qualHits[t] = 0; condQ[t] = new Array(remCount[t] + 1).fill(0); condT[t] = new Array(remCount[t] + 1).fill(0); });
+
+  const order = teams.slice();
+  for (let s = 0; s < SIMS; s++) {
+    const pts = {}, wins = {};
+    teams.forEach(t => { pts[t] = curPts[t]; wins[t] = 0; });
+    for (let g = 0; g < remGames.length; g++) {
+      const game = remGames[g];
+      if (Math.random() < 0.5) { pts[game.a] += 2; wins[game.a]++; }
+      else { pts[game.b] += 2; wins[game.b]++; }
+    }
+    order.sort((x, y) =>
+      (pts[y] - pts[x]) || (nrr[y] - nrr[x]) ||
+      ((curW[y] + wins[y]) - (curW[x] + wins[x])) || (x < y ? -1 : 1)
+    );
+    for (let r = 0; r < n; r++) {
+      const t = order[r];
+      const made = r < SPOTS;
+      if (made) qualHits[t]++;
+      condT[t][wins[t]]++;
+      if (made) condQ[t][wins[t]]++;
+    }
+  }
+  const qualProb = {}; teams.forEach(t => qualProb[t] = qualHits[t] / SIMS);
+
+  const fmtPct = p => (p >= 0.9995) ? '99.9%+' : (p > 0 && p < 0.001) ? '<0.1%' : (p * 100).toFixed(1) + '%';
+
+  // ---- render, in current table order ----
   let html = '';
-  st.forEach(s => {
-    const rem = totalMatches - s.p;
-    const maxPts = s.pts + (rem * 2);
-    
-    let status = '', statusClass = '', text = '';
+  standings.forEach(s => {
+    const t = s.team;
+    const rem = remCount[t];
+    const pStr = fmtPct(qualProb[t]);
 
-    if (rem === 0) {
-      if (s.pos <= 4) { 
-        status = 'Clinched'; statusClass = 'status-clinched'; 
-        text = `Secured a playoff berth finishing #${s.pos} with <strong>${s.pts} points</strong>.`; 
-      } else { 
-        status = 'Eliminated'; statusClass = 'status-eliminated'; 
-        text = `Season completed. Finished #${s.pos} with ${s.pts} points, failing to qualify.`; 
-      }
+    // conditional "if you win at least k of yours" odds, others left as coin flips
+    let cumQ = 0, cumT = 0; const pGE = new Array(rem + 1).fill(0);
+    for (let k = rem; k >= 0; k--) { cumQ += condQ[t][k]; cumT += condT[t][k]; pGE[k] = cumT > 0 ? cumQ / cumT : 0; }
+    const firstK = thr => { for (let k = 0; k <= rem; k++) if (pGE[k] >= thr) return k; return null; };
+    const winOutPct = fmtPct(pGE[rem] || 0);
+
+    let status, statusClass, text;
+
+    if (seasonOver) {
+      if (curRank[t] <= SPOTS) { status = 'Qualified'; statusClass = 'status-clinched'; text = `Finished <strong>#${curRank[t]}</strong> on ${curPts[t]} pts — into the playoffs.`; }
+      else { status = 'Eliminated'; statusClass = 'status-eliminated'; text = `Finished <strong>#${curRank[t]}</strong> on ${curPts[t]} pts, outside the top four.`; }
+    } else if (clinched[t]) {
+      status = 'Clinched'; statusClass = 'status-clinched';
+      text = `<strong>Top four locked.</strong> ` + (rem > 0 ? `Even losing all ${rem} left, ` : ``) + `at most ${SPOTS - 1} rivals can reach ${curPts[t]} pts — a playoff spot is guaranteed.` + (rem > 0 ? ` Now playing for seeding.` : ``);
+    } else if (deadOnPts[t]) {
+      status = 'Eliminated'; statusClass = 'status-eliminated';
+      text = `<strong>Mathematically out.</strong> ` + (rem > 0 ? `A clean sweep tops out at ${maxPts[t]} pts; ` : `Finished on ${curPts[t]} pts; `) + `${SPOTS} sides already sit above that.`;
+    } else if (qualProb[t] <= 0.05) {
+      status = 'Long Shot'; statusClass = 'status-longshot';
+      text = rem === 0
+        ? `<strong>All but gone (~${pStr}).</strong> Done playing on ${curPts[t]} pts; only other results — and NRR — can save them.`
+        : `<strong>All but gone (~${pStr}).</strong> Can still climb to ${maxPts[t]} pts, but even winning out lands at just ~${winOutPct} once NRR settles the logjam.`;
     } else {
-      if (s.pts >= 18) {
-        status = 'Clinched'; statusClass = 'status-clinched';
-        text = `<strong>Q-Mark secured.</strong> Reached the 18-point threshold for guaranteed qualification. Playing for upper-bracket seeding.`;
-      } else if (maxPts < 12) {
-        status = 'Eliminated'; statusClass = 'status-eliminated';
-        text = `<strong>Mathematically eliminated.</strong> Can only reach a maximum of ${maxPts} points, which falls short of the minimum 12-point threshold needed for any tiebreaker scenario.`;
-      } else {
-        status = 'In The Hunt'; statusClass = 'status-bubble';
-        if (maxPts >= 18) {
-          let neededFor18 = Math.ceil((18 - s.pts) / 2);
-          text = `Controls their own destiny. Needs <strong>${neededFor18} more win(s)</strong> out of ${rem} to hit the 18-point guarantee. Finishing below 18 points will leave them reliant on NRR and other match results.`;
-        } else {
-          text = `<strong>Must rely on scenarios and NRR.</strong> Can only reach a maximum of ${maxPts} points. Must maximize wins from their remaining ${rem} fixture(s) and hope favorable Net Run Rate and league results push them into the Top 4.`;
-        }
+      status = 'In The Hunt'; statusClass = 'status-bubble';
+      const lead = qualProb[t] >= 0.999 ? `<strong>All but certain (~${pStr}).</strong>` : `Qualification <strong>~${pStr}</strong>.`;
+      let need;
+      if (rem === 0) need = `done playing on ${curPts[t]} pts — fate now rests on other results`;
+      else {
+        const k50 = firstK(0.5);
+        need = (k50 === null) ? `even winning out is only ~${winOutPct}`
+             : (k50 === 0)   ? `even at .500 form they're around ${pStr}`
+             : `win <strong>${k50}</strong> of their last <strong>${rem}</strong> for a coin-flip-or-better shot`;
       }
+      text = `${lead} Points window ${minPts[t]}–${maxPts[t]}; ${need}. NRR can still decide a tie at the cut.`;
     }
 
     html += `
-      <div class="scenario-card" style="--card-color:${TEAM_COLORS[s.team] || 'var(--accent)'}; --card-color-2:${TEAM_COLORS_2[s.team] || TEAM_COLORS[s.team]}; --team-logo:url('${s.team}.png');">
+      <div class="scenario-card" style="--card-color:${TEAM_COLORS[t] || 'var(--accent)'}; --card-color-2:${TEAM_COLORS_2[t] || TEAM_COLORS[t]}; --team-logo:url('${t}.png');">
         <div class="scenario-header">
-          <div class="scenario-team">${s.team}</div>
+          <div class="scenario-team">${t}</div>
           <div class="scenario-status ${statusClass}">${status}</div>
         </div>
         <div class="scenario-text">${text}</div>
       </div>
     `;
   });
+
   feed.innerHTML = html;
 };
 
