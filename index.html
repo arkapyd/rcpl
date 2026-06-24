@@ -107,11 +107,11 @@ table th.num,
 /* playoffs mode badge & spark animation */
 .playoffs-badge {
   display: none;
-  color: #ff003c;
+  color: #b4d455;
   font-style: italic;
   font-weight: 800;
   letter-spacing: 0.12em;
-  text-shadow: 0 0 14px rgba(255, 0, 60, 0.8), 0 0 4px rgba(255, 0, 60, 0.4);
+  text-shadow: 0 0 14px rgba(180, 212, 85, 0.8), 0 0 4px rgba(180, 212, 85, 0.4);
   position: relative;
 }
 body.playoffs-mode-active .playoffs-badge {
@@ -122,9 +122,9 @@ body.playoffs-mode-active .playoffs-badge {
   bottom: 2px;
   width: 3px;
   height: 3px;
-  background: #ff003c;
+  background: #b4d455;
   border-radius: 50%;
-  box-shadow: 0 0 6px 2px #ff003c;
+  box-shadow: 0 0 6px 2px #b4d455;
   opacity: 0;
   animation: playoff-fire 1.2s infinite ease-in;
   pointer-events: none;
@@ -2950,11 +2950,11 @@ window.togglePlayoffsMode = function() {
   if (_isPlayoffsMode) {
     document.body.classList.add('playoffs-mode-active');
     
-    // Switch to Electric Crimson
-    document.documentElement.style.setProperty('--accent', '#ff003c');
-    document.documentElement.style.setProperty('--accent-rgb', '255, 0, 60');
-    document.documentElement.style.setProperty('--accent-2', '#b3002a');
-    document.documentElement.style.setProperty('--accent-2-rgb', '179, 0, 42');
+    // Switch to Electric Pastel Olive
+    document.documentElement.style.setProperty('--accent', '#b4d455');
+    document.documentElement.style.setProperty('--accent-rgb', '180, 212, 85');
+    document.documentElement.style.setProperty('--accent-2', '#8da63a');
+    document.documentElement.style.setProperty('--accent-2-rgb', '141, 166, 58');
     
     // Hide standard elements, show Playoff Engine & Bracket
     if(oddsSec) oddsSec.style.display = 'none';
