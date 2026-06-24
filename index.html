@@ -3171,10 +3171,19 @@ window.takeoverTeam = function(team){
   const mgrsSec = document.getElementById('managers_section');
   const statsSec = document.getElementById('stats_section');
   const poSec = document.getElementById('playoffs_section');
+  const splitView = document.getElementById('standard_split_view');
+  const bracketView = document.getElementById('playoff_bracket_view');
+
+  // Restore standard visibility
   if(oddsSec) oddsSec.style.display = 'block';
   if(mgrsSec) mgrsSec.style.display = 'block';
   if(statsSec) statsSec.style.display = 'block';
+  if(splitView) splitView.style.display = 'grid'; // Matches your .split CSS class
+
+  // Hide playoff elements
   if(poSec) poSec.style.display = 'none';
+  if(bracketView) bracketView.style.display = 'none';
+
   const hex = TEAM_COLORS[team] || '#86acd8';
   let hex2 = TEAM_COLORS_2[team] || '#3d6fb0';
   const r = parseInt(hex.slice(1,3),16),
