@@ -3096,6 +3096,8 @@ window.renderPlayoffScenarios = function() {
 
     let status, statusClass, text;
 
+    const winOutDecimal = pGE[rem] || 0; // Grab the raw decimal for winning out
+
     if (seasonOver) {
       if (curRank[t] <= SPOTS) { status = 'Qualified'; statusClass = 'status-clinched'; text = `Finished <strong>#${curRank[t]}</strong> on ${curPts[t]} pts — into the playoffs.`; }
       else { status = 'Eliminated'; statusClass = 'status-eliminated'; text = `Finished <strong>#${curRank[t]}</strong> on ${curPts[t]} pts, outside the top four.`; }
@@ -3105,7 +3107,7 @@ window.renderPlayoffScenarios = function() {
     } else if (deadOnPts[t]) {
       status = 'Eliminated'; statusClass = 'status-eliminated';
       text = `<strong>Mathematically out.</strong> ` + (rem > 0 ? `A clean sweep tops out at ${maxPts[t]} pts; ` : `Finished on ${curPts[t]} pts; `) + `${SPOTS} sides already sit above that.`;
-    } else if (qualProb[t] <= 0.05) {
+    } else if (qualProb[t] <= 0.05 && winOutDecimal < 0.5) { // FIX: Only a long shot if winning out doesn't even get them to 50%
       status = 'Long Shot'; statusClass = 'status-longshot';
       text = rem === 0
         ? `<strong>All but gone (~${pStr}).</strong> Done playing on ${curPts[t]} pts; only other results — and NRR — can save them.`
@@ -3117,7 +3119,7 @@ window.renderPlayoffScenarios = function() {
       if (rem === 0) need = `done playing on ${curPts[t]} pts — fate now rests on other results`;
       else {
         const k50 = firstK(0.5);
-        need = (k50 === null) ? `even winning out is only ~${winOutPct}`
+        need = (k50 === null) ? `even winning out only brings them to ~${winOutPct}`
              : (k50 === 0)   ? `even at .500 form they're around ${pStr}`
              : `win <strong>${k50}</strong> of their last <strong>${rem}</strong> for a coin-flip-or-better shot`;
       }
