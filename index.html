@@ -3214,12 +3214,16 @@ window.resetTakeover = function(){
   const mgrsSec = document.getElementById('managers_section');
   const statsSec = document.getElementById('stats_section');
   const poSec = document.getElementById('playoffs_section');
+  const splitView = document.getElementById('standard_split_view');
+  const bracketView = document.getElementById('playoff_bracket_view');
   
   // 2. Restore standard visibility (Turn Stats/Odds/Mgrs back ON, Playoffs OFF)
   if(oddsSec) oddsSec.style.display = 'block';
   if(mgrsSec) mgrsSec.style.display = 'block';
   if(statsSec) statsSec.style.display = 'block';
+  if(splitView) splitView.style.display = 'grid';
   if(poSec) poSec.style.display = 'none';
+  if(bracketView) bracketView.style.display = 'none';
 
   // 3. Revert to standard "Floodlight" blue theme
   document.documentElement.style.setProperty('--accent', '#86acd8');
