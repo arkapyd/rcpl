@@ -3105,9 +3105,14 @@ window.renderPlayoffScenarios = function() {
     } else if (clinched[t]) {
       status = 'Clinched'; statusClass = 'status-clinched';
       text = `<strong>Top four locked.</strong> ` + (rem > 0 ? `Even losing all ${rem} left, ` : ``) + `at most ${SPOTS - 1} rivals can reach ${curPts[t]} pts — a playoff spot is guaranteed.` + (rem > 0 ? ` Now playing for seeding.` : ``);
-    } else if (deadOnPts[t] || qualProb[t] < 0.001) {
+    } else if (deadOnPts[t]) {
       status = 'Eliminated'; statusClass = 'status-eliminated';
-      text = `<strong>Eliminated.</strong> A disappointing campaign comes to an end. Officially out of playoff contention.`;
+      text = `<strong>Mathematically out.</strong> ` + (rem > 0 ? `A clean sweep tops out at ${maxPts[t]} pts; ` : `Finished on ${curPts[t]} pts; `) + `${SPOTS} sides already sit strictly above that.`;
+    } else if (qualProb[t] === 0) {
+      status = 'Mathematical Miracle'; statusClass = 'status-longshot';
+      text = rem === 0
+        ? `<strong>Hanging by a thread (<0.01%).</strong> Done playing on ${curPts[t]} pts. Requires a near-impossible perfect storm of other league results and NRR swings to survive.`
+        : `<strong>Hanging by a thread (<0.01%).</strong> Can still theoretically reach ${maxPts[t]} pts, but requires a near-impossible perfect storm of other league results and NRR swings to survive.`;
     } else if (qualProb[t] < 0.05) {
       status = 'Hanging On'; statusClass = 'status-longshot';
       text = rem === 0
