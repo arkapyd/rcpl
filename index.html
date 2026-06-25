@@ -3114,10 +3114,16 @@ window.renderPlayoffScenarios = function() {
         ? `<strong>Hanging by a thread (<0.01%).</strong> Done playing on ${curPts[t]} pts. Requires a near-impossible perfect storm of other league results and NRR swings to survive.`
         : `<strong>Hanging by a thread (<0.01%).</strong> Can still theoretically reach ${maxPts[t]} pts, but requires a near-impossible perfect storm of other league results and NRR swings to survive.`;
     } else if (qualProb[t] < 0.05) {
-      status = 'Hanging On'; statusClass = 'status-longshot';
-      text = rem === 0
-        ? `<strong>Barely hanging on (~${pStr}).</strong> Done playing on ${curPts[t]} pts; clinging to playoff hopes by a thread while others finish.`
-        : `<strong>Barely hanging on (~${pStr}).</strong> Clinging to their playoff hopes by a thread. Every remaining game is a must-win.`;
+      const winOut = pGE[rem] || 0;
+      if (rem > 0 && winOut >= 0.5) {
+        status = 'Must Win'; statusClass = 'status-bubble';
+        text = `<strong>Run the table and they're ~${winOutPct} in.</strong> The ~${pStr} headline just reflects how hard a perfect run is — but achieve it and they're almost certainly through. Not a single slip permitted.`;
+      } else {
+        status = 'Hanging On'; statusClass = 'status-longshot';
+        text = rem === 0
+          ? `<strong>Barely hanging on (~${pStr}).</strong> Done playing on ${curPts[t]} pts; clinging to playoff hopes by a thread while others finish.`
+          : `<strong>Barely hanging on (~${pStr}).</strong> Clinging to playoff hopes by a thread.${winOut >= 0.05 ? ` Even a clean sweep only brings them to ~${winOutPct}.` : ` Even winning out can't save them.`}`;
+      }
     } else if (rem > 0 && dropOneProb < 0.05) {
       status = 'Long Shot'; statusClass = 'status-longshot';
       text = `<strong>Long shot (~${pStr}).</strong> They can still make it if they win absolutely everything left to reach ${maxPts[t]} pts, but any slip-up is fatal.`;
