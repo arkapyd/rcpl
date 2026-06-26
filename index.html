@@ -756,14 +756,14 @@ tbody tr.highlight-row {
 /* eliminated rows — grays out the entire row, dropping colors cleanly */
 #standings_body tr.eliminated-row {
   filter: grayscale(1);
-  opacity: 0.45;
+  opacity: 0.75; /* Raised from 0.45 to keep text highly legible on dark backgrounds */
   transition: opacity 0.2s ease, filter 0.2s ease;
 }
 #standings_body tr.eliminated-row:hover {
-  opacity: 0.85;
+  opacity: 1; /* Bring it back to full opacity on hover */
 }
 #standings_body tr.eliminated-row .team-cell {
-  color: var(--text-dim) !important;
+  color: var(--text-muted) !important; /* Brighter gray (#a3a3a3) instead of the dim variant */
 }
 
 /* up-next column */
