@@ -4324,15 +4324,19 @@ function renderStatBoards(){
 // AFTER
 // ============================== GRAPHS RENDERING ==============================
 window.graphState = {
-  stats: { pts: true, pos: false, runs: false, wkts: false },
+  stats: { pts: true, pos: false, runs: false, wkts: false, basra: false, bewm: false, eco: false, sr: false },
   teams: {}
 };
 window.masterChartInstance = null;
 
-// per-match cumulative history (pts / runs / wkts / table position) for every team
+// per-match cumulative history (pts / runs / wkts / table position / basra / bewm / eco / sr) for every team
 function computeChartHistory(){
   let hist = {};
-  TEAMS.forEach(t => hist[t] = { pts: [0], runs: [0], wkts: [0], pos: [], current: blankStats(t) });
+  TEAMS.forEach(t => hist[t] = { 
+    pts: [0], runs: [0], wkts: [0], pos: [], 
+    basra: [0], bewm: [0], eco: [0], sr: [0], 
+    current: { ...blankStats(t), bat_inns: 0 } 
+  });
 
   const getRankings = () => {
     let arr = TEAMS.map(t => {
@@ -4361,6 +4365,10 @@ function computeChartHistory(){
     s1.p++; s2.p++;
     const b1 = (r.w1 >= 10) ? OVERS_PER_INNINGS*6 : (r.b1 || OVERS_PER_INNINGS*6);
     const b2 = (r.w2 >= 10) ? OVERS_PER_INNINGS*6 : (r.b2 || OVERS_PER_INNINGS*6);
+    
+    // track full batting innings incrementally for Bat. Avg/BASRA accuracy
+    if((r.w1 || 0) >= 10 || (r.b1 || 0) >= OVERS_PER_INNINGS*6) s1.bat_inns++;
+    if((r.w2 || 0) >= 10 || (r.b2 || 0) >= OVERS_PER_INNINGS*6) s2.bat_inns++;
 
     s1.rf += r.r1||0; s1.of_balls += b1; s1.wickets_taken = (s1.wickets_taken||0) + (r.w2||0);
     s1.ra += r.r2||0; s1.oa_balls += b2;
@@ -4374,21 +4382,44 @@ function computeChartHistory(){
     else { s1.t++; s1.pts += 1; s2.t++; s2.pts += 1; }
 
     let currentRanks = getRankings();
+    
+    // helper to crunch current advanced stats per step
+    const calcAdv = (s) => {
+      let batAvg = s.bat_inns > 0 ? (s.rf / s.bat_inns) : 0;
+      let sr = s.of_balls > 0 ? (s.rf / s.of_balls) * 100 : 0;
+      let econ = s.oa_balls > 0 ? (s.ra / (s.oa_balls / 6)) : 0;
+      let wpm = s.p > 0 ? (s.wickets_taken / s.p) : 0;
+      return { 
+        basra: batAvg + sr, 
+        bewm: s.p > 0 ? (10 + (0.3 * wpm) - (0.7 * econ)) : 0,
+        eco: econ, 
+        sr: sr 
+      };
+    };
+    let adv1 = calcAdv(s1);
+    let adv2 = calcAdv(s2);
 
     hist[r.t1].pts.push(s1.pts);
     hist[r.t1].runs.push(s1.rf);
     hist[r.t1].wkts.push(s1.wickets_taken);
     hist[r.t1].pos.push(currentRanks[r.t1]);
+    hist[r.t1].basra.push(adv1.basra);
+    hist[r.t1].bewm.push(adv1.bewm);
+    hist[r.t1].eco.push(adv1.eco);
+    hist[r.t1].sr.push(adv1.sr);
 
     hist[r.t2].pts.push(s2.pts);
     hist[r.t2].runs.push(s2.rf);
     hist[r.t2].wkts.push(s2.wickets_taken);
     hist[r.t2].pos.push(currentRanks[r.t2]);
+    hist[r.t2].basra.push(adv2.basra);
+    hist[r.t2].bewm.push(adv2.bewm);
+    hist[r.t2].eco.push(adv2.eco);
+    hist[r.t2].sr.push(adv2.sr);
   });
 
   return hist;
 }
-
 window.toggleGraphStat = function(stat, isChecked) {
   window.graphState.stats[stat] = isChecked;
   window.updateMasterGraph();
@@ -4402,7 +4433,10 @@ window.toggleGraphTeam = function(team, isChecked) {
 function renderCharts() {
   if (typeof Chart === 'undefined') return;
 
-  const statLabels = { pts: 'Total Points', pos: 'Table Position', runs: 'Runs Scored', wkts: 'Wickets Taken' };
+  const statLabels = { 
+    pts: 'Total Points', pos: 'Table Position', runs: 'Runs Scored', wkts: 'Wickets Taken', 
+    basra: 'BASRA', bewm: 'BEWM', eco: 'Economy', sr: 'Strike Rate' 
+  };
 
   // initialise with all teams active if first load
   if (Object.keys(window.graphState.teams).length === 0) {
@@ -4433,12 +4467,16 @@ window.updateMasterGraph = function() {
   const activeTeams = Object.keys(window.graphState.teams).filter(k => window.graphState.teams[k]);
 
   const statStyles = {
-    pts:  { dash: [],          width: 3 },
-    pos:  { dash: [5, 5],      width: 2 },
-    runs: { dash: [2, 2],      width: 2 },
-    wkts: { dash: [10, 5, 2],  width: 2 }
+    pts:   { dash: [],          width: 3 },
+    pos:   { dash: [5, 5],      width: 2 },
+    runs:  { dash: [2, 2],      width: 2 },
+    wkts:  { dash: [10, 5, 2],  width: 2 },
+    basra: { dash: [4, 2, 1, 2],width: 2 },
+    bewm:  { dash: [8, 4],      width: 2 },
+    eco:   { dash: [3, 3],      width: 2 },
+    sr:    { dash: [6, 2],      width: 2 }
   };
-  const statTitles = { pts: 'Points', pos: 'Position', runs: 'Runs', wkts: 'Wickets' };
+  const statTitles = { pts: 'Points', pos: 'Position', runs: 'Runs', wkts: 'Wickets', basra: 'BASRA', bewm: 'BEWM', eco: 'Economy', sr: 'Strike Rate' };
 
   activeTeams.forEach(t => {
     activeStats.forEach(stat => {
@@ -4465,7 +4503,10 @@ window.updateMasterGraph = function() {
   if (window.graphState.stats.pts) scales['y-pts'] = { type: 'linear', position: 'right', min: 0, title: { display: true, text: 'Points', color: '#a3a3a3' }, grid: { color: 'rgba(56,56,56,.1)' }, ticks: { color: '#a3a3a3' } };
   if (window.graphState.stats.runs) scales['y-runs'] = { type: 'linear', position: 'left', title: { display: true, text: 'Runs', color: '#a3a3a3' }, grid: { display: false }, ticks: { color: '#a3a3a3' } };
   if (window.graphState.stats.wkts) scales['y-wkts'] = { type: 'linear', position: 'right', title: { display: true, text: 'Wickets', color: '#a3a3a3' }, grid: { display: false }, ticks: { color: '#a3a3a3' } };
-
+  if (window.graphState.stats.basra) scales['y-basra'] = { type: 'linear', position: 'left', title: { display: true, text: 'BASRA', color: '#a3a3a3' }, grid: { display: false }, ticks: { color: '#a3a3a3' } };
+  if (window.graphState.stats.bewm) scales['y-bewm'] = { type: 'linear', position: 'right', title: { display: true, text: 'BEWM', color: '#a3a3a3' }, grid: { display: false }, ticks: { color: '#a3a3a3' } };
+  if (window.graphState.stats.eco) scales['y-eco'] = { type: 'linear', position: 'right', title: { display: true, text: 'Economy', color: '#a3a3a3' }, grid: { display: false }, ticks: { color: '#a3a3a3' } };
+  if (window.graphState.stats.sr) scales['y-sr'] = { type: 'linear', position: 'left', title: { display: true, text: 'Strike Rate', color: '#a3a3a3' }, grid: { display: false }, ticks: { color: '#a3a3a3' } };
   const ctx = document.getElementById('masterChart');
   if (!ctx) return;
   if (window.masterChartInstance) window.masterChartInstance.destroy();
