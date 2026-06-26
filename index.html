@@ -753,6 +753,19 @@ tbody tr.highlight-row {
   padding-bottom: 17px;
 }
 
+/* eliminated rows — grays out the entire row, dropping colors cleanly */
+#standings_body tr.eliminated-row {
+  filter: grayscale(1);
+  opacity: 0.45;
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+#standings_body tr.eliminated-row:hover {
+  opacity: 0.85;
+}
+#standings_body tr.eliminated-row .team-cell {
+  color: var(--text-dim) !important;
+}
+
 /* up-next column */
 .next-row{ display:flex; gap:8px; align-items:center; justify-content:center; flex-wrap:nowrap; }
 .next-opp{
@@ -3995,9 +4008,37 @@ window.saveRoster = function(){
 function renderStandings(standings){
   const tbody = document.getElementById('standings_body');
   const fp = getFairplayAverages();
+
+  // Mathematical Elimination Math
+  const SPOTS = 4;
+  const curPts = {};
+  standings.forEach(s => curPts[s.team] = s.pts);
+  const remCount = {};
+  TEAMS.forEach(t => remCount[t] = 0);
+  SCHEDULE.forEach(f => {
+    if (!results[f.id]) { remCount[f.a]++; remCount[f.b]++; }
+  });
+  const maxPts = {};
+  TEAMS.forEach(t => maxPts[t] = curPts[t] + 2 * remCount[t]);
+  const seasonOver = SCHEDULE.filter(f => !results[f.id]).length === 0;
+
   tbody.innerHTML = standings.map((s, i) => {
     const top4 = i < 4 ? ' top4-row' : '';
     const isHighlighted = (selectedTeamFilter && s.team === selectedTeamFilter) ? ' highlight-row' : '';
+    
+    // Check pure point-ceiling elimination
+    let isEliminated = false;
+    if (seasonOver) {
+      isEliminated = i >= SPOTS;
+    } else {
+      let aboveCeiling = 0;
+      TEAMS.forEach(o => {
+        if (o !== s.team && curPts[o] > maxPts[s.team]) aboveCeiling++;
+      });
+      isEliminated = aboveCeiling >= SPOTS;
+    }
+    const elimClass = isEliminated ? ' eliminated-row' : '';
+
     const ordered = s.form.slice().sort((a, b) => (a.ts || 0) - (b.ts || 0));
     const recent = ordered.slice(-5);
     const latestIdx = recent.length - 1;        // newest real result (before right-padding)
@@ -4018,7 +4059,7 @@ function renderStandings(standings){
       }).join('');
     const nextHtml = nextCells || '<span style="color:var(--text-dim); font-style:italic;">done</span>';
     return `
-      <tr class="${top4}${isHighlighted}" data-team="${s.team}" style="--team-logo:url('${s.team}.png'); --row-c1:${TEAM_COLORS[s.team]}; --row-c2:${TEAM_COLORS_2[s.team] || TEAM_COLORS[s.team]};">
+      <tr class="${top4}${isHighlighted}${elimClass}" data-team="${s.team}" style="--team-logo:url('${s.team}.png'); --row-c1:${TEAM_COLORS[s.team]}; --row-c2:${TEAM_COLORS_2[s.team] || TEAM_COLORS[s.team]};">
         <td class="pos num">${String(i+1).padStart(2,'0')}</td>
         <td>
           <div class="team-cell" style="--team-glow:${TEAM_COLORS[s.team]};" onclick="window.openFormModal('${s.team}')">
