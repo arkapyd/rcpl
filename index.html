@@ -2364,13 +2364,25 @@ button.danger:hover{ background:rgba(239,68,68,.1); }
     </div>
    <div id="stats_graphs" style="display:none;" class="table-wrap">
       <div style="display:flex; flex-wrap:wrap; gap:24px; padding:20px;">
-        <div id="master_graph_legend" style="flex:0 0 200px; display:flex; flex-direction:column; gap:20px;">
+       <div id="master_graph_legend" style="flex:0 0 200px; display:flex; flex-direction:column; gap:20px;">
           <div>
-            <div style="font-family:'JetBrains Mono',monospace; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin-bottom:10px;">// select stats</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin-bottom:10px; display:flex; justify-content:space-between; align-items:baseline;">
+              <span>// select stats</span>
+              <span style="font-size: .6rem; letter-spacing: .05em;">
+                <a style="cursor:pointer; color:var(--text-dim); transition:color .2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-dim)'" onclick="window.toggleAllGraphStats(true)">all</a> / 
+                <a style="cursor:pointer; color:var(--text-dim); transition:color .2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-dim)'" onclick="window.toggleAllGraphStats(false)">none</a>
+              </span>
+            </div>
             <div id="stat_checkboxes" style="display:flex; flex-direction:column; gap:8px;"></div>
           </div>
           <div>
-            <div style="font-family:'JetBrains Mono',monospace; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin-bottom:10px;">// toggle teams</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin-bottom:10px; display:flex; justify-content:space-between; align-items:baseline;">
+              <span>// toggle teams</span>
+              <span style="font-size: .6rem; letter-spacing: .05em;">
+                <a style="cursor:pointer; color:var(--text-dim); transition:color .2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-dim)'" onclick="window.toggleAllGraphTeams(true)">all</a> / 
+                <a style="cursor:pointer; color:var(--text-dim); transition:color .2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-dim)'" onclick="window.toggleAllGraphTeams(false)">none</a>
+              </span>
+            </div>
             <div id="team_checkboxes" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;"></div>
           </div>
         </div>
@@ -4324,17 +4336,27 @@ function renderStatBoards(){
 // AFTER
 // ============================== GRAPHS RENDERING ==============================
 window.graphState = {
-  stats: { pts: true, pos: false, runs: false, wkts: false, basra: false, bewm: false, eco: false, sr: false },
+  stats: { pts: false, pos: false, runs: false, wkts: false, basra: false, bewm: false, eco: false, sr: false },
   teams: {}
 };
 window.masterChartInstance = null;
+
+window.toggleAllGraphStats = function(isChecked) {
+  Object.keys(window.graphState.stats).forEach(k => window.graphState.stats[k] = isChecked);
+  renderCharts();
+};
+
+window.toggleAllGraphTeams = function(isChecked) {
+  TEAMS.forEach(t => window.graphState.teams[t] = isChecked);
+  renderCharts();
+};
 
 // per-match cumulative history (pts / runs / wkts / table position / basra / bewm / eco / sr) for every team
 function computeChartHistory(){
   let hist = {};
   TEAMS.forEach(t => hist[t] = { 
-    pts: [0], runs: [0], wkts: [0], pos: [], 
-    basra: [0], bewm: [0], eco: [0], sr: [0], 
+    pts: [], runs: [], wkts: [], pos: [], 
+    basra: [], bewm: [], eco: [], sr: [], 
     current: { ...blankStats(t), bat_inns: 0 } 
   });
 
@@ -4351,9 +4373,6 @@ function computeChartHistory(){
     arr.forEach((x, i) => ranks[x.team] = i + 1);
     return ranks;
   };
-
-  let initRanks = getRankings();
-  TEAMS.forEach(t => hist[t].pos.push(initRanks[t]));
 
   SCHEDULE.forEach(f => {
     const r = results[f.id];
@@ -4438,9 +4457,9 @@ function renderCharts() {
     basra: 'BASRA', bewm: 'BEWM', eco: 'Economy', sr: 'Strike Rate' 
   };
 
-  // initialise with all teams active if first load
+  // initialise with all teams inactive if first load
   if (Object.keys(window.graphState.teams).length === 0) {
-    TEAMS.forEach(t => window.graphState.teams[t] = true);
+    TEAMS.forEach(t => window.graphState.teams[t] = false);
   }
 
   document.getElementById('stat_checkboxes').innerHTML = Object.keys(statLabels).map(k => `
@@ -4511,7 +4530,8 @@ window.updateMasterGraph = function() {
   if (!ctx) return;
   if (window.masterChartInstance) window.masterChartInstance.destroy();
 
-  const matchLabels = Array.from({length: 15}, (_, i) => i);
+  // exactly 14 matches per team; labeled 1 through 14.
+  const matchLabels = Array.from({length: 14}, (_, i) => i + 1);
 
   window.masterChartInstance = new Chart(ctx, {
     type: 'line',
