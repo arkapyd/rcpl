@@ -3153,15 +3153,15 @@ window.renderPlayoffScenarios = function() {
       status = 'Long Shot'; statusClass = 'status-longshot';
       text = `<strong>Long shot (~${pStr}).</strong> They can still make it if they win absolutely everything left to reach ${maxPts[t]} pts, but any slip-up is fatal.`;
     } else {
-      // Diversify the middle-of-the-pack tags based on probability & rank
+     // Diversify the middle-of-the-pack tags based on probability & rank
       if (qualProb[t] >= 0.90) {
-        status = 'Almost There';
+        status = 'Almost In Playoffs';
       } else if (qualProb[t] >= 0.65) {
-        status = (curRank[t] <= 3) ? 'Top 2 Possibility' : 'Strong Position';
+        status = (curRank[t] <= 2) ? 'Top 2 Contender' : 'Top 4 Contender';
       } else if (qualProb[t] >= 0.30) {
-        status = 'In The Hunt';
+        status = 'Top 4 Hunt';
       } else {
-        status = 'Top 4 Possibility';
+        status = 'Top 4 Bubble';
       }
       
       statusClass = 'status-bubble';
