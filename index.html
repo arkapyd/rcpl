@@ -3149,15 +3149,25 @@ window.renderPlayoffScenarios = function() {
           ? `<strong>Barely hanging on (~${pStr}).</strong> Done playing on ${curPts[t]} pts; clinging to playoff hopes by a thread while others finish.`
           : `<strong>Barely hanging on (~${pStr}).</strong> Clinging to playoff hopes by a thread.${winOut >= 0.05 ? ` Even a clean sweep only brings them to ~${winOutPct}.` : ` Even winning out can't save them.`}`;
       }
-    } else if (rem > 0 && dropOneProb < 0.05) {
+   } else if (rem > 0 && dropOneProb < 0.05) {
       status = 'Long Shot'; statusClass = 'status-longshot';
       text = `<strong>Long shot (~${pStr}).</strong> They can still make it if they win absolutely everything left to reach ${maxPts[t]} pts, but any slip-up is fatal.`;
     } else {
-      status = 'In The Hunt'; statusClass = 'status-bubble';
+      // Diversify the middle-of-the-pack tags based on probability & rank
+      if (qualProb[t] >= 0.90) {
+        status = 'Almost There';
+      } else if (qualProb[t] >= 0.65) {
+        status = (curRank[t] <= 3) ? 'Top 2 Possibility' : 'Strong Position';
+      } else if (qualProb[t] >= 0.30) {
+        status = 'In The Hunt';
+      } else {
+        status = 'Top 4 Possibility';
+      }
+      
+      statusClass = 'status-bubble';
       const lead = qualProb[t] >= 0.999 ? `<strong>All but certain (~${pStr}).</strong>` : `Qualification <strong>~${pStr}</strong>.`;
       let need;
       if (rem === 0) need = `done playing on ${curPts[t]} pts — fate now rests on other results`;
-      else {
         const k50 = firstK(0.5);
         need = (k50 === null) ? `even winning out only brings them to ~${winOutPct}`
              : (k50 === 0)   ? `even at .500 form they're around ${pStr}`
