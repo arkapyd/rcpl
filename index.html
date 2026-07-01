@@ -2920,6 +2920,12 @@ let SCHEDULE = [
   {id:'M70', a:'kkr', b:'dc'}
 ];
 
+const PLAYOFF_SCHEDULE = [
+  {id: 'P01', a: 'tbd', b: 'tbd', label: 'Qualifier 1'},
+  {id: 'P02', a: 'tbd', b: 'tbd', label: 'Eliminator'},
+  {id: 'P03', a: 'tbd', b: 'tbd', label: 'Qualifier 2'},
+  {id: 'P04', a: 'tbd', b: 'tbd', label: 'Final'}
+];
 // ============================== STATE ==============================
 let results = {};
 let fairplay = {};
@@ -3850,8 +3856,16 @@ function initUI(){
   ).join('');
 
   const fs = document.getElementById('fixture_select');
+  let activeSchedule = SCHEDULE.slice();
+  if (typeof _isPlayoffsMode !== 'undefined' && _isPlayoffsMode) activeSchedule = activeSchedule.concat(PLAYOFF_SCHEDULE);
+  
   fs.innerHTML = '<option value="">select a fixture…</option>' +
-    SCHEDULE.map(f => `<option value="${f.id}">${f.id} · ${TEAM_NAMES[f.a]} vs ${TEAM_NAMES[f.b]}</option>`).join('');
+    activeSchedule.map(f => {
+      const nameA = TEAM_NAMES[f.a] || 'TBD';
+      const nameB = TEAM_NAMES[f.b] || 'TBD';
+      const label = f.label ? ` (${f.label})` : '';
+      return `<option value="${f.id}">${f.id}${label} · ${nameA} vs ${nameB}</option>`;
+    }).join('');
   fs.addEventListener('change', window.loadFixture);
 
   // managers grid — rendered from the live (editable) roster
@@ -4102,7 +4116,9 @@ function buildResultLine(fixture, r){
 }
 
 function renderResultsFeed(){
-  let played = SCHEDULE
+  let activeSchedule = SCHEDULE.slice();
+  if (typeof _isPlayoffsMode !== 'undefined' && _isPlayoffsMode) activeSchedule = activeSchedule.concat(PLAYOFF_SCHEDULE);
+  let played = activeSchedule
     .filter(f => results[f.id])
     .filter(f => !selectedTeamFilter || f.a === selectedTeamFilter || f.b === selectedTeamFilter)
     .map(f => ({ fixture: f, r: results[f.id] }))
@@ -4124,7 +4140,7 @@ function renderResultsFeed(){
     return `
       <div class="feed-item ${hasDesc}" ${clickAttr}>
         <div class="feed-meta">
-          <span>${fixture.id} · ${dateStr}</span>
+          <span>${fixture.label ? `${fixture.id} (${fixture.label})` : fixture.id} · ${dateStr}</span>
           <span class="tag-played">Played</span>
         </div>
         <div class="feed-fixture">
@@ -4142,7 +4158,10 @@ function renderResultsFeed(){
 }
 
 function renderUpcomingFeed(){
-  let upcoming = SCHEDULE
+  let activeSchedule = SCHEDULE.slice();
+  if (typeof _isPlayoffsMode !== 'undefined' && _isPlayoffsMode) activeSchedule = activeSchedule.concat(PLAYOFF_SCHEDULE);
+
+  let upcoming = activeSchedule
     .filter(f => !results[f.id])
     .filter(f => !selectedTeamFilter || f.a === selectedTeamFilter || f.b === selectedTeamFilter)
     .slice(0, selectedTeamFilter ? 14 : 4);
@@ -4160,9 +4179,9 @@ function renderUpcomingFeed(){
         <span class="tag-upcoming">Upcoming</span>
       </div>
       <div class="feed-fixture">
-        <span class="team-link" style="--team-glow:${TEAM_COLORS[f.a]};" onclick="window.takeoverTeam('${f.a}')">${TEAM_NAMES[f.a]}</span>
+        <span class="team-link" style="--team-glow:${TEAM_COLORS[f.a] || 'var(--text-muted)'};" onclick="window.takeoverTeam('${f.a}')">${TEAM_NAMES[f.a] || 'TBD'}</span>
         <span class="vs">vs</span>
-        <span class="team-link" style="--team-glow:${TEAM_COLORS[f.b]};" onclick="window.takeoverTeam('${f.b}')">${TEAM_NAMES[f.b]}</span>
+        <span class="team-link" style="--team-glow:${TEAM_COLORS[f.b] || 'var(--text-muted)'};" onclick="window.takeoverTeam('${f.b}')">${TEAM_NAMES[f.b] || 'TBD'}</span>
       </div>
     </div>`).join('');
     
@@ -4174,7 +4193,10 @@ function renderUpcomingFeed(){
 
 function renderSchedule(){
   const tbody = document.getElementById('schedule_body');
-  const rows = SCHEDULE
+  let activeSchedule = SCHEDULE.slice();
+  if (typeof _isPlayoffsMode !== 'undefined' && _isPlayoffsMode) activeSchedule = activeSchedule.concat(PLAYOFF_SCHEDULE);
+  
+  const rows = activeSchedule
     .filter(f => {
       if(currentFilter === 'upcoming') return !results[f.id];
       if(currentFilter === 'played') return !!results[f.id];
@@ -4205,19 +4227,25 @@ function renderSchedule(){
             <td class="sched-status"><span class="tag-winner">${winTag}</span></td>
           </tr>`;
       }
-      return `
-        <tr class="is-upcoming" style="--logo-a:url('${f.a}.png'); --logo-b:url('${f.b}.png');">
-          <td><span class="sched-id">${f.id}</span></td>
-          <td>
-            <span class="sched-teams">
-              <span class="team-link" style="--team-glow:${TEAM_COLORS[f.a]};" onclick="window.takeoverTeam('${f.a}')">${TEAM_NAMES[f.a]}</span>
-              <span class="vs">vs</span>
-              <span class="team-link" style="--team-glow:${TEAM_COLORS[f.b]};" onclick="window.takeoverTeam('${f.b}')">${TEAM_NAMES[f.b]}</span>
-            </span>
-          </td>
-          <td><span class="sched-result">—</span></td>
-          <td class="sched-status"><span class="tag-upcoming">Upcoming</span></td>
-        </tr>`;
+     const nameA = TEAM_NAMES[f.a] || 'TBD';
+          const nameB = TEAM_NAMES[f.b] || 'TBD';
+          const colorA = TEAM_COLORS[f.a] || 'var(--text-muted)';
+          const colorB = TEAM_COLORS[f.b] || 'var(--text-muted)';
+          const displayId = f.label ? `<span class="sched-id" title="${f.label}">${f.id}*</span>` : `<span class="sched-id">${f.id}</span>`;
+
+          return `
+            <tr class="is-upcoming" style="--logo-a:url('${f.a}.png'); --logo-b:url('${f.b}.png');">
+              <td>${displayId}</td>
+              <td>
+                <span class="sched-teams">
+                  <span class="team-link" style="--team-glow:${colorA};" onclick="window.takeoverTeam('${f.a}')">${nameA}</span>
+                  <span class="vs">vs</span>
+                  <span class="team-link" style="--team-glow:${colorB};" onclick="window.takeoverTeam('${f.b}')">${nameB}</span>
+                </span>
+              </td>
+              <td><span class="sched-result">—</span></td>
+              <td class="sched-status"><span class="tag-upcoming">Upcoming</span></td>
+            </tr>`;
     }).join('');
   tbody.innerHTML = rows || `<tr><td colspan="4" class="feed-empty">no matches in this view.</td></tr>`;
 }
@@ -5434,12 +5462,18 @@ function renderBetMatchOptions(){
   const sel = document.getElementById('bet_fixture_select');
   if(!sel) return;
   const cur = sel.value;
+  let activeSchedule = SCHEDULE.slice();
+  if (typeof _isPlayoffsMode !== 'undefined' && _isPlayoffsMode) activeSchedule = activeSchedule.concat(PLAYOFF_SCHEDULE);
+
   sel.innerHTML = '<option value="">select a fixture…</option>' +
-    SCHEDULE.map(f => {
+    activeSchedule.map(f => {
       const r = results[f.id];
       const status = r ? ' [played]' : ' [upcoming]';
       const n = (bets[f.id] && Object.keys(bets[f.id]).length) ? ` · ${Object.keys(bets[f.id]).length} bet(s)` : '';
-      return `<option value="${f.id}">${f.id} · ${TEAM_NAMES[f.a]} vs ${TEAM_NAMES[f.b]}${status}${n}</option>`;
+      const nameA = TEAM_NAMES[f.a] || 'TBD';
+      const nameB = TEAM_NAMES[f.b] || 'TBD';
+      const label = f.label ? ` (${f.label})` : '';
+      return `<option value="${f.id}">${f.id}${label} · ${nameA} vs ${nameB}${status}${n}</option>`;
     }).join('');
   if(cur) sel.value = cur;
 }
@@ -5449,6 +5483,9 @@ function renderBetMatchOptions(){
 // favourite profit = stake / ratio → decimal = 1 + 1/ratio
 // underdog  profit = stake * ratio → decimal = 1 + ratio
 function engineOddsForFixture(f){
+  if(f.a === 'tbd' || f.b === 'tbd') {
+    return { dec: {}, fav: 'tbd', dog: 'tbd', isEvens: true, fractional: 'N/A', ratio: 1 };
+  }
   const ladder = [
     {v:1.0,s:'1/1'},{v:1.1,s:'11/10'},{v:1.2,s:'6/5'},{v:1.25,s:'5/4'},
     {v:1.33,s:'4/3'},{v:1.4,s:'7/5'},{v:1.5,s:'3/2'},{v:1.6,s:'8/5'},
@@ -5486,25 +5523,38 @@ function renderBetEntryRows(){
     if(statusEl) statusEl.innerHTML = '// pick a fixture to record bets';
     return;
   }
-  const f = SCHEDULE.find(x => x.id === id);
+  
+  let activeSchedule = SCHEDULE.slice();
+  if (typeof PLAYOFF_SCHEDULE !== 'undefined') activeSchedule = activeSchedule.concat(PLAYOFF_SCHEDULE);
+  const f = activeSchedule.find(x => x.id === id);
   const r = results[id];
   const saved = bets[id] || {};
   const mgrs = bettingManagers();
 
+  const actualA = r ? r.t1 : f.a;
+  const actualB = r ? r.t2 : f.b;
+  const fSim = { id: f.id, a: actualA, b: actualB };
+
   // engine line for this fixture → auto decimal odds per side
-  const eng = engineOddsForFixture(f);
-  _betCtx = { id, fa: f.a, fb: f.b, dec: eng.dec, fav: eng.fav, dog: eng.dog, isEvens: eng.isEvens, fractional: eng.fractional };
+  const eng = engineOddsForFixture(fSim);
+  _betCtx = { id, fa: actualA, fb: actualB, dec: eng.dec, fav: eng.fav, dog: eng.dog, isEvens: eng.isEvens, fractional: eng.fractional };
 
   if(statusEl){
-    const engLine = eng.isEvens
-      ? `evenly matched · both <strong>2.00</strong>`
-      : `<strong style="color:${TEAM_COLORS[eng.fav]};">${eng.fav.toUpperCase()} ${eng.dec[eng.fav].toFixed(2)}</strong> · <strong style="color:${TEAM_COLORS[eng.dog]};">${eng.dog.toUpperCase()} ${eng.dec[eng.dog].toFixed(2)}</strong> <span style="color:var(--text-dim);">(${eng.fractional})</span>`;
+    const engLine = (eng.fav === 'tbd') 
+      ? `<span style="color:var(--text-dim);">odds unavailable until teams are decided</span>`
+      : (eng.isEvens
+        ? `evenly matched · both <strong>2.00</strong>`
+        : `<strong style="color:${TEAM_COLORS[eng.fav]};">${eng.fav.toUpperCase()} ${eng.dec[eng.fav].toFixed(2)}</strong> · <strong style="color:${TEAM_COLORS[eng.dog]};">${eng.dog.toUpperCase()} ${eng.dec[eng.dog].toFixed(2)}</strong> <span style="color:var(--text-dim);">(${eng.fractional})</span>`);
+    
+    const dispA = actualA === 'tbd' ? 'TBD' : actualA.toUpperCase();
+    const dispB = actualB === 'tbd' ? 'TBD' : actualB.toUpperCase();
+
     if(r){
       const winner = getWinner(r);
       const wtxt = winner ? `${winner.toUpperCase()} won` : 'tied — bets push';
-      statusEl.innerHTML = `<span class="accent">${id}</span> · <span class="played">played</span> · ${f.a.toUpperCase()} vs ${f.b.toUpperCase()} · ${wtxt}<br>// engine line: ${engLine} <span style="color:var(--text-dim);">· from current strength</span>`;
+      statusEl.innerHTML = `<span class="accent">${id}</span> · <span class="played">played</span> · ${dispA} vs ${dispB} · ${wtxt}<br>// engine line: ${engLine} <span style="color:var(--text-dim);">· from current strength</span>`;
     } else {
-      statusEl.innerHTML = `<span class="accent">${id}</span> · <span class="upcoming-text">upcoming</span> · ${f.a.toUpperCase()} vs ${f.b.toUpperCase()} · settles once the result is logged<br>// engine line: ${engLine}`;
+      statusEl.innerHTML = `<span class="accent">${id}</span> · <span class="upcoming-text">upcoming</span> · ${dispA} vs ${dispB} · settles once the result is logged<br>// engine line: ${engLine}`;
     }
   }
 
@@ -5526,8 +5576,10 @@ function renderBetEntryRows(){
           <label>Bet On</label>
             <select id="betside_${i}" onchange="window.onBetSideChange(${i})">
               <option value="" ${side === '' ? 'selected' : ''}>— no bet —</option>
-              <option value="${f.a}" ${side === f.a ? 'selected' : ''}>${f.a.toUpperCase()}</option>
-              <option value="${f.b}" ${side === f.b ? 'selected' : ''}>${f.b.toUpperCase()}</option>
+              ${actualA === 'tbd' 
+                ? TEAMS.map(t => `<option value="${t}" ${side === t ? 'selected' : ''}>${t.toUpperCase()}</option>`).join('')
+                : `<option value="${actualA}" ${side === actualA ? 'selected' : ''}>${actualA.toUpperCase()}</option>
+                   <option value="${actualB}" ${side === actualB ? 'selected' : ''}>${actualB.toUpperCase()}</option>`}
             </select>
           </div>
           <div>
@@ -5660,7 +5712,9 @@ window.saveBets = function(){
   const sel = document.getElementById('bet_fixture_select');
   const id = sel ? sel.value : '';
   if(!id){ window.showToast('select a fixture first.', 'error'); return; }
-  const f = SCHEDULE.find(x => x.id === id);
+  let activeSchedule = SCHEDULE.slice();
+  if (typeof PLAYOFF_SCHEDULE !== 'undefined') activeSchedule = activeSchedule.concat(PLAYOFF_SCHEDULE);
+  const f = activeSchedule.find(x => x.id === id);
   const mgrs = bettingManagers();
   const matchBets = {};
   let bad = null;
@@ -5676,7 +5730,7 @@ window.saveBets = function(){
     if(isNaN(stake) || stake <= 0){ bad = bad || `${m.name}: stake must be > 0 (or set “— no bet —”).`; return; }
     if((isNaN(odds) || odds < 1) && _betCtx && _betCtx.dec[side] != null) odds = _betCtx.dec[side];
     if(isNaN(odds) || odds < 1) odds = 2.0;
-    if(side !== f.a && side !== f.b){ bad = bad || `${m.name}: pick a valid side.`; return; }
+    if(f.a !== 'tbd' && side !== f.a && side !== f.b){ bad = bad || `${m.name}: pick a valid side.`; return; }
     matchBets[m.id] = { side, stake, odds };
   });
   if(bad){ window.showToast(bad, 'error'); return; }
@@ -5821,11 +5875,18 @@ function getFairplayAverages(){
 
 // collect + validate FP from the inline inputs in Match Result Entry (keyed by fixture teams)
 function collectFpFromInputs(id){
-  const f = SCHEDULE.find(x => x.id === id);
+  let activeSchedule = SCHEDULE.slice();
+  if (typeof PLAYOFF_SCHEDULE !== 'undefined') activeSchedule = activeSchedule.concat(PLAYOFF_SCHEDULE);
+  const f = activeSchedule.find(x => x.id === id);
+  const r = results[id];
   const entry = {};
   if(!f) return { ok:true, entry };
+  
+  const actualA = r ? r.t1 : f.a;
+  const actualB = r ? r.t2 : f.b;
   let bad = null;
-  [[f.a, 'fp_a'], [f.b, 'fp_b']].forEach(([team, elId]) => {
+  [[actualA, 'fp_a'], [actualB, 'fp_b']].forEach(([team, elId]) => {
+    if(team === 'tbd') return;
     const el = document.getElementById(elId);
     if(!el) return;
     const raw = (el.value || '').trim();
@@ -6002,13 +6063,19 @@ function updateUI(){
     }
   }
 
-  const fs = document.getElementById('fixture_select');
+ const fs = document.getElementById('fixture_select');
   if(fs){
     const cur = fs.value;
+    let activeSchedule = SCHEDULE.slice();
+    if (typeof _isPlayoffsMode !== 'undefined' && _isPlayoffsMode) activeSchedule = activeSchedule.concat(PLAYOFF_SCHEDULE);
+    
     fs.innerHTML = '<option value="">select a fixture…</option>' +
-      SCHEDULE.map(f => {
+      activeSchedule.map(f => {
         const status = results[f.id] ? ' [played]' : ' [upcoming]';
-        return `<option value="${f.id}">${f.id} · ${TEAM_NAMES[f.a]} vs ${TEAM_NAMES[f.b]}${status}</option>`;
+        const nameA = TEAM_NAMES[f.a] || 'TBD';
+        const nameB = TEAM_NAMES[f.b] || 'TBD';
+        const label = f.label ? ` (${f.label})` : '';
+        return `<option value="${f.id}">${f.id}${label} · ${nameA} vs ${nameB}${status}</option>`;
       }).join('');
     if(cur) fs.value = cur;
   }
@@ -6311,7 +6378,9 @@ window.loadFixture = function(){
     clearForm();
     return;
   }
-  const f = SCHEDULE.find(x => x.id === id);
+  let activeSchedule = SCHEDULE.slice();
+  if (typeof _isPlayoffsMode !== 'undefined' && _isPlayoffsMode) activeSchedule = activeSchedule.concat(PLAYOFF_SCHEDULE);
+  const f = activeSchedule.find(x => x.id === id);
   const r = results[id];
   if(r){
     document.getElementById('t1').value = r.t1;
@@ -6344,19 +6413,24 @@ window.loadFixture = function(){
     ['b1','b2'].forEach(x => document.getElementById(x).value = 30);
     document.getElementById('has_super_over').checked = false;
     document.getElementById('super_over_panel').style.display = 'none';
-    status.innerHTML = `<span class="accent">${id}</span> · <span class="upcoming-text">upcoming</span> · ${f.a.toUpperCase()} vs ${f.b.toUpperCase()}`;
+    const nameA = f.a === 'tbd' ? 'TBD' : f.a.toUpperCase();
+    const nameB = f.b === 'tbd' ? 'TBD' : f.b.toUpperCase();
+    status.innerHTML = `<span class="accent">${id}</span> · <span class="upcoming-text">upcoming</span> · ${nameA} vs ${nameB}`;
   }
 
-  // fairplay inputs (independent of result) — tied to this fixture's teams
+  // fairplay inputs
   const _fp = fairplay[id] || {};
   const _fpa = document.getElementById('fp_a');
   const _fpb = document.getElementById('fp_b');
-  if(_fpa) _fpa.value = (_fp[f.a] != null) ? _fp[f.a] : '';
-  if(_fpb) _fpb.value = (_fp[f.b] != null) ? _fp[f.b] : '';
+  const actualA = r ? r.t1 : f.a;
+  const actualB = r ? r.t2 : f.b;
+  
+  if(_fpa) _fpa.value = (_fp[actualA] != null) ? _fp[actualA] : '';
+  if(_fpb) _fpb.value = (_fp[actualB] != null) ? _fp[actualB] : '';
   const _la = document.getElementById('fp_label_a');
   const _lb = document.getElementById('fp_label_b');
-  if(_la){ _la.textContent = f.a.toUpperCase(); _la.style.color = TEAM_COLORS[f.a]; }
-  if(_lb){ _lb.textContent = f.b.toUpperCase(); _lb.style.color = TEAM_COLORS[f.b]; }
+  if(_la){ _la.textContent = actualA === 'tbd' ? 'TBD' : actualA.toUpperCase(); _la.style.color = TEAM_COLORS[actualA] || 'var(--text-muted)'; }
+  if(_lb){ _lb.textContent = actualB === 'tbd' ? 'TBD' : actualB.toUpperCase(); _lb.style.color = TEAM_COLORS[actualB] || 'var(--text-muted)'; }
 };
 
 function clearForm(){
@@ -6372,7 +6446,9 @@ function clearForm(){
 window.saveMatch = function(){
   const id = document.getElementById('fixture_select').value;
   if(!id){ window.showToast('select a fixture first.', 'error'); return; }
-  const f = SCHEDULE.find(x => x.id === id);
+  let activeSchedule = SCHEDULE.slice();
+  if (typeof _isPlayoffsMode !== 'undefined' && _isPlayoffsMode) activeSchedule = activeSchedule.concat(PLAYOFF_SCHEDULE);
+  const f = activeSchedule.find(x => x.id === id);
 
   const r = {
     t1: document.getElementById('t1').value,
@@ -6390,10 +6466,12 @@ window.saveMatch = function(){
   if(!r.t1 || !r.t2){ window.showToast('select both teams.', 'error'); return; }
   if(r.t1 === r.t2){ window.showToast('teams must differ.', 'error'); return; }
 
-  const fixturePair = new Set([f.a, f.b]);
-  if(!fixturePair.has(r.t1) || !fixturePair.has(r.t2)){
-    window.showToast(`teams must be ${f.a.toUpperCase()} and ${f.b.toUpperCase()} for ${id}.`, 'error');
-    return;
+  if(f.a !== 'tbd' && f.b !== 'tbd') {
+    const fixturePair = new Set([f.a, f.b]);
+    if(!fixturePair.has(r.t1) || !fixturePair.has(r.t2)){
+      window.showToast(`teams must be ${f.a.toUpperCase()} and ${f.b.toUpperCase()} for ${id}.`, 'error');
+      return;
+    }
   }
 
   // validate the inline fairplay scores before committing (blank = skip)
